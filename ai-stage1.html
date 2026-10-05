@@ -882,12 +882,12 @@ bind(['gb','gp','gt'],gd);
 /* ---------- 7. 3D 손실 곡면 + 경로 ---------- */
 const SS2=(b,m)=>DATA.reduce((a,[w,h])=>a+(h-b-m*w)**2,0);
 const PATH=(()=>{let b=0,m=1;const P=[[b,m]];for(let i=0;i<500;i++){let gb=0,gm=0;DATA.forEach(([w,h])=>{const r=h-b-m*w;gb+=-2*r;gm+=-2*w*r;});b-=0.01*gb;m-=0.01*gm;P.push([b,m]);}return P;})();
-const SB0=-0.3,SB1=1.9,SM0=0.3,SM1=1.1,ZMAX=12;
+const SB0=-0.2,SB1=1.6,SM0=0.1,SM1=1.3,ZMAX=16,SPAN=1.8;
 const GC=[[SB0,SM0],[SB1,SM0],[SB1,SM1],[SB0,SM1]];
 function surf(){
   const az=+$('saz').value*Math.PI/180, op=+$('sop').value, k=+$('sk').value, kp=+$('skp').value;
   const el=0.62, ce=Math.cos(el), se=Math.sin(el), cx=215, cy=212, S=258, HZ=0.47;
-  const W=(b,m,z)=>[(b-SB0)/(SB1-SB0)-0.5,(m-SM0)/(SM1-SM0)-0.5,z/ZMAX*HZ];
+  const W=(b,m,z)=>[(b-(SB0+SB1)/2)/SPAN,(m-(SM0+SM1)/2)/SPAN,z/ZMAX*HZ];
   const PJ=([u,v,w])=>{const X=u*Math.cos(az)-v*Math.sin(az), D=u*Math.sin(az)+v*Math.cos(az);
     return [cx+X*S, cy+(D*se-w*ce)*S, D*ce+w*se];};
   const P3=(b,m,z)=>PJ(W(b,m,z));
@@ -922,7 +922,7 @@ function surf(){
   const far=G.reduce((a,p,i)=>p[2]<G[a][2]?i:a,0), cB=GC[far];
   const top=P3(cB[0],cB[1],ZMAX);
   s+=L(G[far][0].toFixed(1),G[far][1].toFixed(1),top[0].toFixed(1),top[1].toFixed(1),'ink2',1);
-  [4,8,12].forEach(z=>{const q=P3(cB[0],cB[1],z);s+=L((q[0]-4).toFixed(1),q[1].toFixed(1),q[0].toFixed(1),q[1].toFixed(1),'ink2',1)+T((q[0]-7).toFixed(1),(q[1]+4).toFixed(1),z,{a:'end'});});
+  [4,8,12,16].forEach(z=>{const q=P3(cB[0],cB[1],z);s+=L((q[0]-4).toFixed(1),q[1].toFixed(1),q[0].toFixed(1),q[1].toFixed(1),'ink2',1)+T((q[0]-7).toFixed(1),(q[1]+4).toFixed(1),z,{a:'end'});});
   s+=T((top[0]+8).toFixed(1),(top[1]+8).toFixed(1),'SSR',{c:'red'});
   const edges=[[0,1,'b'],[1,2,'m'],[2,3,'b'],[3,0,'m']].map(([a,c,t])=>({a,c,t,d:G[a][2]+G[c][2]}));
   const eb=edges.filter(e=>e.t==='b').sort((x,y)=>y.d-x.d)[0], em=edges.filter(e=>e.t==='m').sort((x,y)=>y.d-x.d)[0];
@@ -1012,6 +1012,7 @@ const gB=(b,m)=>DATA.reduce((a,[w,h])=>a-2*(h-b-m*w),0), gM=(b,m)=>DATA.reduce((
 function slice(){
   const az=+$('xaz').value*Math.PI/180, xa=+$('xa').value, xb=+$('xb').value, ta=+$('xta').value, tb=+$('xtb').value;
   const el=0.62, ce=Math.cos(el), se=Math.sin(el), cx=200, cy=205, S=232, HZ=0.47;
+  const SB0=-0.6,SB1=0.6,SM0=0.4,SM1=1.6,ZMAX=13,GC=[[SB0,SM0],[SB1,SM0],[SB1,SM1],[SB0,SM1]];
   const W=(b,m,z)=>[(b-SB0)/(SB1-SB0)-0.5,(m-SM0)/(SM1-SM0)-0.5,z/ZMAX*HZ];
   const PJ=([u,v,w])=>{const X=u*Math.cos(az)-v*Math.sin(az), D=u*Math.sin(az)+v*Math.cos(az); return [cx+X*S, cy+(D*se-w*ce)*S, D*ce+w*se];};
   const P3=(b,m,z)=>PJ(W(b,m,z)), fmt=p=>p[0].toFixed(1)+' '+p[1].toFixed(1);
@@ -1023,7 +1024,7 @@ function slice(){
     const a1=[w[2][0]-w[0][0],w[2][1]-w[0][1],w[2][2]-w[0][2]], a2=[w[3][0]-w[1][0],w[3][1]-w[1][1],w[3][2]-w[1][2]];
     let nv=[a1[1]*a2[2]-a1[2]*a2[1],a1[2]*a2[0]-a1[0]*a2[2],a1[0]*a2[1]-a1[1]*a2[0]]; const nn=Math.hypot(...nv)||1; nv=nv.map(x=>x/nn); if(nv[2]<0) nv=nv.map(x=>-x);
     const sh=Math.max(0,nv[0]*LT[0]+nv[1]*LT[1]+nv[2]*LT[2]);
-    const zc=(zs[0]+zs[1]+zs[2]+zs[3])/4, t=Math.max(0,Math.min(1,Math.log(zc/0.44)/Math.log(12/0.44)));
+    const zc=(zs[0]+zs[1]+zs[2]+zs[3])/4, t=Math.max(0,Math.min(1,Math.log(zc/0.8)/Math.log(13/0.8)));
     const pct=Math.round(Math.max(6,Math.min(92,10+72*t+10*(0.6-sh))));
     items.push({d:(p[0][2]+p[1][2]+p[2][2]+p[3][2])/4,s:`<path d="M${p.map(fmt).join('L')}Z" style="fill:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke-width:.6"/>`});
   }
@@ -1047,7 +1048,7 @@ function slice(){
     vals.forEach(v=>{const t=e.t==='b'?(v-ga[0])/(gb[0]-ga[0]):(v-ga[1])/(gb[1]-ga[1]); if(t<0||t>1) return;
       const x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t; o+=L(x.toFixed(1),y.toFixed(1),(x+ox*5).toFixed(1),(y+oy*5).toFixed(1),'ink2',1)+T((x+ox*15).toFixed(1),(y+oy*15+4).toFixed(1),v,{a:'middle'});});
     o+=T((mid[0]+ox*36).toFixed(1),(mid[1]+oy*36+4).toFixed(1),name,{a:'middle'});return o;};
-  s+=lab(eb,[0,1],'절편')+lab(em,[0.5,1],'기울기');
+  s+=lab(eb,[-0.5,0.5],'절편')+lab(em,[0.5,1.5],'기울기');
   s+=items.map(o=>o.s).join('');
   // 곡면 위 선 이름표 (앞쪽 끝)
   const cx0=(G[0][0]+G[2][0])/2, cy0=(G[0][1]+G[2][1])/2;
