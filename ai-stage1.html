@@ -522,7 +522,7 @@ aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;marg
   <p class="chno">4장</p>
   <h2>경사하강법 ② 절편과 기울기</h2>
   <p class="src">영상: <a href="https://youtu.be/sDv4f4s2SB8?t=944" target="_blank" rel="noopener">Gradient Descent, Step-by-Step</a> 15:44~23:54</p>
-  <div class="card"><div><span>질문</span>구할 숫자가 둘 이상이면 경사하강법은 어떻게 바뀔까요?</div><div><span>키워드</span>3D 손실함수 · 편미분 · 그래디언트 · 학습률 · 일반 절차 · SGD</div><div><span>연결</span>3장의 절차를 절편과 기울기에 함께 적용합니다. 1차의 마지막 장입니다.</div></div>
+  <div class="card"><div><span>질문</span>구할 숫자가 둘 이상이면 경사하강법은 어떻게 바뀔까요?</div><div><span>키워드</span>3D 손실함수 · 편미분 · 그래디언트 · 학습률 · 정리 · SGD</div><div><span>연결</span>3장의 절차를 절편과 기울기에 함께 적용합니다. 1차의 마지막 장입니다.</div></div>
 
   <h3>3D 손실함수</h3>
   <p class="ask">기울기도 모르는 값이면 SSR은 어떻게 되나요?</p>
@@ -592,8 +592,8 @@ aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;marg
   </figure>
   <p class="take">파라미터가 둘이면 미분도 둘(그래디언트), Step Size도 둘입니다. 나머지 절차는 3장과 같습니다.</p>
 
-  <h3>일반 절차</h3>
-  <p class="ask">다른 문제에도 같은 방법을 쓸 수 있나요?</p>
+  <h3>정리</h3>
+  <p class="ask">지금까지 한 일을 순서대로 적으면요?</p>
   <p>영상은 파라미터가 더 많아도 미분을 더 할 뿐 나머지는 그대로라고 설명합니다. 또 잔차 제곱의 합은 손실함수의 한 종류일 뿐이고, 다른 종류의 데이터에 맞는 손실함수가 많지만 어떤 손실함수를 쓰든 경사하강법은 같은 방식으로 작동한다고 말합니다. 영상이 정리한 절차는 다섯 단계입니다.</p>
   <ol>
     <li>손실함수를 그 안의 각 파라미터로 미분합니다. 머신러닝 용어로는 손실함수의 그래디언트를 구합니다.</li>
