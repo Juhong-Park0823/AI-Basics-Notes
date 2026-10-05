@@ -535,18 +535,18 @@ aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;marg
   <p>영상은 3장처럼 절편으로 미분하고, 이번에는 기울기로도 미분합니다.</p>
   <p><b>절편으로 미분할 때</b>는 기울기를 상수처럼 취급합니다. 상수의 미분은 0이므로 괄호 안을 미분하면 3장과 똑같이 −1이 남습니다.</p>
   <div class="eq" style="line-height:1.9"><span class="frac"><span>d</span><span>d 절편</span></span> SSR = <span class="c-green">−2(1.4 − (절편 + 기울기 × 0.5))<br>+ −2(1.9 − (절편 + 기울기 × 2.3))<br>+ −2(3.2 − (절편 + 기울기 × 2.9))</span></div>
+  <p>기울기를 0.64로 고정하면 이 식은 3장의 미분 식과 같아집니다. (보충)</p>
   <p><b>기울기로 미분할 때</b>는 절편을 상수처럼 취급합니다. 괄호 안의 <span class="m">−<span class="k">기울기</span> × 0.5</span>를 기울기로 미분하면 −0.5가 남고, 이를 앞으로 옮깁니다. 영상은 0.5에 2를 곱해 버리지 않고 굵게 남겨 두어, 첫 번째 사람의 몸무게라는 것을 알아보게 합니다.</p>
   <div class="eq" style="line-height:1.9"><span class="frac"><span>d</span><span>d 기울기</span></span> SSR = <span class="c-green">−2 × <b>0.5</b>(1.4 − (절편 + 기울기 × 0.5))<br>+ −2 × <b>2.3</b>(1.9 − (절편 + 기울기 × 2.3))<br>+ −2 × <b>2.9</b>(3.2 − (절편 + 기울기 × 2.9))</span></div>
   <p class="try"><b>재생해 보기:</b> 곡면을 한 방향으로 자르면 3장 같은 곡선이 나오고, 편미분은 그 단면의 접선 기울기입니다. (보충 그림)</p>
   <figure class="fig" id="f-slice">
-    <svg viewBox="0 0 640 330" role="img" aria-label="왼쪽은 SSR 곡면과 그 위의 단면 선, 오른쪽은 단면 곡선과 접선"></svg>
+    <svg viewBox="0 0 640 330" role="img" aria-label="왼쪽은 SSR 곡면과 그 위의 절편 방향·기울기 방향 단면 선, 오른쪽은 같은 눈금으로 그린 두 단면 곡선과 접선"></svg>
     <div class="ctrl">
       <label for="xaz">회전</label><input type="range" id="xaz" min="110" max="170" step="any" value="145"><output id="xaz-o"></output>
-      <label for="xm">고정 기울기</label><input type="range" id="xm" min="0.5" max="1.05" step="any" value="1"><output id="xm-o"></output>
       <label for="xa">절편 방향 단면</label><input type="range" id="xa" min="0" max="1" step="any" value="0"><output id="xa-o"></output>
+      <label for="xta">절편 방향 접선</label><input type="range" id="xta" min="0" max="1" step="any" value="0"><output id="xta-o"></output>
       <label for="xb">기울기 방향 단면</label><input type="range" id="xb" min="0" max="1" step="any" value="0"><output id="xb-o"></output>
-      <label for="xr">오른쪽 그림</label><input type="range" id="xr" min="0" max="1" step="any" value="0"><output id="xr-o"></output>
-      <label for="xt">접선</label><input type="range" id="xt" min="0" max="1" step="any" value="0"><output id="xt-o"></output>
+      <label for="xtb">기울기 방향 접선</label><input type="range" id="xtb" min="0" max="1" step="any" value="0"><output id="xtb-o"></output>
     </div>
     <div class="read" id="slice-read"></div>
   </figure>
@@ -1010,7 +1010,7 @@ bind(['db','dk'],dsum);
 /* ---------- 10. 4장 편미분: 곡면을 한 방향으로 자르기 ---------- */
 const gB=(b,m)=>DATA.reduce((a,[w,h])=>a-2*(h-b-m*w),0), gM=(b,m)=>DATA.reduce((a,[w,h])=>a-2*w*(h-b-m*w),0);
 function slice(){
-  const az=+$('xaz').value*Math.PI/180, xm=+$('xm').value, xa=+$('xa').value, xb=+$('xb').value, xr=+$('xr').value, xt=+$('xt').value;
+  const az=+$('xaz').value*Math.PI/180, xa=+$('xa').value, xb=+$('xb').value, ta=+$('xta').value, tb=+$('xtb').value;
   const el=0.62, ce=Math.cos(el), se=Math.sin(el), cx=200, cy=205, S=232, HZ=0.47;
   const W=(b,m,z)=>[(b-SB0)/(SB1-SB0)-0.5,(m-SM0)/(SM1-SM0)-0.5,z/ZMAX*HZ];
   const PJ=([u,v,w])=>{const X=u*Math.cos(az)-v*Math.sin(az), D=u*Math.sin(az)+v*Math.cos(az); return [cx+X*S, cy+(D*se-w*ce)*S, D*ce+w*se];};
@@ -1027,11 +1027,13 @@ function slice(){
     const pct=Math.round(Math.max(6,Math.min(92,10+72*t+10*(0.6-sh))));
     items.push({d:(p[0][2]+p[1][2]+p[2][2]+p[3][2])/4,s:`<path d="M${p.map(fmt).join('L')}Z" style="fill:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke-width:.6"/>`});
   }
-  const cut=(fn,op)=>{const n=40;for(let q=0;q<n;q++){const A=fn(q/n),B=fn((q+1)/n),a=P3(A[0],A[1],SS2(...A)+0.12),c=P3(B[0],B[1],SS2(...B)+0.12);
-    items.push({d:Math.max(a[2],c[2])+0.05,s:`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${c[0].toFixed(1)}" y2="${c[1].toFixed(1)}" style="stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;opacity:${op}"/>`});}};
-  if(xa>0) cut(u=>[SB0+(SB1-SB0)*u,xm],xa);
-  if(xb>0) cut(u=>[0,SM0+(SM1-SM0)*u],xb);
-  const pb=0, pm=xr<0.5?xm:1, pp=P3(pb,pm,SS2(pb,pm)+0.12);
+  // 곡면 위 단면: 절편 방향 = 실선, 기울기 방향 = 점선(점)
+  const pt=(b,m)=>P3(b,m,SS2(b,m)+0.12);
+  if(xa>0){const n=40;for(let q=0;q<n;q++){const a=pt(SB0+(SB1-SB0)*q/n,1),c=pt(SB0+(SB1-SB0)*(q+1)/n,1);
+    items.push({d:Math.max(a[2],c[2])+0.05,s:`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${c[0].toFixed(1)}" y2="${c[1].toFixed(1)}" style="stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;opacity:${xa}"/>`});}}
+  if(xb>0){const n=26;for(let q=0;q<=n;q++){const a=pt(0,SM0+(SM1-SM0)*q/n);
+    items.push({d:a[2]+0.05,s:`<circle cx="${a[0].toFixed(1)}" cy="${a[1].toFixed(1)}" r="2.2" style="fill:var(--ink);opacity:${xb}"/>`});}}
+  const pp=pt(0,1);
   items.push({d:pp[2]+0.08,s:`<circle cx="${pp[0].toFixed(1)}" cy="${pp[1].toFixed(1)}" r="5.5" style="fill:var(--violet);stroke:var(--paper);stroke-width:1.2"/>`});
   items.sort((a,b)=>a.d-b.d);
   let s='';
@@ -1047,28 +1049,36 @@ function slice(){
     o+=T((mid[0]+ox*36).toFixed(1),(mid[1]+oy*36+4).toFixed(1),name,{a:'middle'});return o;};
   s+=lab(eb,[0,1],'절편')+lab(em,[0.5,1],'기울기');
   s+=items.map(o=>o.s).join('');
-  // 오른쪽: 단면
-  const X0=430, X1=615, Y0=262, YT=62, py=v=>Y0-v/10*(Y0-YT);
-  const A=xr<0.5, lo=A?SB0:SM0, hi=A?SB1:SM1, px=v=>X0+(v-lo)/(hi-lo)*(X1-X0);
-  const fn=A?(v=>SS2(v,xm)):(v=>SS2(0,v)), at=A?0:1, sl=A?gB(0,xm):gM(0,1);
-  const op=A?xa:xb;
-  s+=L(X0,Y0,X1+4,Y0)+L(X0,Y0,X0,YT-6);
-  [2,4,6,8,10].forEach(v=>{s+=L(X0-4,py(v),X0,py(v))+T(X0-7,py(v)+4,v,{a:'end'});});
-  (A?[0,1]:[0.5,1]).forEach(v=>{s+=L(px(v),Y0,px(v),Y0+4)+T(px(v),Y0+17,v,{a:'middle'});});
-  s+=T((X0+X1)/2,Y0+36,A?'절편':'기울기',{a:'middle'})+T(X0+8,YT+2,'SSR',{c:'red'});
-  if(op>0){
-    s+=`<g style="opacity:${op}">`+T(X0,32,A?`기울기 = ${f(xm,2)} 고정`:'절편 = 0 고정',{c:'ink'});
-    let dd='';for(let j=0;j<=60;j++){const v=lo+(hi-lo)*j/60;dd+=(j?'L':'M')+px(v).toFixed(1)+' '+py(fn(v)).toFixed(1);}
-    s+=`<path d="${dd}" style="fill:none;stroke:var(--red);stroke-width:2"/>`;
-    if(xt>0){const w=A?0.35:0.12, y0=fn(at); s+=`<g clip-path="url(#cp-xr)" style="opacity:${xt}">${L(px(at-w),py(y0-sl*w),px(at+w),py(y0+sl*w),'green',2.2)}</g>`;}
-    s+=C(px(at),py(fn(at)),5,'violet')+'</g>';
-  }
-  s=`<defs><clipPath id="cp-xr"><rect x="${X0}" y="${YT-6}" width="${X1-X0+4}" height="${Y0-YT+6}"/></clipPath></defs>`+s;
+  // 곡면 위 선 이름표 (앞쪽 끝)
+  const cx0=(G[0][0]+G[2][0])/2, cy0=(G[0][1]+G[2][1])/2;
+  const tag=(e1,e2,txt,op)=>{const e=e1[0]>e2[0]?e1:e2, dx=e[0]-cx0, dy=e[1]-cy0, dl=Math.hypot(dx,dy)||1;
+    return `<g style="opacity:${op}">${T((e[0]+dx/dl*12).toFixed(1),(e[1]+dy/dl*12-6).toFixed(1),txt,{a:dx<0?'end':'start',c:'ink'})}</g>`;};
+  if(xa>0) s+=tag(pt(SB0,1),pt(SB1,1),'절편 방향',xa);
+  if(xb>0) s+=tag(pt(0,SM0),pt(0,SM1),'기울기 방향',xb);
+  // 오른쪽: 두 단면 (가로·세로 눈금 같음 → 접선 기울기를 그대로 비교)
+  const X0=430, X1=610, K=(X1-X0)/1.2, HZ2=4, H=100;
+  const panel=(top,title,fn,c0,ticks,sl,op,tp,dotted,id)=>{
+    const Y0=top+H, px=v=>X0+(v-(c0-0.6))*K, py=v=>Y0-v/HZ2*H;
+    let o=`<defs><clipPath id="${id}"><rect x="${X0}" y="${top-4}" width="${X1-X0+4}" height="${H+4}"/></clipPath></defs>`;
+    o+=L(X0,Y0,X1+4,Y0)+L(X0,Y0,X0,top-4);
+    [2,4].forEach(v=>{o+=L(X0-4,py(v),X0,py(v))+T(X0-7,py(v)+4,v,{a:'end'});});
+    ticks.forEach(v=>{o+=L(px(v),Y0,px(v),Y0+4)+T(px(v),Y0+16,String(v).replace('-','−'),{a:'middle'});});
+    const icon=dotted?[0,6,12,18].map(x=>C(X0+x,top-20,2.2,'ink')).join(''):L(X0,top-20,X0+18,top-20,'ink',2.6);
+    o+=`<g style="opacity:${0.35+0.65*op}">${icon}${T(X0+26,top-16,title,{c:'ink'})}</g>`;
+    if(op>0){
+      let dd='';for(let j=0;j<=60;j++){const v=c0-0.6+1.2*j/60;dd+=(j?'L':'M')+px(v).toFixed(1)+' '+py(fn(v)).toFixed(1);}
+      o+=`<g style="opacity:${op}"><g clip-path="url(#${id})"><path d="${dd}" style="fill:none;stroke:var(--red);stroke-width:2"/>`;
+      if(tp>0){const w=0.35,y0=fn(c0); o+=`<g style="opacity:${tp}">${L(px(c0-w),py(y0-sl*w),px(c0+w),py(y0+sl*w),'green',2.2)}</g>`;}
+      o+='</g>'+C(px(c0),py(fn(c0)),5,'violet')+'</g>';
+    }
+    return o;};
+  s+=panel(46,'절편 방향 (기울기 1 고정)',v=>SS2(v,1),0,[-0.5,0,0.5],gB(0,1),xa,ta,false,'cp-xa');
+  s+=panel(206,'기울기 방향 (절편 0 고정)',v=>SS2(0,v),1,[0.5,1,1.5],gM(0,1),xb,tb,true,'cp-xb');
   $('f-slice').querySelector('svg').innerHTML=s;
-  $('xaz-o').textContent=f(+$('xaz').value,0)+'°'; $('xm-o').textContent=f(xm,2); $('xa-o').textContent=f(xa,2); $('xb-o').textContent=f(xb,2); $('xr-o').textContent=A?'절편 방향':'기울기 방향'; $('xt-o').textContent=f(xt,2);
-  $('slice-read').innerHTML=A?`기울기 ${f(xm,2)} 고정 · 절편 0에서 <span class="c-red">SSR ${f(SS2(0,xm),2)}</span> · <span class="c-green">절편으로 미분 = ${f(gB(0,xm),2)}</span>`:`절편 0 고정 · 기울기 1에서 <span class="c-red">SSR ${f(SS2(0,1),2)}</span> · <span class="c-green">기울기로 미분 = ${f(gM(0,1),2)}</span>`;
+  $('xaz-o').textContent=f(+$('xaz').value,0)+'°'; $('xa-o').textContent=f(xa,2); $('xb-o').textContent=f(xb,2); $('xta-o').textContent=f(ta,2); $('xtb-o').textContent=f(tb,2);
+  $('slice-read').innerHTML=`절편 0, 기울기 1에서 <span class="c-red">SSR ${f(SS2(0,1),2)}</span> · <span class="c-green">절편으로 미분 ${f(gB(0,1),2)}</span> · <span class="c-green">기울기로 미분 ${f(gM(0,1),2)}</span>`;
 }
-bind(['xaz','xm','xa','xb','xr','xt'],slice);
+bind(['xaz','xa','xb','xta','xtb'],slice);
 
 /* ---------- 11. 4장 학습률 0.01 vs 0.1 ---------- */
 const PATH1=(()=>{let b=0,m=1;const P=[[b,m]];for(let i=0;i<8;i++){const gb=gB(b,m),gm=gM(b,m);b-=0.1*gb;m-=0.1*gm;P.push([b,m]);}return P;})();
@@ -1305,13 +1315,12 @@ SCENES['f-dsum']=[
   {dur:7, set:{db:0.95}, cap:'절편 0.95에서는 두 번째 항이 양수가 되어 나머지 두 항과 상쇄되고, 합이 0이 됩니다. 접선이 평평한 이곳이 최소제곱법이 바로 풀어서 찾는 곳입니다.'}
 ];
 SCENES['f-slice']=[
-  {dur:5, cut:{xaz:145,xm:1,xa:0,xb:0,xr:0,xt:0}, cap:`SSR 곡면입니다. ${bc('violet','점')}은 영상의 출발점인 절편 0, 기울기 1입니다.`, line:'SSR(절편, 기울기)'},
-  {dur:6.5, set:{xa:1}, cap:'기울기를 1로 고정하고 절편만 바꾸면 곡면 위의 이 선을 따라 움직입니다. 오른쪽은 이 단면만 꺼내 그린 곡선입니다.', line:'기울기 = 1 고정 → SSR은 절편만의 함수'},
-  {dur:5.5, set:{xt:1}, cap:`절편으로 미분한 값 −1.6은 이 단면에서 ${bc('green','접선')}의 기울기입니다. 기울기를 상수처럼 둔다는 것이 이 뜻입니다.`, line:`절편으로 미분 = ${bc('green','−1.6')}`},
-  {dur:6.5, set:{xm:0.64}, cap:'고정한 기울기를 0.64로 옮기면 단면이 3장의 SSR 곡선과 같아지고, 접선의 기울기는 −5.7이 됩니다.', line:v=>`기울기 ${n3(v.xm,2)} 고정 → 절편으로 미분 = ${n3(-1.6+(1-v.xm)*(-11.4),2)}`},
-  {dur:6.5, clear:true, cut:{xr:1,xt:0}, set:{xm:1,xa:0,xb:1}, cap:'이번에는 절편을 0으로 고정하고 기울기만 바꿉니다. 곡면을 다른 방향으로 자른 단면입니다.', line:'절편 = 0 고정 → SSR은 기울기만의 함수'},
-  {dur:5, set:{xt:1}, cap:`기울기로 미분한 값 −0.8은 이 단면에서 ${bc('green','접선')}의 기울기입니다.`, line:`기울기로 미분 = ${bc('green','−0.8')}`},
-  {dur:5.5, set:{xa:1}, cap:'두 방향으로 자른 단면의 기울기 −1.6과 −0.8을 묶은 것이 그래디언트입니다.', line:'그래디언트 = (−1.6, −0.8)'}
+  {dur:5, cut:{xaz:145,xa:0,xb:0,xta:0,xtb:0}, cap:`SSR 곡면입니다. ${bc('violet','점')}은 영상의 출발점인 절편 0, 기울기 1입니다.`, line:'SSR(절편, 기울기)'},
+  {dur:6.5, set:{xa:1}, cap:'기울기는 1에 고정하고 절편만 바꾸면, 곡면 위에서 절편 방향의 실선을 따라 움직입니다. 오른쪽 위가 이 단면만 꺼낸 곡선입니다.', line:'절편 방향: 기울기 = 1 고정, 절편만 바꿈'},
+  {dur:5.5, set:{xta:1}, cap:`절편으로 미분한 값 −1.6은 이 단면에서 ${bc('green','접선')}의 기울기입니다.`, line:`절편으로 미분 = ${bc('green','−1.6')}`},
+  {dur:6.5, clear:true, set:{xb:1}, cap:'이번에는 절편을 0에 고정하고 기울기만 바꿉니다. 곡면 위의 점선이고, 오른쪽 아래가 이 단면입니다.', line:'기울기 방향: 절편 = 0 고정, 기울기만 바꿈'},
+  {dur:6, set:{xtb:1}, cap:`기울기로 미분한 값 −0.8은 이 단면에서 ${bc('green','접선')}의 기울기입니다. 두 그래프는 눈금이 같아서, 절편 방향 접선이 두 배 가파른 것을 그대로 비교할 수 있습니다.`, line:`기울기로 미분 = ${bc('green','−0.8')}`},
+  {dur:5.5, cap:'두 방향으로 자른 단면의 기울기 −1.6과 −0.8을 묶은 것이 그래디언트입니다.', line:'그래디언트 = (−1.6, −0.8)'}
 ];
 SCENES['f-lr']=[
   {dur:5, cut:{la:0,lb:0}, cap:'SSR 곡면을 위에서 내려다본 그림입니다. 색이 옅을수록 SSR이 낮습니다. 출발점은 절편 0, 기울기 1입니다.', line:'출발: 절편 0, 기울기 1'},
