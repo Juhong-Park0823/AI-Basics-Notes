@@ -169,7 +169,12 @@ figure.fig.sc .ctrl, figure.fig.sc .btns{display:none}
 .sc-dots button.now::before{background:var(--ink)}
 @media (max-width:620px){.sc-lines{font-size:16px}.sc-bar{grid-template-columns:auto auto auto 1fr}.sc-dots{grid-column:1 / -1;justify-content:center}.sc-cap{font-size:15px}}
 /* ---- AI 노트: 차수 메뉴 ---- */
-.topbar{border-bottom:1px solid var(--rule);background:var(--paper)}
+.topbar{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--rule);background:var(--paper);transition:transform .25s ease}
+.topbar.hide{transform:translateY(-100%)}
+aside.side{top:var(--tb,0px);transition:top .25s ease}
+@media (min-width:901px){aside.side{height:calc(100vh - var(--tb,0px))}}
+@media (max-width:900px){aside.side{max-height:calc(100vh - var(--tb,0px))}}
+@media (prefers-reduced-motion:reduce){.topbar,aside.side{transition:none}}
 .stagebar{display:flex;align-items:center;gap:2px;max-width:1080px;margin:0 auto;padding:8px 20px;overflow-x:auto;white-space:nowrap;font-size:14px;scrollbar-width:none}
 .stagebar::-webkit-scrollbar{display:none}
 .stagebar a,.stagebar span{padding:4px 10px;border-radius:5px;color:var(--ink2);text-decoration:none;line-height:1.5}
@@ -200,7 +205,16 @@ aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;marg
 </style>
 </head>
 <body class="hub">
-<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home on" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html">1차</a><a href="ai-stage2.html">2차</a><span class="off" title="준비 중">3차</span><span class="off" title="준비 중">4차</span><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header>
+<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home on" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html">1차</a><a href="ai-stage2.html">2차</a><span class="off" title="준비 중">3차</span><span class="off" title="준비 중">4차</span><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header><script>
+(function(){const h=document.querySelector('.topbar');if(!h)return;const R=document.documentElement;let last=scrollY,hid=false;
+const set=v=>{hid=v;h.classList.toggle('hide',v);R.style.setProperty('--tb',v?'0px':h.offsetHeight+'px');};
+set(false);
+addEventListener('scroll',()=>{const y=scrollY,d=y-last;
+  if(y<=h.offsetHeight){if(hid)set(false);last=y;return;}
+  if(d>8){if(!hid)set(true);last=y;}else if(d<-8){if(hid)set(false);last=y;}},{passive:true});
+addEventListener('resize',()=>{if(!hid)R.style.setProperty('--tb',h.offsetHeight+'px');});
+h.addEventListener('focusin',()=>{if(hid)set(false);});})();
+</script>
 <main id="main">
   <p class="chno">유튜브 AI 커리큘럼 노트</p>
   <h1>AI 기초 노트</h1>

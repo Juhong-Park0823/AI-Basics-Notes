@@ -172,7 +172,12 @@ figure.fig.sc .ctrl, figure.fig.sc .btns{display:none}
 .sc-dots button.now::before{background:var(--ink)}
 @media (max-width:620px){.sc-lines{font-size:16px}.sc-bar{grid-template-columns:auto auto auto 1fr}.sc-dots{grid-column:1 / -1;justify-content:center}.sc-cap{font-size:15px}}
 /* ---- AI 노트: 차수 메뉴 ---- */
-.topbar{border-bottom:1px solid var(--rule);background:var(--paper)}
+.topbar{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--rule);background:var(--paper);transition:transform .25s ease}
+.topbar.hide{transform:translateY(-100%)}
+aside.side{top:var(--tb,0px);transition:top .25s ease}
+@media (min-width:901px){aside.side{height:calc(100vh - var(--tb,0px))}}
+@media (max-width:900px){aside.side{max-height:calc(100vh - var(--tb,0px))}}
+@media (prefers-reduced-motion:reduce){.topbar,aside.side{transition:none}}
 .stagebar{display:flex;align-items:center;gap:2px;max-width:1080px;margin:0 auto;padding:8px 20px;overflow-x:auto;white-space:nowrap;font-size:14px;scrollbar-width:none}
 .stagebar::-webkit-scrollbar{display:none}
 .stagebar a,.stagebar span{padding:4px 10px;border-radius:5px;color:var(--ink2);text-decoration:none;line-height:1.5}
@@ -203,7 +208,16 @@ aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;marg
 </style>
 </head>
 <body>
-<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html" class="on" aria-current="page">1차</a><a href="ai-stage2.html">2차</a><span class="off" title="준비 중">3차</span><span class="off" title="준비 중">4차</span><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header>
+<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html" class="on" aria-current="page">1차</a><a href="ai-stage2.html">2차</a><span class="off" title="준비 중">3차</span><span class="off" title="준비 중">4차</span><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header><script>
+(function(){const h=document.querySelector('.topbar');if(!h)return;const R=document.documentElement;let last=scrollY,hid=false;
+const set=v=>{hid=v;h.classList.toggle('hide',v);R.style.setProperty('--tb',v?'0px':h.offsetHeight+'px');};
+set(false);
+addEventListener('scroll',()=>{const y=scrollY,d=y-last;
+  if(y<=h.offsetHeight){if(hid)set(false);last=y;return;}
+  if(d>8){if(!hid)set(true);last=y;}else if(d<-8){if(hid)set(false);last=y;}},{passive:true});
+addEventListener('resize',()=>{if(!hid)R.style.setProperty('--tb',h.offsetHeight+'px');});
+h.addEventListener('focusin',()=>{if(hid)set(false);});})();
+</script>
 <div class="layout">
 <aside class="side" id="side">
   <div class="sidetop"><a href="#intro" class="brand">1차 선형회귀와 경사하강법</a><button type="button" id="navbtn" aria-expanded="false" aria-controls="sidenav">목차</button></div>
@@ -698,7 +712,7 @@ function route(){
 window.addEventListener('hashchange',route); route();
 
 const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-const topGap=()=>(window.innerWidth<=900?side.getBoundingClientRect().height:0)+40;
+const topGap=()=>(window.innerWidth<=900?side.getBoundingClientRect().height:0)+40+((document.querySelector('.topbar')||{}).offsetHeight||0);
 nav.addEventListener('click',e=>{
   const a=e.target.closest('.kw a'); if(!a) return;
   const el=document.getElementById(a.getAttribute('href').slice(1));
@@ -879,6 +893,11 @@ function gd(){
 }
 bind(['gb','gp','gt'],gd);
 
+/* ---------- 손실 높이 색: 보라(낮음) → 남색 → 청록 → 초록 → 노랑(높음) ---------- */
+const HS=[[0.0,[89,75,139]],[0.125,[76,105,151]],[0.25,[63,125,151]],[0.375,[51,148,148]],[0.5,[50,169,139]],[0.625,[75,190,119]],[0.75,[124,208,87]],[0.875,[185,222,50]],[1.0,[253,231,37]]];
+function HEAT(t,sh){t=Math.max(0,Math.min(1,t));let i=0;while(i<HS.length-2&&t>HS[i+1][0])i++;
+  const [a,ca]=HS[i],[b,cb]=HS[i+1],u=(t-a)/(b-a),k=sh===undefined?1:0.86+0.14*sh;
+  return 'rgb('+ca.map((c,j)=>Math.round((c+(cb[j]-c)*u)*k)).join(',')+')';}
 /* ---------- 7. 3D 손실 곡면 + 경로 ---------- */
 const SS2=(b,m)=>DATA.reduce((a,[w,h])=>a+(h-b-m*w)**2,0);
 const PATH=(()=>{let b=0,m=1;const P=[[b,m]];for(let i=0;i<500;i++){let gb=0,gm=0;DATA.forEach(([w,h])=>{const r=h-b-m*w;gb+=-2*r;gm+=-2*w*r;});b-=0.01*gb;m-=0.01*gm;P.push([b,m]);}return P;})();
@@ -902,8 +921,8 @@ function surf(){
     let nv=[a1[1]*a2[2]-a1[2]*a2[1],a1[2]*a2[0]-a1[0]*a2[2],a1[0]*a2[1]-a1[1]*a2[0]]; const nn=Math.hypot(...nv)||1; nv=nv.map(x=>x/nn); if(nv[2]<0) nv=nv.map(x=>-x);
     const sh=Math.max(0,nv[0]*LT[0]+nv[1]*LT[1]+nv[2]*LT[2]);
     const zc=(zs[0]+zs[1]+zs[2]+zs[3])/4, t=Math.max(0,Math.min(1,Math.log(zc/0.44)/Math.log(12/0.44)));
-    const pct=Math.round(Math.max(6,Math.min(92,10+72*t+10*(0.6-sh))));
-    let s=`<path d="M${p.map(fmt).join('L')}Z" style="fill:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke-width:.6"/>`;
+    const col=HEAT(t,sh);
+    let s=`<path d="M${p.map(fmt).join('L')}Z" style="fill:${col};stroke:${col};stroke-width:.6"/>`;
     items.push({d:(p[0][2]+p[1][2]+p[2][2]+p[3][2])/4,s,surf:1});
   }
   const kk=Math.max(0,Math.min(500,k)), i0=Math.floor(kk), fr=kk-i0;
@@ -911,9 +930,9 @@ function surf(){
   if(kp>0){
     const idx=[];for(let i=0;i<=i0;i+=(i<40?1:4)) idx.push(PATH[i]); idx.push(cur);
     for(let q=0;q+1<idx.length;q++){const a=P3(idx[q][0],idx[q][1],SS2(...idx[q])+0.12),c=P3(idx[q+1][0],idx[q+1][1],SS2(...idx[q+1])+0.12);
-      items.push({d:Math.max(a[2],c[2])+0.05,s:`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${c[0].toFixed(1)}" y2="${c[1].toFixed(1)}" style="stroke:var(--violet);stroke-width:2.6;stroke-linecap:round;opacity:${kp}"/>`});}
+      items.push({d:Math.max(a[2],c[2])+0.05,s:`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${c[0].toFixed(1)}" y2="${c[1].toFixed(1)}" style="stroke:#fff;stroke-width:2.6;stroke-linecap:round;opacity:${kp}"/>`});}
     const pc=P3(cur[0],cur[1],SS2(...cur)+0.12);
-    items.push({d:pc[2]+0.06,s:`<circle cx="${pc[0].toFixed(1)}" cy="${pc[1].toFixed(1)}" r="5.5" style="fill:var(--violet);stroke:var(--paper);stroke-width:1.2;opacity:${kp}"/>`});
+    items.push({d:pc[2]+0.06,s:`<circle cx="${pc[0].toFixed(1)}" cy="${pc[1].toFixed(1)}" r="5.5" style="fill:var(--violet);stroke:#fff;stroke-width:1.2;opacity:${kp}"/>`});
   }
   items.sort((a,b)=>a.d-b.d);
   let s='';
@@ -1025,8 +1044,8 @@ function slice(){
     let nv=[a1[1]*a2[2]-a1[2]*a2[1],a1[2]*a2[0]-a1[0]*a2[2],a1[0]*a2[1]-a1[1]*a2[0]]; const nn=Math.hypot(...nv)||1; nv=nv.map(x=>x/nn); if(nv[2]<0) nv=nv.map(x=>-x);
     const sh=Math.max(0,nv[0]*LT[0]+nv[1]*LT[1]+nv[2]*LT[2]);
     const zc=(zs[0]+zs[1]+zs[2]+zs[3])/4, t=Math.max(0,Math.min(1,Math.log(zc/0.8)/Math.log(13/0.8)));
-    const pct=Math.round(Math.max(6,Math.min(92,10+72*t+10*(0.6-sh))));
-    items.push({d:(p[0][2]+p[1][2]+p[2][2]+p[3][2])/4,s:`<path d="M${p.map(fmt).join('L')}Z" style="fill:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke:color-mix(in srgb,var(--red) ${pct}%,var(--paper));stroke-width:.6"/>`});
+    const col=HEAT(t,sh);
+    items.push({d:(p[0][2]+p[1][2]+p[2][2]+p[3][2])/4,s:`<path d="M${p.map(fmt).join('L')}Z" style="fill:${col};stroke:${col};stroke-width:.6"/>`});
   }
   // 곡면 위 단면: 절편 방향 = 실선, 기울기 방향 = 점선(점)
   const pt=(b,m)=>P3(b,m,SS2(b,m)+0.12);
@@ -1087,7 +1106,7 @@ const LB0=-0.6,LB1=2.0,LM0=-0.4,LM1=1.8, MX0=50,MX1=360,MY0=30,MY1=280;
 const mx=b=>MX0+(b-LB0)/(LB1-LB0)*(MX1-MX0), my=m=>MY1-(m-LM0)/(LM1-LM0)*(MY1-MY0);
 const MAP=(()=>{let s='';const nx=40,ny=34;for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const b=LB0+(LB1-LB0)*(i+0.5)/nx,m=LM0+(LM1-LM0)*(j+0.5)/ny,z=SS2(b,m),t=Math.max(0,Math.min(1,Math.log(Math.max(z,0.44)/0.44)/Math.log(12/0.44))),pct=Math.round(10+72*t);
   const x=mx(LB0+(LB1-LB0)*i/nx), y=my(LM0+(LM1-LM0)*(j+1)/ny), w=(MX1-MX0)/nx, h=(MY1-MY0)/ny;
-  s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(w+0.4).toFixed(1)}" height="${(h+0.4).toFixed(1)}" style="fill:color-mix(in srgb,var(--red) ${pct}%,var(--paper))"/>`;}return s;})();
+  s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(w+0.4).toFixed(1)}" height="${(h+0.4).toFixed(1)}" style="fill:${HEAT(t)}"/>`;}return s;})();
 const at=(P,k)=>{const n=P.length-1,kk=Math.max(0,Math.min(n,k)),i=Math.floor(kk),r=kk-i;return i<n?[P[i][0]+(P[i+1][0]-P[i][0])*r,P[i][1]+(P[i+1][1]-P[i][1])*r]:P[n];};
 function lr(){
   const ka=+$('la').value, kb=+$('lb').value;
@@ -1101,18 +1120,18 @@ function lr(){
     if(dots) pts.slice(0,-1).forEach(p=>o+=C(mx(p[0]).toFixed(1),my(p[1]).toFixed(1),3.5,c));
     return o;};
   s+=`<g clip-path="url(#cp-lr)">`;
-  if(ka>0){const P=PATH.slice(0,Math.floor(ka)+1).concat([at(PATH,ka)]); s+=`<polyline points="${P.map(p=>mx(p[0]).toFixed(1)+','+my(p[1]).toFixed(1)).join(' ')}" style="fill:none;stroke:var(--violet);stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round"/>`;}
+  if(ka>0){const P=PATH.slice(0,Math.floor(ka)+1).concat([at(PATH,ka)]); s+=`<polyline points="${P.map(p=>mx(p[0]).toFixed(1)+','+my(p[1]).toFixed(1)).join(' ')}" style="fill:none;stroke:#fff;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round"/>`;}
   if(kb>0) s+=poly(PATH1,kb,'ink',2,true);
   const ca=at(PATH,ka), cb=at(PATH1,kb);
   if(kb>0) s+=C(mx(cb[0]),my(cb[1]),5,'ink');
-  s+=C(mx(ca[0]),my(ca[1]),5.5,'violet');
+  s+=`<circle cx="${mx(ca[0]).toFixed(1)}" cy="${my(ca[1]).toFixed(1)}" r="5.5" style="fill:var(--violet);stroke:#fff;stroke-width:1.2"/>`;
   s+='</g>';
   const X=390;
-  s+=T(X,60,'학습률 0.01',{c:'violet'})+T(X,84,`걸음 ${Math.round(ka)} · SSR ${f(SS2(...ca),2)}`)+T(X,106,`절편 ${f(ca[0],2)} · 기울기 ${f(ca[1],2)}`);
-  if(kb>0) s+=T(X,156,'학습률 0.1',{c:'ink'})+T(X,180,`걸음 ${f(kb,0)} · SSR ${f(SS2(...cb),SS2(...cb)<100?2:0)}`)+T(X,202,`절편 ${f(cb[0],2)} · 기울기 ${f(cb[1],2)}`);
+  s+=T(X,60,'학습률 0.01 (흰 선)',{c:'ink'})+T(X,84,`걸음 ${Math.round(ka)} · SSR ${f(SS2(...ca),2)}`)+T(X,106,`절편 ${f(ca[0],2)} · 기울기 ${f(ca[1],2)}`);
+  if(kb>0) s+=T(X,156,'학습률 0.1 (검은 선)',{c:'ink'})+T(X,180,`걸음 ${f(kb,0)} · SSR ${f(SS2(...cb),SS2(...cb)<100?2:0)}`)+T(X,202,`절편 ${f(cb[0],2)} · 기울기 ${f(cb[1],2)}`);
   $('f-lr').querySelector('svg').innerHTML=s;
   $('la-o').textContent=f(ka,0); $('lb-o').textContent=f(kb,1);
-  $('lr-read').innerHTML=`<span class="c-violet">학습률 0.01: 걸음 ${Math.round(ka)}, SSR ${f(SS2(...ca),3)}</span> · 학습률 0.1: 걸음 ${f(kb,0)}, SSR ${f(SS2(...cb),SS2(...cb)<100?3:0)} (경로는 직접 계산, 보충)`;
+  $('lr-read').innerHTML=`<span>학습률 0.01: 걸음 ${Math.round(ka)}, SSR ${f(SS2(...ca),3)}</span> · 학습률 0.1: 걸음 ${f(kb,0)}, SSR ${f(SS2(...cb),SS2(...cb)<100?3:0)} (경로는 직접 계산, 보충)`;
 }
 bind(['la','lb'],lr);
 
@@ -1325,8 +1344,8 @@ SCENES['f-slice']=[
 ];
 SCENES['f-lr']=[
   {dur:5, cut:{la:0,lb:0}, cap:'SSR 곡면을 위에서 내려다본 그림입니다. 색이 옅을수록 SSR이 낮습니다. 출발점은 절편 0, 기울기 1입니다.', line:'출발: 절편 0, 기울기 1'},
-  {dur:7.5, set:{la:500}, move:[0.05,0.9], cap:`${bc('violet','학습률 0.01')}은 작은 걸음으로 골짜기를 따라 내려가 약 500걸음 뒤 절편 0.95, 기울기 0.64에 닿습니다.`, line:v=>`학습률 0.01 · 걸음 ${Math.round(v.la)}`},
-  {dur:7.5, clear:true, set:{lb:4}, cap:'같은 출발점에서 학습률 0.1은 걸음이 10배 커서 골짜기를 건너뛰고, 건너뛸 때마다 더 멀리 튑니다.', line:v=>`학습률 0.1 · 걸음 ${Math.floor(v.lb+0.001)}`},
+  {dur:7.5, set:{la:500}, move:[0.05,0.9], cap:`학습률 0.01(흰 선)은 작은 걸음으로 골짜기를 따라 내려가 약 500걸음 뒤 절편 0.95, 기울기 0.64에 닿습니다.`, line:v=>`학습률 0.01 · 걸음 ${Math.round(v.la)}`},
+  {dur:7.5, clear:true, set:{lb:4}, cap:'같은 출발점에서 학습률 0.1(검은 선)은 걸음이 10배 커서 골짜기를 건너뛰고, 건너뛸 때마다 더 멀리 튑니다.', line:v=>`학습률 0.1 · 걸음 ${Math.floor(v.lb+0.001)}`},
   {dur:6, set:{lb:7}, cap:'몇 걸음 만에 그림 밖으로 나가고 SSR은 수천으로 커집니다. 영상이 말한 "0.1로는 정답에 닿지 못한다"가 이런 모습입니다 (경로는 보충 계산).'}
 ];
 
