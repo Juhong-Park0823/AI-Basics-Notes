@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 기초 노트</title>
+<meta name="description" content="유튜브 영상으로 짠 AI 커리큘럼을 차수별로, 장면별로 재생되는 그림과 함께 정리한 공부 노트">
+<meta property="og:title" content="AI 기초 노트">
+<meta property="og:description" content="선형회귀부터 CNN까지, 유튜브 원문 영상을 따라 정리한 AI 공부 노트">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#F7F7F7; --panel:#F7F7F7; --ink:#1D232B; --ink2:#6B7580; --rule:#E3E6EA;
+  --blue:#2A78BD; --blue-soft:rgba(42,120,189,.16);
+  --amber:#D2920C; --amber-soft:rgba(210,146,12,.35);
+  --green:#2E9460; --green-soft:rgba(46,148,96,.2);
+  --red:#C6473A; --red-soft:rgba(198,71,58,.35);
+  --violet:#7B5EA7; --violet-soft:rgba(123,94,167,.22);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#15181C; --panel:#15181C; --ink:#E6E9ED; --ink2:#9AA3AD; --rule:#2B3138;
+    --blue:#5CA6E6; --blue-soft:rgba(92,166,230,.2);
+    --amber:#EDB53F; --amber-soft:rgba(237,181,63,.38);
+    --green:#5CC28C; --green-soft:rgba(92,194,140,.22);
+    --red:#E5705F; --red-soft:rgba(229,112,95,.38); --violet:#B39AE0; --violet-soft:rgba(179,154,224,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15181C; --panel:#15181C; --ink:#E6E9ED; --ink2:#9AA3AD; --rule:#2B3138;
+  --blue:#5CA6E6; --blue-soft:rgba(92,166,230,.2);
+  --amber:#EDB53F; --amber-soft:rgba(237,181,63,.38);
+  --green:#5CC28C; --green-soft:rgba(92,194,140,.22);
+  --red:#E5705F; --red-soft:rgba(229,112,95,.38); --violet:#B39AE0; --violet-soft:rgba(179,154,224,.25);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;color:var(--ink);background:var(--paper);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:17px;line-height:1.8;word-break:keep-all;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:56px 22px 96px}
+h1{font-size:clamp(28px,5vw,36px);font-weight:700;line-height:1.3;margin:0 0 12px}
+h2{font-size:clamp(24px,4vw,28px);font-weight:700;line-height:1.35;margin:0 0 4px}
+h3{font-size:19px;font-weight:700;margin:40px 0 8px}
+p{margin:0 0 16px}
+a{color:var(--blue)}
+.lede{color:var(--ink2)}
+nav.toc{margin:24px 0 0;font-size:16px}
+nav.toc a{display:block;padding:3px 0;text-decoration:none}
+nav.toc a small{color:var(--ink2);font-size:14px;margin-left:8px}
+nav.toc a:hover{text-decoration:underline}
+section.ch{margin-top:80px}
+.chno{font-size:14px;color:var(--ink2);margin:0 0 2px}
+.src{font-size:14px;color:var(--ink2);margin-bottom:24px}
+.m{font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;font-style:italic;font-size:1.08em;white-space:nowrap}
+.eq{font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;font-size:20px;text-align:center;margin:18px 0 22px;overflow-x:auto;white-space:nowrap}
+.eq i{font-style:italic}
+.c-violet{color:var(--violet)} .c-blue{color:var(--blue)} .c-amber{color:var(--amber)} .c-green{color:var(--green)} .c-red{color:var(--red)}
+figure.fig{margin:28px 0 32px}
+figure.fig svg{display:block;width:100%;height:auto}
+.ctrl{display:grid;grid-template-columns:minmax(84px,auto) 1fr 64px;align-items:center;gap:4px 14px;font-size:14px;color:var(--ink2);margin-top:8px}
+.ctrl output{font-variant-numeric:tabular-nums;color:var(--ink);text-align:right}
+input[type=range]{width:100%;accent-color:var(--ink2)}
+input[type=range]:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.read{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.8}
+.read b{font-weight:600}
+figcaption{font-size:14px;color:var(--ink2);margin-top:8px;line-height:1.65}
+.svgt{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:13px;fill:var(--ink2)}
+.svgm{font-family:"STIX Two Text",serif;font-style:italic;font-size:15px}
+details.q{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:-1px 0 0;padding:0}
+details.q + :not(details.q){margin-top:24px}
+details.q summary{cursor:pointer;padding:12px 0;font-size:16px;list-style:none;display:flex;gap:10px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"+";color:var(--ink2);width:12px;flex:none}
+details.q[open] summary::before{content:"−"}
+details.q > div{padding:0 0 8px 22px;font-size:16px}
+details.quiz{margin:20px 0;font-size:14px}
+details.quiz summary{cursor:pointer;color:var(--ink2)}
+.tbl{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px 8px 0;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2)}
+.mine{font-size:14px;color:var(--ink2)}
+footer{margin-top:80px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink2)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (max-width:520px){ body{font-size:16px} .ctrl{grid-template-columns:1fr 60px} .ctrl label{grid-column:1 / -1;margin-bottom:-6px} .eq{font-size:17px} }
+.ask{color:var(--ink2);margin:-2px 0 10px}
+.ask::before{content:"Q. ";font-weight:600}
+.take{border-left:3px solid var(--ink);padding-left:14px;margin:18px 0 20px}
+.try{font-size:15px;color:var(--ink2);margin:20px 0 -8px}
+.note{font-size:14px;color:var(--ink2)}
+aside.wait{font-size:15px;color:var(--ink);background:color-mix(in srgb,var(--ink) 4%,var(--paper));border-radius:6px;padding:12px 16px;margin:16px 0 20px;line-height:1.75}
+aside.wait .tbl{display:block}
+.recap{margin:44px 0 16px;padding:16px 0 0;border-top:1px solid var(--rule);font-size:15px;line-height:1.8}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:"STIX Two Text","Cambria Math",serif;font-size:1.05em;line-height:1.15;margin:0 2px}
+.frac > span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.frac > span:last-child{padding:0 3px}
+.frac i{font-style:italic}
+figure.fig.mini{margin:20px 0 26px}
+
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1080px;margin:0 auto}
+aside.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:44px 12px 40px 20px;border-right:1px solid var(--rule)}
+.sidetop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-weight:600;color:var(--ink);text-decoration:none;font-size:15px}
+#navbtn{display:none;font:inherit;font-size:14px;background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 12px;color:var(--ink);cursor:pointer}
+#sidenav a{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2);text-decoration:none;font-size:14px;line-height:1.45;padding:6px 10px;border-radius:5px}
+#sidenav a{transition:background-color .2s ease,color .2s ease}
+#sidenav a:hover{color:var(--ink)}
+#sidenav a.on{color:var(--ink);font-weight:600;background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+#sidenav .kw{margin:2px 0 8px}
+#sidenav .kw a{font-size:13px;padding:4px 10px 4px 22px}
+#sidenav .sep{border-top:1px solid var(--rule);margin:12px 0}
+main{max-width:760px;width:100%;padding:44px 36px max(96px,45vh);margin:0}
+.page h1{margin-top:4px}
+section.page.ch{margin-top:0}
+.card{display:grid;gap:6px;font-size:15px;padding:14px 16px;border:1px solid var(--rule);border-radius:8px;margin:4px 0 8px}
+.card span{display:inline-block;min-width:52px;color:var(--ink2);font-size:13px}
+.chitem{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--rule)}
+.chitem > a:first-child{flex:1;border-bottom:0 !important}
+.chlist a.vid{flex:none;font-size:13px;color:var(--ink2);text-decoration:none;border:1px solid var(--rule);border-radius:5px;padding:3px 9px}
+.chlist a.vid:hover{color:var(--ink);border-color:var(--ink2)}
+.chlist a{display:block;padding:12px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink)}
+.chlist a span{display:block;color:var(--ink2);font-size:15px}
+.chlist a:hover b{color:var(--blue)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:64px;padding-top:18px;border-top:1px solid var(--rule)}
+.pager a{text-decoration:none;font-size:15px;color:var(--ink);max-width:48%}
+.pager a small{display:block;color:var(--ink2);font-size:13px}
+.pager a.next{text-align:right;margin-left:auto}
+footer{margin-top:40px}
+.page{scroll-margin-top:120px}
+main h3{scroll-margin-top:40px}
+@media (max-width:900px){main h3{scroll-margin-top:100px}}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btns button{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;color:var(--ink2);cursor:pointer}
+.btns button:hover{color:var(--ink);border-color:var(--ink2)}
+td.m{font-family:"STIX Two Text",serif;font-style:italic}
+@media (max-width:900px){
+  .layout{display:block}
+  aside.side{position:sticky;top:0;height:auto;max-height:100vh;border-right:0;border-bottom:1px solid var(--rule);background:var(--paper);padding:10px 18px;z-index:5}
+  .sidetop{margin:0}
+  #navbtn{display:inline-block}
+  #sidenav{display:none;padding:10px 0 14px}
+  aside.side.open #sidenav{display:block}
+  main{padding:28px 20px 80px}
+}
+/* ---- scene player ---- */
+figure.fig.sc .ctrl, figure.fig.sc .btns{display:none}
+.sc-lines{font-family:"STIX Two Text","Cambria Math",serif;font-size:19px;line-height:1.55;margin:12px 0 0;text-align:center}
+.sc-lines i{font-style:italic}
+.sc-lines .num{font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;font-size:.85em}
+.sc-ln{opacity:.32;white-space:nowrap;overflow-x:auto;animation:scin .35s ease both}
+.sc-ln.cur{opacity:1}
+@keyframes scin{from{opacity:0;transform:translateY(6px)}}
+.sc-cap{min-height:3.3em;margin:10px 0 6px;font-size:16px;font-weight:600;color:var(--ink);text-align:center;line-height:1.6;transition:opacity .15s ease}
+.sc-bar{display:grid;grid-template-columns:auto auto auto 1fr auto;gap:8px;align-items:center}
+.sc-bar button{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;color:var(--ink);cursor:pointer;line-height:1.6}
+.sc-bar button.sc-play{min-width:78px}
+.sc-bar button:hover{border-color:var(--ink2)}
+.sc-bar button:focus-visible,.sc-dots button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sc-bar input[type=range]{min-width:0}
+.sc-dots{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.sc-dots button{width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.sc-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rule)}
+.sc-dots button.on::before{background:var(--ink2)}
+.sc-dots button.now::before{background:var(--ink)}
+@media (max-width:620px){.sc-lines{font-size:16px}.sc-bar{grid-template-columns:auto auto auto 1fr}.sc-dots{grid-column:1 / -1;justify-content:center}.sc-cap{font-size:15px}}
+/* ---- AI 노트: 차수 메뉴 ---- */
+.topbar{border-bottom:1px solid var(--rule);background:var(--paper)}
+.stagebar{display:flex;align-items:center;gap:2px;max-width:1080px;margin:0 auto;padding:8px 20px;overflow-x:auto;white-space:nowrap;font-size:14px;scrollbar-width:none}
+.stagebar::-webkit-scrollbar{display:none}
+.stagebar a,.stagebar span{padding:4px 10px;border-radius:5px;color:var(--ink2);text-decoration:none;line-height:1.5}
+.stagebar a:hover{color:var(--ink)}
+.stagebar a.home{font-weight:700;color:var(--ink);padding-left:0;margin-right:10px}
+.stagebar a.on{color:var(--ink);font-weight:600;background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+.stagebar span.off{opacity:.45;cursor:default}
+.stagebar a.ext{margin-left:auto;padding-right:0}
+.stagebar a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.chitem.soon > div:first-child{flex:1;padding:12px 0;color:var(--ink2)}
+.chitem.soon > div:first-child span{display:block;font-size:15px}
+/* ---- 허브 ---- */
+body.hub main{margin:0 auto;max-width:760px}
+.stages{margin:8px 0 0}
+.stage{display:block;padding:16px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink)}
+.stage b{font-size:18px}
+.stage span{display:block;color:var(--ink2);font-size:15px}
+a.stage:hover b{color:var(--blue)}
+div.stage{color:var(--ink2)}
+.stage .tag{display:inline-block;font-size:12px;border:1px solid var(--rule);border-radius:4px;padding:0 6px;margin-left:8px;vertical-align:2px;color:var(--ink2)}
+@media (max-width:620px){.stagebar{padding:8px 14px;font-size:13px}.stagebar a,.stagebar span{padding:4px 7px}.stagebar a.home{margin-right:4px}.stagebar .ext .lg{display:none}}
+aside.need{font-size:15px;line-height:1.75;border:1px solid var(--rule);border-radius:6px;padding:12px 16px;margin:16px 0 20px}
+aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:2px}
+.sum{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 4px}
+.sum > span:first-child,.sum > span:last-child{font-size:.62em}
+.sum > span:nth-child(2){font-size:1.45em;line-height:1.05}
+.m .k,td.m .k{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-style:normal;font-size:.93em}
+</style>
+</head>
+<body class="hub">
+<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home on" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html">1차</a><a href="ai-stage2.html">2차</a><span class="off" title="준비 중">3차</span><span class="off" title="준비 중">4차</span><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header>
+<main id="main">
+  <p class="chno">유튜브 AI 커리큘럼 노트</p>
+  <h1>AI 기초 노트</h1>
+  <p class="lede">유튜브 영상으로 짠 AI 커리큘럼을 차수별로 정리한 노트입니다. 각 차수는 원문 영상의 순서와 예시 숫자를 따르고, 영상에 없는 설명은 (보충)으로 표시했습니다. 그림은 ▶를 누르면 설명과 함께 장면별로 재생되고, ⏮ ⏭나 장면 점으로 원하는 장면에 멈춰 볼 수 있습니다. 위쪽 메뉴로 어느 페이지에서든 다른 차수로 이동할 수 있습니다.</p>
+
+  <h3>차수</h3>
+  <div class="stages">
+    <a class="stage" href="ai-stage1.html"><b>1차. 선형회귀와 경사하강법</b><span>선형회귀 · 손실함수(MSE) · 경사하강법</span></a>
+    <a class="stage" href="ai-stage2.html"><b>2차. 역전파와 신경망</b><span>연쇄법칙 · 역전파 · 뉴런 · 활성화 함수 · 첫 신경망</span></a>
+    <div class="stage"><b>3차</b><span class="tag">준비 중</span><span>CNN · 풀링 · LeNet · AlexNet</span></div>
+    <div class="stage"><b>4차</b><span class="tag">준비 중</span></div>
+    <div class="stage"><b>5차</b><span class="tag">준비 중</span></div>
+    <div class="stage"><b>6차</b><span class="tag">준비 중</span></div>
+  </div>
+
+  <h3>미분</h3>
+  <p>경사하강법과 역전파에 필요한 미분은 이 노트에서 다시 설명하지 않고, 각 장의 "필요한 미분" 상자에서 <a href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분학의 본질 노트</a>(3Blue1Brown, 16장)의 해당 장으로 연결합니다.</p>
+  <footer>원문은 각 차수 페이지에 영상별로 밝혀 두었습니다.</footer>
+</main>
+</body>
+</html>

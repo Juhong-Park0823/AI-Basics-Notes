@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2차 역전파와 신경망 · AI 기초 노트</title>
+<meta name="description" content="AI 기초 노트 2차: 연쇄법칙을 이용한 역전파, 뉴런, 활성화 함수, 첫 신경망을 유튜브 원문 영상을 따라 장면별로 재생되는 그림과 함께 정리한 노트">
+<meta property="og:title" content="2차 역전파와 신경망 · AI 기초 노트">
+<meta property="og:description" content="계산 그래프와 역전파 → 뉴런 → 활성화 함수 → 첫 신경망을 장면별로 재생되는 그림과 함께 정리한 공부 노트">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F7F7; --panel:#F7F7F7; --ink:#1D232B; --ink2:#6B7580; --rule:#E3E6EA;
+  --blue:#2A78BD; --blue-soft:rgba(42,120,189,.16);
+  --amber:#D2920C; --amber-soft:rgba(210,146,12,.35);
+  --green:#2E9460; --green-soft:rgba(46,148,96,.2);
+  --red:#C6473A; --red-soft:rgba(198,71,58,.35);
+  --violet:#7B5EA7; --violet-soft:rgba(123,94,167,.22);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#15181C; --panel:#15181C; --ink:#E6E9ED; --ink2:#9AA3AD; --rule:#2B3138;
+    --blue:#5CA6E6; --blue-soft:rgba(92,166,230,.2);
+    --amber:#EDB53F; --amber-soft:rgba(237,181,63,.38);
+    --green:#5CC28C; --green-soft:rgba(92,194,140,.22);
+    --red:#E5705F; --red-soft:rgba(229,112,95,.38); --violet:#B39AE0; --violet-soft:rgba(179,154,224,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15181C; --panel:#15181C; --ink:#E6E9ED; --ink2:#9AA3AD; --rule:#2B3138;
+  --blue:#5CA6E6; --blue-soft:rgba(92,166,230,.2);
+  --amber:#EDB53F; --amber-soft:rgba(237,181,63,.38);
+  --green:#5CC28C; --green-soft:rgba(92,194,140,.22);
+  --red:#E5705F; --red-soft:rgba(229,112,95,.38); --violet:#B39AE0; --violet-soft:rgba(179,154,224,.25);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;color:var(--ink);background:var(--paper);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:17px;line-height:1.8;word-break:keep-all;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:56px 22px 96px}
+h1{font-size:clamp(28px,5vw,36px);font-weight:700;line-height:1.3;margin:0 0 12px}
+h2{font-size:clamp(24px,4vw,28px);font-weight:700;line-height:1.35;margin:0 0 4px}
+h3{font-size:19px;font-weight:700;margin:40px 0 8px}
+p{margin:0 0 16px}
+a{color:var(--blue)}
+.lede{color:var(--ink2)}
+nav.toc{margin:24px 0 0;font-size:16px}
+nav.toc a{display:block;padding:3px 0;text-decoration:none}
+nav.toc a small{color:var(--ink2);font-size:14px;margin-left:8px}
+nav.toc a:hover{text-decoration:underline}
+section.ch{margin-top:80px}
+.chno{font-size:14px;color:var(--ink2);margin:0 0 2px}
+.src{font-size:14px;color:var(--ink2);margin-bottom:24px}
+.m{font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;font-style:italic;font-size:1.08em;white-space:nowrap}
+.eq{font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;font-size:20px;text-align:center;margin:18px 0 22px;overflow-x:auto;white-space:nowrap}
+.eq i{font-style:italic}
+.c-violet{color:var(--violet)} .c-blue{color:var(--blue)} .c-amber{color:var(--amber)} .c-green{color:var(--green)} .c-red{color:var(--red)}
+figure.fig{margin:28px 0 32px}
+figure.fig svg{display:block;width:100%;height:auto}
+.ctrl{display:grid;grid-template-columns:minmax(84px,auto) 1fr 64px;align-items:center;gap:4px 14px;font-size:14px;color:var(--ink2);margin-top:8px}
+.ctrl output{font-variant-numeric:tabular-nums;color:var(--ink);text-align:right}
+input[type=range]{width:100%;accent-color:var(--ink2)}
+input[type=range]:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.read{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.8}
+.read b{font-weight:600}
+figcaption{font-size:14px;color:var(--ink2);margin-top:8px;line-height:1.65}
+.svgt{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:13px;fill:var(--ink2)}
+.svgm{font-family:"STIX Two Text",serif;font-style:italic;font-size:15px}
+details.q{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:-1px 0 0;padding:0}
+details.q + :not(details.q){margin-top:24px}
+details.q summary{cursor:pointer;padding:12px 0;font-size:16px;list-style:none;display:flex;gap:10px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"+";color:var(--ink2);width:12px;flex:none}
+details.q[open] summary::before{content:"−"}
+details.q > div{padding:0 0 8px 22px;font-size:16px}
+details.quiz{margin:20px 0;font-size:14px}
+details.quiz summary{cursor:pointer;color:var(--ink2)}
+.tbl{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px 8px 0;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2)}
+.mine{font-size:14px;color:var(--ink2)}
+footer{margin-top:80px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink2)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (max-width:520px){ body{font-size:16px} .ctrl{grid-template-columns:1fr 60px} .ctrl label{grid-column:1 / -1;margin-bottom:-6px} .eq{font-size:17px} }
+.ask{color:var(--ink2);margin:-2px 0 10px}
+.ask::before{content:"Q. ";font-weight:600}
+.take{border-left:3px solid var(--ink);padding-left:14px;margin:18px 0 20px}
+.try{font-size:15px;color:var(--ink2);margin:20px 0 -8px}
+.note{font-size:14px;color:var(--ink2)}
+aside.wait{font-size:15px;color:var(--ink);background:color-mix(in srgb,var(--ink) 4%,var(--paper));border-radius:6px;padding:12px 16px;margin:16px 0 20px;line-height:1.75}
+aside.wait .tbl{display:block}
+.recap{margin:44px 0 16px;padding:16px 0 0;border-top:1px solid var(--rule);font-size:15px;line-height:1.8}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:"STIX Two Text","Cambria Math",serif;font-size:1.05em;line-height:1.15;margin:0 2px}
+.frac > span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.frac > span:last-child{padding:0 3px}
+.frac i{font-style:italic}
+figure.fig.mini{margin:20px 0 26px}
+
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1080px;margin:0 auto}
+aside.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:44px 12px 40px 20px;border-right:1px solid var(--rule)}
+.sidetop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-weight:600;color:var(--ink);text-decoration:none;font-size:15px}
+#navbtn{display:none;font:inherit;font-size:14px;background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 12px;color:var(--ink);cursor:pointer}
+#sidenav a{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2);text-decoration:none;font-size:14px;line-height:1.45;padding:6px 10px;border-radius:5px}
+#sidenav a{transition:background-color .2s ease,color .2s ease}
+#sidenav a:hover{color:var(--ink)}
+#sidenav a.on{color:var(--ink);font-weight:600;background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+#sidenav .kw{margin:2px 0 8px}
+#sidenav .kw a{font-size:13px;padding:4px 10px 4px 22px}
+#sidenav .sep{border-top:1px solid var(--rule);margin:12px 0}
+main{max-width:760px;width:100%;padding:44px 36px max(96px,45vh);margin:0}
+.page h1{margin-top:4px}
+section.page.ch{margin-top:0}
+.card{display:grid;gap:6px;font-size:15px;padding:14px 16px;border:1px solid var(--rule);border-radius:8px;margin:4px 0 8px}
+.card span{display:inline-block;min-width:52px;color:var(--ink2);font-size:13px}
+.chitem{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--rule)}
+.chitem > a:first-child{flex:1;border-bottom:0 !important}
+.chlist a.vid{flex:none;font-size:13px;color:var(--ink2);text-decoration:none;border:1px solid var(--rule);border-radius:5px;padding:3px 9px}
+.chlist a.vid:hover{color:var(--ink);border-color:var(--ink2)}
+.chlist a{display:block;padding:12px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink)}
+.chlist a span{display:block;color:var(--ink2);font-size:15px}
+.chlist a:hover b{color:var(--blue)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:64px;padding-top:18px;border-top:1px solid var(--rule)}
+.pager a{text-decoration:none;font-size:15px;color:var(--ink);max-width:48%}
+.pager a small{display:block;color:var(--ink2);font-size:13px}
+.pager a.next{text-align:right;margin-left:auto}
+footer{margin-top:40px}
+.page{scroll-margin-top:120px}
+main h3{scroll-margin-top:40px}
+@media (max-width:900px){main h3{scroll-margin-top:100px}}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btns button{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;color:var(--ink2);cursor:pointer}
+.btns button:hover{color:var(--ink);border-color:var(--ink2)}
+td.m{font-family:"STIX Two Text",serif;font-style:italic}
+@media (max-width:900px){
+  .layout{display:block}
+  aside.side{position:sticky;top:0;height:auto;max-height:100vh;border-right:0;border-bottom:1px solid var(--rule);background:var(--paper);padding:10px 18px;z-index:5}
+  .sidetop{margin:0}
+  #navbtn{display:inline-block}
+  #sidenav{display:none;padding:10px 0 14px}
+  aside.side.open #sidenav{display:block}
+  main{padding:28px 20px 80px}
+}
+/* ---- scene player ---- */
+figure.fig.sc .ctrl, figure.fig.sc .btns{display:none}
+.sc-lines{font-family:"STIX Two Text","Cambria Math",serif;font-size:19px;line-height:1.55;margin:12px 0 0;text-align:center}
+.sc-lines i{font-style:italic}
+.sc-lines .num{font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;font-size:.85em}
+.sc-ln{opacity:.32;white-space:nowrap;overflow-x:auto;animation:scin .35s ease both}
+.sc-ln.cur{opacity:1}
+@keyframes scin{from{opacity:0;transform:translateY(6px)}}
+.sc-cap{min-height:3.3em;margin:10px 0 6px;font-size:16px;font-weight:600;color:var(--ink);text-align:center;line-height:1.6;transition:opacity .15s ease}
+.sc-bar{display:grid;grid-template-columns:auto auto auto 1fr auto;gap:8px;align-items:center}
+.sc-bar button{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;color:var(--ink);cursor:pointer;line-height:1.6}
+.sc-bar button.sc-play{min-width:78px}
+.sc-bar button:hover{border-color:var(--ink2)}
+.sc-bar button:focus-visible,.sc-dots button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sc-bar input[type=range]{min-width:0}
+.sc-dots{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.sc-dots button{width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.sc-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rule)}
+.sc-dots button.on::before{background:var(--ink2)}
+.sc-dots button.now::before{background:var(--ink)}
+@media (max-width:620px){.sc-lines{font-size:16px}.sc-bar{grid-template-columns:auto auto auto 1fr}.sc-dots{grid-column:1 / -1;justify-content:center}.sc-cap{font-size:15px}}
+/* ---- AI 노트: 차수 메뉴 ---- */
+.topbar{border-bottom:1px solid var(--rule);background:var(--paper)}
+.stagebar{display:flex;align-items:center;gap:2px;max-width:1080px;margin:0 auto;padding:8px 20px;overflow-x:auto;white-space:nowrap;font-size:14px;scrollbar-width:none}
+.stagebar::-webkit-scrollbar{display:none}
+.stagebar a,.stagebar span{padding:4px 10px;border-radius:5px;color:var(--ink2);text-decoration:none;line-height:1.5}
+.stagebar a:hover{color:var(--ink)}
+.stagebar a.home{font-weight:700;color:var(--ink);padding-left:0;margin-right:10px}
+.stagebar a.on{color:var(--ink);font-weight:600;background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+.stagebar span.off{opacity:.45;cursor:default}
+.stagebar a.ext{margin-left:auto;padding-right:0}
+.stagebar a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.chitem.soon > div:first-child{flex:1;padding:12px 0;color:var(--ink2)}
+.chitem.soon > div:first-child span{display:block;font-size:15px}
+/* ---- 허브 ---- */
+body.hub main{margin:0 auto;max-width:760px}
+.stages{margin:8px 0 0}
+.stage{display:block;padding:16px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink)}
+.stage b{font-size:18px}
+.stage span{display:block;color:var(--ink2);font-size:15px}
+a.stage:hover b{color:var(--blue)}
+div.stage{color:var(--ink2)}
+.stage .tag{display:inline-block;font-size:12px;border:1px solid var(--rule);border-radius:4px;padding:0 6px;margin-left:8px;vertical-align:2px;color:var(--ink2)}
+@media (max-width:620px){.stagebar{padding:8px 14px;font-size:13px}.stagebar a,.stagebar span{padding:4px 7px}.stagebar a.home{margin-right:4px}.stagebar .ext .lg{display:none}}
+aside.need{font-size:15px;line-height:1.75;border:1px solid var(--rule);border-radius:6px;padding:12px 16px;margin:16px 0 20px}
+aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:2px}
+.sum{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 4px}
+.sum > span:first-child,.sum > span:last-child{font-size:.62em}
+.sum > span:nth-child(2){font-size:1.45em;line-height:1.05}
+.m .k,td.m .k{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-style:normal;font-size:.93em}
+pre.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;background:color-mix(in srgb,var(--ink) 5%,var(--paper));border-radius:6px;padding:14px 16px;overflow-x:auto;margin:14px 0 20px}
+pre.code code{font-family:inherit}
+</style>
+</head>
+<body>
+<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html">1차</a><a href="ai-stage2.html" class="on" aria-current="page">2차</a><span class="off" title="준비 중">3차</span><span class="off" title="준비 중">4차</span><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header>
+<div class="layout">
+<aside class="side" id="side">
+  <div class="sidetop"><a href="#intro" class="brand">2차 역전파와 신경망</a><button type="button" id="navbtn" aria-expanded="false" aria-controls="sidenav">목차</button></div>
+  <nav id="sidenav" aria-label="목차"></nav>
+</aside>
+<main id="main">
+
+<section class="page" id="intro" hidden>
+  <p class="chno">AI 기초 노트 · 2차</p>
+  <h1>역전파와 신경망</h1>
+  <p class="lede">유튜브 영상으로 짠 AI 커리큘럼의 2차 노트입니다. 1차에서 미지수 2개(절편과 기울기)를 경사하강법으로 구했다면, 2차는 미지수가 수만~수십억 개일 때 그 미분을 어떻게 구하는지(역전파)에서 시작해, 신경망을 이루는 뉴런과 활성화 함수, 그리고 이것들로 만든 첫 신경망까지 이어집니다. 그림은 ▶를 누르면 설명과 함께 장면별로 재생되고, ⏮ ⏭나 아래 점으로 원하는 장면에 멈춰 볼 수 있습니다.</p>
+  <p class="lede">2차의 색은 이렇게 씁니다. <span class="c-blue">파랑</span>은 앞으로 계산한 값(순전파 값), <span class="c-green">초록</span>은 뒤로 전해지는 그래디언트(미분값), <span class="c-amber">주황</span>은 노드 하나의 국소 그래디언트, <span class="c-violet">보라</span>는 가중치와 바이어스, <span class="c-red">빨강</span>은 손실입니다. 처음 보는 용어나 기호는 <a href="#glossary" style="white-space:nowrap">용어·기호</a>에 정리했습니다.</p>
+
+  <h3>문제</h3>
+  <p class="ask">미지수가 수십억 개면 어떻게 하나요?</p>
+  <p>1차의 경사하강법은 손실을 각 미지수로 미분해 한 걸음씩 움직였습니다. 1차 4장에서 StatQuest 영상은 미지수가 더 많아도 미분을 더 하면 될 뿐 절차는 같다고 설명했습니다. 문제는 그 미분을 구하는 일입니다. 미지수가 절편과 기울기 둘이면 식을 손으로 미분할 수 있지만, 신경망처럼 미지수가 수만~수십억 개면 그럴 수 없습니다.</p>
+  <p>CS231n 강의는 이렇게 크고 복잡한 함수에서 모든 변수에 대한 그래디언트를 구하는 방법으로 <b>역전파(backpropagation)</b>를 소개합니다. 역전파는 연쇄법칙을 거듭 적용하는 방법입니다.</p>
+
+  <h3>흐름</h3>
+  <p class="ask">2차에서는 무엇을 배우나요?</p>
+  <div class="tbl"><table>
+    <tr><th>장</th><th>질문</th><th>답</th></tr>
+    <tr><td><a href="#ch1">1장</a></td><td>미지수가 아주 많을 때 미분은 어떻게 구하나요?</td><td>계산 그래프를 뒤에서부터 거슬러 가며 연쇄법칙을 적용 (역전파)</td></tr>
+    <tr><td><a href="#ch2">2장</a></td><td>신경망의 기본 단위는 무엇인가요?</td><td>뉴런: 가중합 + 바이어스 → 활성화 함수</td></tr>
+    <tr><td><a href="#ch3">3장</a></td><td>뉴런을 많이 쌓으면 왜 문제가 되나요?</td><td>선형 결합만 쌓으면 결국 하나의 선형 함수 → 활성화 함수로 선형성을 깸</td></tr>
+    <tr><td><a href="#ch4">4장</a></td><td>뉴런과 활성화 함수로 신경망을 만들면?</td><td>층을 쌓은 신경망과 그 학습 (총 복습)</td></tr>
+  </table></div>
+
+  <h3>연쇄법칙</h3>
+  <p class="ask">역전파에 필요한 미분은 무엇인가요?</p>
+  <p>커리큘럼은 역전파 전에 연쇄법칙을 먼저 봅니다. 영상은 3Blue1Brown 미적분 4편이고, 미적분 노트 5장에 정리되어 있습니다. 함수 안에 함수가 들어 있을 때, 전체의 미분은 바깥 함수의 미분과 안쪽 함수의 미분을 곱한 것입니다.</p>
+  <div class="eq"><span class="frac"><span>d</span><span>d<i>x</i></span></span> <i>g</i>(<i>h</i>(<i>x</i>)) = <i>g</i>′(<i>h</i>(<i>x</i>)) · <i>h</i>′(<i>x</i>)</div>
+  <aside class="need"><b>필요한 미분</b><a href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html#ch5" target="_blank" rel="noopener">미적분 5장. 합·곱·합성의 미분</a> — 연쇄법칙 (영상: <a href="https://www.youtube.com/watch?v=e46LMG7k9G0" target="_blank" rel="noopener">미적분학의 본질 4편</a>)<br><a href="ai-stage1.html#ch3">1차 3장</a> — SSR을 절편으로 미분할 때 쓴 연쇄법칙</aside>
+
+  <h3>장 목록</h3>
+  <div class="chlist">
+    <div class="chitem"><a href="#ch1"><b>1장. 계산 그래프와 역전파</b><span>미지수가 아주 많을 때 미분은 어떻게 구할까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=d14TUNcbn1k" target="_blank" rel="noopener">CS231n 4강 ▶</a></div>
+    <div class="chitem"><a href="#ch2"><b>2장. 뉴런</b><span>신경망의 기본 단위는 무엇일까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=LHOLedaY2so" target="_blank" rel="noopener">뉴런 ▶</a></div>
+    <div class="chitem"><a href="#ch3"><b>3장. 활성화 함수</b><span>뉴런을 그냥 많이 쌓으면 왜 안 될까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=DaixewJTF8k" target="_blank" rel="noopener">활성화 함수 ▶</a></div>
+    <div class="chitem"><a href="#ch4"><b>4장. 첫 신경망</b><span>뉴런과 활성화 함수로 만든 신경망은 어떻게 학습할까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=wrguEHxk_EI" target="_blank" rel="noopener">DL1 ▶</a></div>
+  </div>
+
+  <h3>원문 영상</h3>
+  <div class="tbl"><table>
+    <tr><th>영상</th><th>길이</th><th>장</th></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=e46LMG7k9G0" target="_blank" rel="noopener">미적분학의 본질 4편: 연쇄법칙과 곱의 법칙</a> (3Blue1Brown 한국어)</td><td>—</td><td>개요 (<a href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html#ch5" target="_blank" rel="noopener">미적분 노트</a>로 대신)</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=d14TUNcbn1k" target="_blank" rel="noopener">Lecture 4 | Introduction to Neural Networks</a> (Stanford CS231n, 2017)</td><td>1:13:59</td><td>1~4</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=LHOLedaY2so" target="_blank" rel="noopener">What is a Neuron? | Artificial Neural Networks</a> (Architecture Bytes - AI)</td><td>2:03</td><td>2</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=DaixewJTF8k" target="_blank" rel="noopener">Why Do We Need Activation Functions in Neural Networks?</a> (NeuralNine)</td><td>14:32</td><td>3</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=wrguEHxk_EI" target="_blank" rel="noopener">DL1 신경망의 구조</a> · <a href="https://www.youtube.com/watch?v=8861RzFOFs8" target="_blank" rel="noopener">DL2 경사하강법</a> · <a href="https://www.youtube.com/watch?v=tkH7KgLZc0E" target="_blank" rel="noopener">DL3 역전파 직관</a> · <a href="https://www.youtube.com/watch?v=HKqdFQfXVhw" target="_blank" rel="noopener">DL4 역전파 미적분</a> (3Blue1Brown 한국어)</td><td>—</td><td>4 (링크)</td></tr>
+  </table></div>
+  <p class="note">CS231n과 뉴런·활성화 함수 영상은 영어 자막, DL1~4는 한국어 영상입니다. 노트의 번역과 정리는 영상 내용을 따르고, 영상에 없는 설명·그림은 (보충)으로 표시했습니다.</p>
+</section>
+
+<section class="page ch" id="ch1" hidden>
+  <p class="chno">1장</p>
+  <h2>계산 그래프와 역전파</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=d14TUNcbn1k&t=96" target="_blank" rel="noopener">Stanford CS231n 2017, Lecture 4</a> 1:36~54:37</p>
+  <div class="card"><div><span>질문</span>미지수가 아주 많을 때 미분은 어떻게 구할까요?</div><div><span>키워드</span>계산 그래프 · 순전파 · 역전파 · 국소 그래디언트 · 상류 그래디언트 · 게이트</div><div><span>연결</span>1차 경사하강법에 필요한 미분을, 미지수가 많아도 구할 수 있게 합니다.</div></div>
+
+  <h3>복습</h3>
+  <p class="ask">강의는 어디서 출발하나요?</p>
+  <p>강의는 지난 시간까지의 내용을 짧게 정리하며 시작합니다. 가중치 <span class="m">W</span>로 정해지는 함수 <span class="m">f</span>가 데이터 <span class="m">x</span>를 받아 클래스별 점수를 내고, 그 점수가 얼마나 나쁜지를 손실 <span class="m">L</span>로 잽니다. 강의에서는 SVM 손실에 정규화 항을 더한 손실을 예로 쓰는데, 이 커리큘럼에는 아직 나오지 않은 내용이라 이름만 적어 둡니다.</p>
+  <p>손실이 가장 작은 <span class="m">W</span>를 찾으려면 <span class="m">L</span>을 <span class="m">W</span>로 미분한 그래디언트가 필요합니다. 그다음은 1차에서 본 경사하강법입니다. 그래디언트의 반대 방향으로 한 걸음씩 움직여 손실 지형의 바닥으로 내려갑니다.</p>
+  <p>그래디언트를 구하는 방법은 두 가지입니다. <b>수치적 방법</b>(값을 조금씩 바꿔 차이를 재는 유한 차분)은 느리고 근사값이지만 쓰기 쉽습니다. <b>해석적 방법</b>(미분 식을 유도)은 빠르고 정확하지만 유도하다 틀리기 쉽습니다. 그래서 실제로는 해석적 방법을 쓰고, 맞게 구현했는지 수치적 방법으로 확인합니다. 이번 강의는 아무리 복잡한 함수라도 해석적 그래디언트를 구하는 방법을 다룹니다.</p>
+
+  <h3>계산 그래프</h3>
+  <p class="ask">복잡한 함수를 어떻게 다루나요?</p>
+  <p>강의는 함수를 <b>계산 그래프(computational graph)</b>로 그립니다. 그래프의 노드 하나하나가 계산 단계입니다. 예를 들어 선형 분류기는 <span class="m">x</span>와 <span class="m">W</span>가 곱셈 노드로 들어가 점수가 되고, 점수가 손실 노드를 거쳐 데이터 손실이 되고, 정규화 항과 더해져 최종 손실 <span class="m">L</span>이 됩니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 170" role="img" aria-label="선형 분류기의 계산 그래프"><text x="40" y="54" class="svgm" text-anchor="end" style="fill:var(--blue);font-size:13px">x</text><text x="40" y="124" class="svgm" text-anchor="end" style="fill:var(--violet);font-size:13px">W</text><line x1="48" y1="50" x2="138" y2="78" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="48" y1="120" x2="138" y2="92" style="stroke:var(--ink2);stroke-width:1.2"/><circle cx="155" cy="85" r="17" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="155" y="90" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:16px">×</text><line x1="172" y1="85" x2="250" y2="85" style="stroke:var(--ink2);stroke-width:1.2"/><text x="211" y="77" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">점수 s</text><rect x="250" y="68" width="110" height="34" rx="6" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="305.0" y="90.0" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">힌지 손실</text><line x1="360" y1="85" x2="452" y2="100" style="stroke:var(--ink2);stroke-width:1.2"/><text x="400" y="82" class="svgm" text-anchor="middle" style="fill:var(--ink2);font-size:13px">Lᵢ</text><line x1="48" y1="120" x2="60" y2="150" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="60" y1="150" x2="250" y2="150" style="stroke:var(--ink2);stroke-width:1.2"/><rect x="250" y="133" width="110" height="34" rx="6" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="305.0" y="155.0" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">정규화 R</text><line x1="360" y1="150" x2="452" y2="112" style="stroke:var(--ink2);stroke-width:1.2"/><text x="408" y="148" class="svgm" text-anchor="middle" style="fill:var(--ink2);font-size:13px">R(W)</text><circle cx="469" cy="105" r="17" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="469" y="110" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:16px">+</text><line x1="486" y1="105" x2="560" y2="105" style="stroke:var(--ink2);stroke-width:1.2"/><text x="570" y="110" class="svgm" text-anchor="start" style="fill:var(--red);font-size:13px">L</text></svg>
+    <figcaption>선형 분류기의 계산 그래프 (강의 화면을 단순하게 다시 그림). 노드가 계산 단계이고, 선을 따라 값이 왼쪽에서 오른쪽으로 흐릅니다.</figcaption>
+  </figure>
+  <p>함수를 계산 그래프로 나타내면 <b>역전파(backpropagation)</b>를 쓸 수 있습니다. 역전파는 연쇄법칙을 재귀적으로 적용해 그래프 안 <b>모든 변수에 대한 그래디언트</b>를 구하는 방법입니다. 강의는 합성곱 신경망처럼 입력이 수많은 층을 거쳐 손실에 닿는 함수나, 그래프가 훨씬 더 복잡한 모델을 예로 들며, 이런 함수의 중간 변수마다 그래디언트 식을 손으로 쓰는 건 사실상 불가능하다고 말합니다.</p>
+
+  <h3>순전파</h3>
+  <p class="ask">가장 간단한 예로 해 보면요?</p>
+  <p>강의의 첫 예는 다음 함수입니다.</p>
+  <div class="eq"><i>f</i>(<i>x</i>, <i>y</i>, <i>z</i>) = (<i>x</i> + <i>y</i>)<i>z</i>, &nbsp;&nbsp; <i>x</i> = −2, <i>y</i> = 5, <i>z</i> = −4</div>
+  <p>먼저 계산 그래프를 그립니다. 덧셈 노드에서 <span class="m">x + y</span>를 계산하고, 그 결과에 곱셈 노드에서 <span class="m">z</span>를 곱합니다. 중간값에는 이름을 붙입니다. 덧셈 노드의 출력을 <span class="m">q</span>라고 하면 <span class="m">q = x + y</span>, <span class="m">f = qz</span>입니다. 입력값을 넣어 앞에서부터 계산하는 것을 <b>순전파(forward pass)</b>라고 합니다. <span class="m">q</span> = −2 + 5 = 3, <span class="m">f</span> = 3 × (−4) = −12입니다.</p>
+  <p>각 노드의 미분도 적어 둡니다. 덧셈 <span class="m">q = x + y</span>는 <span class="m">∂q/∂x = 1</span>, <span class="m">∂q/∂y = 1</span>이고, 곱셈 <span class="m">f = qz</span>는 <span class="m">∂f/∂q = z</span>, <span class="m">∂f/∂z = q</span>입니다. 구하려는 것은 <span class="m">∂f/∂x</span>, <span class="m">∂f/∂y</span>, <span class="m">∂f/∂z</span>입니다.</p>
+  <aside class="wait"><b>잠깐, ∂는 무엇인가요?</b> (보충) 변수가 여럿인 함수에서 한 변수만 바꾸며 미분할 때 d 대신 쓰는 기호로, "편미분"이라고 읽습니다. 1차 4장에서 절편과 기울기를 하나씩 미분한 것과 같습니다. <span class="m">∂f/∂x</span>는 "<span class="m">x</span>를 조금 바꿀 때 <span class="m">f</span>가 얼마나 변하는가"입니다.</aside>
+
+  <h3>역전파</h3>
+  <p class="ask">뒤에서부터 미분을 구하면요?</p>
+  <p>역전파는 그래프의 맨 끝에서 시작해 뒤로 거슬러 가며 그래디언트를 하나씩 채웁니다. 강의 화면처럼 선 위에는 순전파 값(<span class="c-blue">파랑</span>), 선 아래에는 그래디언트(<span class="c-green">초록</span>)를 적습니다.</p>
+  <p class="try"><b>재생해 보기:</b> 순전파로 값을 채운 뒤, 출력에서 시작해 그래디언트가 입력 쪽으로 채워지는 순서를 봅니다.</p>
+  <figure class="fig" id="f-g1">
+    <svg viewBox="0 0 640 280" role="img" aria-label="f = (x + y)z 계산 그래프의 순전파 값과 역전파 그래디언트"></svg>
+    <div class="ctrl">
+      <label for="g1k">단계</label><input type="range" id="g1k" min="0" max="8" step="any" value="0"><output id="g1k-o"></output>
+    </div>
+    <div class="read" id="g1-read"></div>
+  </figure>
+  <p>맨 끝 <span class="m">∂f/∂f</span>는 당연히 1입니다. <span class="m">∂f/∂z = q</span> = 3, <span class="m">∂f/∂q = z</span> = −4입니다. 그런데 <span class="m">y</span>는 <span class="m">f</span>에 바로 연결되어 있지 않고 <span class="m">q</span>를 거칩니다. 여기서 연쇄법칙을 씁니다.</p>
+  <div class="eq"><span class="c-green">∂<i>f</i>/∂<i>y</i></span> = <span class="c-green">∂<i>f</i>/∂<i>q</i></span> · <span class="c-amber">∂<i>q</i>/∂<i>y</i></span> = −4 × 1 = <span class="c-green">−4</span></div>
+  <p>강의는 이렇게 설명합니다. <span class="m">y</span>를 조금 바꾸면 <span class="m">q</span>가 거의 같은 양만큼 바뀌고(<span class="m">∂q/∂y</span> = 1), <span class="m">q</span>의 변화는 <span class="m">f</span>에 약 −4배로 전해집니다(<span class="m">∂f/∂q</span> = −4). 두 효과를 곱하면 <span class="m">y</span>가 <span class="m">f</span>에 주는 효과는 −4입니다. <span class="m">x</span>도 같은 덧셈 노드를 지나므로 <span class="m">∂f/∂x</span> = −4 × 1 = −4입니다.</p>
+  <p class="take">역전파는 그래프의 끝에서 시작해, 이미 구한 그래디언트에 노드 하나의 미분을 곱하며 입력 쪽으로 거슬러 갑니다.</p>
+
+  <h3>국소 × 상류</h3>
+  <p class="ask">노드 하나는 무엇만 알면 되나요?</p>
+  <p>강의는 각 노드가 <b>바로 주변만</b> 안다는 점을 강조합니다. 노드는 들어오는 입력(<span class="m">x</span>, <span class="m">y</span>)과 내보내는 출력(<span class="m">z</span>)을 알고, 자기 출력의 입력에 대한 미분인 <b>국소 그래디언트(local gradient)</b> <span class="m">∂z/∂x</span>, <span class="m">∂z/∂y</span>를 계산할 수 있습니다. 덧셈이나 곱셈처럼 노드가 단순하면 국소 그래디언트도 바로 적을 수 있습니다.</p>
+  <p>역전파 중에 이 노드에 도착하면, 뒤쪽에서 이미 최종 손실 <span class="m">L</span>의 <span class="m">z</span>에 대한 그래디언트 <span class="m">∂L/∂z</span>가 계산되어 넘어옵니다. 이것이 <b>상류 그래디언트(upstream gradient)</b>입니다. 노드는 여기에 국소 그래디언트를 곱해 입력 쪽 그래디언트를 만들고, 앞 노드로 넘깁니다.</p>
+  <div class="eq"><span class="c-green">∂<i>L</i>/∂<i>x</i></span> = <span class="c-green">∂<i>L</i>/∂<i>z</i></span> · <span class="c-amber">∂<i>z</i>/∂<i>x</i></span> &nbsp;&nbsp;&nbsp; (상류 그래디언트 × 국소 그래디언트)</div>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 190" role="img" aria-label="노드 하나의 국소 그래디언트와 상류 그래디언트"><line x1="110" y1="50" x2="292" y2="84" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="110" y1="140" x2="292" y2="106" style="stroke:var(--ink2);stroke-width:1.2"/><circle cx="320" cy="95" r="28" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="320" y="100" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:18px">f</text><line x1="348" y1="95" x2="540" y2="95" style="stroke:var(--ink2);stroke-width:1.2"/><text x="98" y="54" class="svgm" text-anchor="end" style="fill:var(--blue);font-size:13px">x</text><text x="98" y="144" class="svgm" text-anchor="end" style="fill:var(--blue);font-size:13px">y</text><text x="552" y="99" class="svgm" text-anchor="start" style="fill:var(--blue);font-size:13px">z</text><text x="320" y="148" class="svgt" text-anchor="middle" style="fill:var(--amber);font-size:12px">국소 그래디언트</text><text x="320" y="168" class="svgm" text-anchor="middle" style="fill:var(--amber);font-size:13px">∂z/∂x, ∂z/∂y</text><text x="444" y="118" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:13px">∂L/∂z</text><text x="444" y="138" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:12px">상류 그래디언트</text><text x="160" y="108" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:13px">∂L/∂x = ∂L/∂z · ∂z/∂x</text><text x="160" y="170" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:13px">∂L/∂y = ∂L/∂z · ∂z/∂y</text></svg>
+    <figcaption>노드 하나가 아는 것. 순전파 때 입력 x, y로 z를 계산하고(파랑), 역전파 때 뒤에서 온 ∂L/∂z(초록)에 국소 그래디언트(주황)를 곱해 앞으로 넘깁니다.</figcaption>
+  </figure>
+  <aside class="wait"><b>잠깐, 그냥 미적분으로 식을 풀면 안 되나요?</b> 강의 중에 나온 질문입니다. 이 예처럼 간단하면 식을 전개해 직접 미분할 수 있습니다(예: <span class="m">∂f/∂x = z</span>). 하지만 식이 아주 복잡해지면 전체를 유도하기 어렵습니다. 그래프로 쪼개면 덧셈·곱셈·지수처럼 단순한 계산의 국소 그래디언트만 알면 되고, 나머지는 연쇄법칙으로 숫자를 곱해 가면 됩니다. 또 다른 질문에 대해 강의는, 국소 그래디언트는 식으로 적어 두고 상류 그래디언트는 그때그때의 숫자 값으로 받아 곱한다고 답합니다.</aside>
+  <p class="take">노드는 자기 국소 그래디언트만 알면 됩니다. 뒤에서 온 상류 그래디언트에 곱해 앞으로 넘기는 일을 반복하면 모든 변수의 그래디언트가 나옵니다.</p>
+
+  <h3>시그모이드 예</h3>
+  <p class="ask">조금 더 복잡한 함수에서도 되나요?</p>
+  <p>강의의 두 번째 예입니다.</p>
+  <div class="eq"><i>f</i>(<i>w</i>, <i>x</i>) = <span class="frac"><span>1</span><span>1 + <i>e</i><sup>−(<i>w</i>₀<i>x</i>₀ + <i>w</i>₁<i>x</i>₁ + <i>w</i>₂)</sup></span></span></div>
+  <p>계산 그래프로 나누면 <span class="m">w₀x₀</span>와 <span class="m">w₁x₁</span>를 곱하고, 더하고, <span class="m">w₂</span>를 더하고, −1을 곱하고, 지수를 취하고, 1을 더하고, 마지막으로 역수를 취합니다. 값은 <span class="m">w₀</span> = 2, <span class="m">x₀</span> = −1, <span class="m">w₁</span> = −3, <span class="m">x₁</span> = −2, <span class="m">w₂</span> = −3입니다. 강의 화면 아래에는 필요한 국소 그래디언트가 적혀 있습니다.</p>
+  <div class="tbl"><table>
+    <tr><th>노드</th><th>함수</th><th>국소 그래디언트</th></tr>
+    <tr><td>지수</td><td class="m">f(x) = eˣ</td><td class="m">df/dx = eˣ</td></tr>
+    <tr><td>상수배</td><td class="m">f(x) = ax</td><td class="m">df/dx = a</td></tr>
+    <tr><td>역수</td><td class="m">f(x) = 1/x</td><td class="m">df/dx = −1/x²</td></tr>
+    <tr><td>상수 더하기</td><td class="m">f(x) = c + x</td><td class="m">df/dx = 1</td></tr>
+  </table></div>
+  <p class="try"><b>재생해 보기:</b> 순전파로 출력 0.73을 구한 뒤, 노드마다 "상류 × 국소"로 그래디언트가 한 칸씩 앞으로 전해지는 과정을 봅니다.</p>
+  <figure class="fig" id="f-g2">
+    <svg viewBox="0 0 640 290" role="img" aria-label="시그모이드 함수 계산 그래프의 순전파와 역전파"></svg>
+    <div class="ctrl">
+      <label for="g2k">단계</label><input type="range" id="g2k" min="0" max="8" step="any" value="0"><output id="g2k-o"></output>
+    </div>
+    <div class="read" id="g2-read"></div>
+  </figure>
+  <p>덧셈 노드에서는 상류 그래디언트 0.2가 두 갈래에 똑같이 0.2로 전해집니다. 곱셈 노드에서는 한 입력의 그래디언트가 <b>다른 입력의 값</b> × 상류 그래디언트입니다. 그래서 <span class="m">w₀</span>는 (−1) × 0.2 = −0.2, <span class="m">x₀</span>는 2 × 0.2 = 0.4입니다. 강의 화면에는 "[local gradient] x [upstream gradient]"라고 적혀 있습니다. <span class="m">w₁</span>, <span class="m">x₁</span>도 같은 방법으로 −0.4, −0.6입니다(보충 계산).</p>
+  <p>강의는 이 과정 전체에서 다룬 것이 국소 그래디언트의 식뿐이었다는 점을 짚습니다. 식에 순전파 값을 넣고, 연쇄법칙으로 숫자를 곱해 뒤로 전했을 뿐 전체 식을 미분하지 않았습니다.</p>
+
+  <h3>노드 묶기</h3>
+  <p class="ask">노드는 꼭 덧셈·곱셈 단위로 쪼개야 하나요?</p>
+  <p>아닙니다. 국소 그래디언트만 적을 수 있으면 노드를 원하는 크기로 묶을 수 있습니다. 강의는 위 예의 뒷부분이 <b>시그모이드 함수</b>라는 점을 보여 줍니다.</p>
+  <div class="eq"><i>σ</i>(<i>x</i>) = <span class="frac"><span>1</span><span>1 + <i>e</i><sup>−<i>x</i></sup></span></span>, &nbsp;&nbsp; <span class="frac"><span><i>dσ</i>(<i>x</i>)</span><span><i>dx</i></span></span> = (1 − <i>σ</i>(<i>x</i>)) <i>σ</i>(<i>x</i>)</div>
+  <p>×(−1), 지수, +1, 역수의 네 노드를 시그모이드 노드 하나로 바꾸면, 입력 1에서 출력 0.73이고 국소 그래디언트는 (1 − 0.73) × 0.73 ≈ 0.2입니다. 상류 그래디언트 1을 곱하면 0.2로, 네 노드로 쪼개 계산한 값과 같습니다. 노드를 크게 묶으면 그래프가 간결해지지만 국소 그래디언트를 미리 유도해야 하고, 작게 쪼개면 각 국소 그래디언트가 단순해집니다. 강의는 이것을 둘 사이의 선택이라고 설명합니다.</p>
+  <p>강의자는 그래디언트를 구하기 어려울 때마다 계산 그래프로 쪼개고 연쇄법칙을 쓰면 된다는 점이 마음을 편하게 해 준다고 말합니다.</p>
+
+  <h3>게이트 패턴</h3>
+  <p class="ask">노드 종류마다 그래디언트가 어떻게 흐르나요?</p>
+  <p>강의는 역전파에서 보이는 패턴에 이름을 붙입니다. 노드는 "게이트"라고도 부릅니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 200" role="img" aria-label="덧셈, max, 곱셈 게이트의 그래디언트 흐름"><text x="105" y="22" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">덧셈 = 분배기</text><line x1="30" y1="55" x2="104" y2="96" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="30" y1="155" x2="104" y2="114" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="138" y1="105" x2="200" y2="105" style="stroke:var(--ink2);stroke-width:1.2"/><circle cx="120" cy="105" r="18" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="120" y="110" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">+</text><text x="24" y="59" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">a</text><text x="24" y="159" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">b</text><text x="60" y="52" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">−2.00</text><text x="76" y="88" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">0.20</text><text x="60" y="168" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">6.00</text><text x="76" y="136" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">0.20</text><text x="176" y="96" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">4.00</text><text x="176" y="124" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">0.20</text><text x="320" y="22" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">max = 라우터</text><line x1="245" y1="55" x2="319" y2="96" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="245" y1="155" x2="319" y2="114" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="353" y1="105" x2="415" y2="105" style="stroke:var(--ink2);stroke-width:1.2"/><circle cx="335" cy="105" r="18" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="335" y="110" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:11px">max</text><text x="239" y="59" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">z</text><text x="239" y="159" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">w</text><text x="275" y="52" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">2</text><text x="291" y="88" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">2</text><text x="275" y="168" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">−1</text><text x="291" y="136" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">0</text><text x="391" y="96" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">2</text><text x="391" y="124" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">2</text><text x="535" y="22" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">곱셈 = 스위처</text><line x1="460" y1="55" x2="534" y2="96" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="460" y1="155" x2="534" y2="114" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="568" y1="105" x2="630" y2="105" style="stroke:var(--ink2);stroke-width:1.2"/><circle cx="550" cy="105" r="18" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="550" y="110" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">×</text><text x="454" y="59" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">w₀</text><text x="454" y="159" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">x₀</text><text x="490" y="52" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">2.00</text><text x="506" y="88" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">−0.20</text><text x="490" y="168" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">−1.00</text><text x="506" y="136" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">0.40</text><text x="606" y="96" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">−2.00</text><text x="606" y="124" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">0.20</text></svg>
+    <figcaption>덧셈 게이트(시그모이드 예의 덧셈 노드), max 게이트(강의 예: z = 2, w = −1, 상류 그래디언트 2), 곱셈 게이트(시그모이드 예의 w₀ · x₀ 노드). 위는 순전파 값, 아래는 그래디언트입니다.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <tr><th>게이트</th><th>강의의 이름</th><th>역전파에서 하는 일</th></tr>
+    <tr><td>덧셈</td><td>분배기 (distributor)</td><td>상류 그래디언트를 모든 입력에 그대로 나눠 줌</td></tr>
+    <tr><td>max</td><td>라우터 (router)</td><td>순전파에서 더 컸던 입력에만 그래디언트 전체를 보내고, 나머지는 0. 큰 값만 결과에 영향을 줬기 때문</td></tr>
+    <tr><td>곱셈</td><td>스위처 (switcher)</td><td>상류 그래디언트에 <b>상대편 입력의 값</b>을 곱해 보냄</td></tr>
+  </table></div>
+  <p>한 노드의 출력이 여러 노드로 갈라져 들어가면, 역전파 때 각 갈래에서 돌아오는 그래디언트를 <b>더합니다</b>. 그 노드를 조금 바꾸면 연결된 모든 노드가 함께 바뀌기 때문이고, 다변수 연쇄법칙이 이를 보장합니다.</p>
+  <aside class="wait"><b>잠깐, 가중치는 언제 바꾸나요?</b> 강의 중에 나온 질문입니다. 역전파는 그래디언트를 구하는 데까지입니다. 가중치를 실제로 바꾸는 일은 지난 강의의 최적화, 즉 1차에서 본 경사하강법이 그래디언트를 받아서 합니다.</aside>
+
+  <h3>벡터</h3>
+  <p class="ask">변수가 숫자가 아니라 벡터면요?</p>
+  <p>흐름은 똑같고, 그래디언트가 <b>야코비 행렬(Jacobian)</b>이 된다는 점만 다릅니다. 야코비 행렬은 출력의 각 성분을 입력의 각 성분으로 미분한 값을 모은 행렬입니다. 강의의 예로, 4096차원 벡터에 원소마다 <span class="m">max(0, x)</span>를 적용하는 노드는 야코비 행렬이 4096 × 4096이고, 입력 100개를 한 번에 처리하면 409,600 × 409,600이 됩니다. 하지만 원소별 연산이라 입력의 한 성분은 출력의 같은 성분에만 영향을 주므로 이 행렬은 대각 행렬이고, 실제로는 만들지 않습니다.</p>
+  <p>강의는 <span class="m">f(x, W) = ‖W·x‖²</span>(<span class="m">x</span>는 n차원, <span class="m">W</span>는 n × n)도 같은 방법으로 풉니다. <span class="m">q = Wx</span>로 두면 <span class="m">∂f/∂q = 2q</span>, <span class="m">∂f/∂W = 2q·xᵀ</span>, <span class="m">∂f/∂x = 2Wᵀq</span>입니다. 그리고 <b>변수에 대한 그래디언트는 그 변수와 모양이 같다</b>는 점을 검산에 쓰라고 권합니다. 그래디언트의 각 성분은 변수의 그 성분이 최종 출력에 얼마나 영향을 주는지를 나타내기 때문입니다.</p>
+
+  <h3>구현</h3>
+  <p class="ask">코드로는 어떻게 짜나요?</p>
+  <p>노드마다 <b>forward</b>(출력 계산)와 <b>backward</b>(그래디언트 계산)를 만듭니다. 순전파는 입력이 먼저 계산되도록 정렬한 순서(위상 정렬)대로 모든 노드의 forward를 부르고, 역전파는 그 반대 순서로 backward를 부릅니다. 강의의 곱셈 게이트 예입니다.</p>
+  <pre class="code"><code>class MultiplyGate:
+    def forward(self, x, y):
+        z = x * y
+        self.x = x        # 역전파에 쓰려고 저장
+        self.y = y
+        return z
+    def backward(self, dz):
+        dx = self.y * dz  # [상대편 값] × [상류 그래디언트]
+        dy = self.x * dz
+        return [dx, dy]</code></pre>
+  <p>순전파 값을 저장(cache)해 두는 것이 중요합니다. 역전파에서 그 값을 다시 쓰기 때문입니다. 강의는 Caffe 같은 딥러닝 프레임워크의 layers 폴더에 들어 있는 것들이 바로 이런 forward/backward 쌍이라고 소개합니다.</p>
+
+  <div class="recap"><b>1장 키워드</b>: 함수를 계산 그래프로 쪼개고, 순전파로 값을 구한 뒤, 끝에서부터 "상류 그래디언트 × 국소 그래디언트"를 거슬러 곱해 모든 변수의 그래디언트를 구합니다(역전파). 덧셈은 나눠 주고, max는 한쪽으로 보내고, 곱셈은 상대편 값을 곱하며, 갈라진 곳에서는 더합니다. 신경망처럼 아주 큰 함수도 이 방법으로 그래디언트를 구하고, 경사하강법으로 가중치를 바꿉니다.<br>다음 장에서는 신경망의 기본 단위인 <b>뉴런</b>을 봅니다.</div>
+</section>
+
+<section class="page ch" id="ch2" hidden>
+  <p class="chno">2장</p>
+  <h2>뉴런</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=LHOLedaY2so" target="_blank" rel="noopener">What is a Neuron? | Artificial Neural Networks</a> 전체 · <a href="https://www.youtube.com/watch?v=d14TUNcbn1k&t=3860" target="_blank" rel="noopener">Stanford CS231n 2017, Lecture 4</a> 64:20~70:16</p>
+  <div class="card"><div><span>질문</span>신경망의 기본 단위는 무엇일까요?</div><div><span>키워드</span>뉴런 · 가중치 · 바이어스 · 가중합 · 활성화 함수 · 생물 뉴런</div><div><span>연결</span>1장의 역전파로 그래디언트를 구할 대상이 이 뉴런들의 가중치와 바이어스입니다.</div></div>
+
+  <h3>뉴런</h3>
+  <p class="ask">뉴런은 무엇인가요?</p>
+  <p>뉴런 영상은 뉴런을 신경망의 <b>기본 구성 요소</b>라고 소개합니다. 입력을 받아 처리하고 출력을 내는 수학 함수로 생각하면 됩니다. 뉴런은 다른 뉴런과 연결되어 있고, 연결마다 <b>가중치(weight)</b>가 붙어 있습니다. 가중치는 연결의 세기, 즉 한 뉴런의 출력이 다른 뉴런에 얼마나 영향을 주는지를 정합니다. 훈련 중에는 이 가중치를 조정해 신경망의 성능을 높입니다.</p>
+
+  <h3>가중합</h3>
+  <p class="ask">뉴런 안에서는 무슨 일이 일어나나요?</p>
+  <p>영상은 입력 세 개 <span class="m">x₁, x₂, x₃</span>(그냥 숫자)와 각 연결의 가중치 <span class="m">w₁, w₂, w₃</span>로 설명합니다. 입력마다 자기 가중치를 곱하고, 그 결과를 모두 더한 뒤 <b>바이어스(bias)</b>를 더합니다. 이 값을 <b>활성화 함수(activation function)</b>에 넣으면 그 뉴런의 출력이 나옵니다. 영상 화면의 뉴런 안에는 이 식이 적혀 있고, σ가 활성화 함수라고 표시되어 있습니다.</p>
+  <div class="eq">출력 = <i>σ</i>( <span class="c-blue"><i>x</i>₁</span><span class="c-violet"><i>w</i>₁</span> + <span class="c-blue"><i>x</i>₂</span><span class="c-violet"><i>w</i>₂</span> + <span class="c-blue"><i>x</i>₃</span><span class="c-violet"><i>w</i>₃</span> + <span class="c-violet"><i>b</i></span> ) = <i>σ</i>( Σ <span class="c-blue"><i>x</i><sub><i>i</i></sub></span><span class="c-violet"><i>w</i><sub><i>i</i></sub></span> + <span class="c-violet"><i>b</i></span> )</div>
+  <p class="try"><b>재생해 보기 (보충 예시 숫자):</b> 영상에는 숫자가 없어서 입력 (0.8, 0.2, 0.5), 가중치 (0.5, −1.0, 1.5), 바이어스 −0.3을 넣고, 활성화 함수로 1장의 시그모이드를 썼습니다. 곱하고, 더하고, 바이어스를 더하고, σ를 거치는 순서를 봅니다.</p>
+  <figure class="fig" id="f-neu">
+    <svg viewBox="0 0 640 260" role="img" aria-label="입력 3개, 가중치, 바이어스, 활성화 함수로 출력을 계산하는 뉴런"></svg>
+    <div class="ctrl">
+      <label for="nk">단계</label><input type="range" id="nk" min="0" max="5" step="any" value="0"><output id="nk-o"></output>
+      <label for="nb">바이어스</label><input type="range" id="nb" min="-3" max="1" step="any" value="-0.3"><output id="nb-o"></output>
+    </div>
+    <div class="read" id="neu-read"></div>
+  </figure>
+  <p>1장의 계산 그래프로 보면 뉴런은 곱셈 노드 세 개, 덧셈 노드, 활성화 함수 노드를 묶은 것입니다(보충). 그래서 1장의 역전파를 그대로 적용해 가중치와 바이어스에 대한 그래디언트를 구할 수 있습니다.</p>
+  <p class="take">뉴런은 입력에 가중치를 곱해 더하고, 바이어스를 더한 뒤, 활성화 함수를 거쳐 출력을 냅니다.</p>
+
+  <h3>파라미터</h3>
+  <p class="ask">가중치와 바이어스는 누가 정하나요?</p>
+  <p>영상은 가중치와 바이어스가 모두 <b>훈련 중에 조정되는 파라미터</b>라고 설명합니다. 신경망이 정확한 결과를 내도록 바꿔 가는 값이고, 1차의 절편·기울기와 같은 역할입니다. 1차의 직선 <span class="m">y = mx + b</span>는 입력이 하나이고 활성화 함수가 없는 뉴런 하나와 같은 모양입니다(보충). 기울기 <span class="m">m</span>이 가중치, 절편 <span class="m">b</span>가 바이어스입니다. 1차 1장에서 머신러닝에서는 절편을 bias라고도 부른다고 본 것이 이것입니다.</p>
+
+  <h3>활성화 함수</h3>
+  <p class="ask">활성화 함수는 무슨 일을 하나요?</p>
+  <p>영상은 활성화 함수의 주된 역할을 받은 값을 다음 층이나 최종 출력에 알맞게 바꾸는 것이라고 설명합니다. 음수는 0으로, 양수는 1로 바꾸는 것처럼 아주 간단할 수도 있습니다. 활성화 함수가 왜 꼭 필요한지는 3장에서 봅니다. 영상은 "뉴런은 결국 수학 함수"라는 말로 마칩니다.</p>
+
+  <h3>생물 뉴런</h3>
+  <p class="ask">뇌의 뉴런과는 어떤 관계인가요?</p>
+  <p>CS231n 강의는 신경망을 먼저 함수로 설명한 뒤, 생물 뉴런과의 비유를 짧게 소개합니다. 생물 뉴런은 <b>가지돌기</b>로 다른 뉴런의 신호를 받고, <b>세포체</b>에서 그 신호를 모아 통합한 뒤, <b>축삭</b>을 따라 다음 뉴런으로 신호를 보냅니다. 인공 뉴런도 입력 <span class="m">xᵢ</span>를 가중치 <span class="m">wᵢ</span>로 모아 <span class="m">Σwᵢxᵢ + b</span>를 계산하고, 활성화 함수를 거친 값을 다음 뉴런으로 보냅니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 200" role="img" aria-label="생물 뉴런과 인공 뉴런의 대응"><line x1="130.9" y1="111.0" x2="85.0" y2="137.5" style="stroke:var(--ink2);stroke-width:2"/><line x1="85.0" y1="137.5" x2="74.7" y2="152.2" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="85.0" y1="137.5" x2="67.1" y2="139.1" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="128.0" y1="100.0" x2="75.0" y2="100.0" style="stroke:var(--ink2);stroke-width:2"/><line x1="75.0" y1="100.0" x2="58.7" y2="107.6" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="75.0" y1="100.0" x2="58.7" y2="92.4" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="130.9" y1="89.0" x2="85.0" y2="62.5" style="stroke:var(--ink2);stroke-width:2"/><line x1="85.0" y1="62.5" x2="67.1" y2="60.9" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="85.0" y1="62.5" x2="74.7" y2="47.8" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="137.4" y1="118.0" x2="107.0" y2="161.4" style="stroke:var(--ink2);stroke-width:2"/><line x1="107.0" y1="161.4" x2="103.9" y2="179.2" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="107.0" y1="161.4" x2="91.4" y2="170.4" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="137.4" y1="82.0" x2="107.0" y2="38.6" style="stroke:var(--ink2);stroke-width:2"/><line x1="107.0" y1="38.6" x2="91.4" y2="29.6" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="107.0" y1="38.6" x2="103.9" y2="20.8" style="stroke:var(--ink2);stroke-width:1.4"/><circle cx="150" cy="100" r="22" style="fill:color-mix(in srgb,var(--ink2) 18%,var(--paper));stroke:var(--ink2);stroke-width:1.6"/><line x1="172" y1="100" x2="270" y2="100" style="stroke:var(--ink2);stroke-width:2"/><line x1="270" y1="100" x2="287.3" y2="90.0" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="270" y1="100" x2="290.0" y2="100.0" style="stroke:var(--ink2);stroke-width:1.4"/><line x1="270" y1="100" x2="287.3" y2="110.0" style="stroke:var(--ink2);stroke-width:1.4"/><text x="70" y="30" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">가지돌기</text><text x="150" y="145" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">세포체</text><text x="225" y="90" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">축삭</text><text x="150" y="190" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">생물 뉴런</text><line x1="318" y1="100" x2="338" y2="100" style="stroke:var(--ink2);stroke-width:1"/><text x="328" y="96" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:13px">↔</text><line x1="380" y1="40" x2="470" y2="85.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="372" y="45" class="svgm" text-anchor="end" style="fill:var(--blue);font-size:13px">x₁</text><text x="420" y="54.25" class="svgm" text-anchor="middle" style="fill:var(--violet);font-size:13px">w₁</text><line x1="380" y1="100" x2="470" y2="100.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="372" y="105" class="svgm" text-anchor="end" style="fill:var(--blue);font-size:13px">x₂</text><text x="420" y="94.0" class="svgm" text-anchor="middle" style="fill:var(--violet);font-size:13px">w₂</text><line x1="380" y1="160" x2="470" y2="115.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="372" y="165" class="svgm" text-anchor="end" style="fill:var(--blue);font-size:13px">x₃</text><text x="420" y="133.75" class="svgm" text-anchor="middle" style="fill:var(--violet);font-size:13px">w₃</text><circle cx="500" cy="100" r="32" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.4"/><text x="500" y="98" class="svgm" text-anchor="middle" style="fill:var(--ink);font-size:12px">Σwᵢxᵢ + b</text><text x="500" y="116" class="svgm" text-anchor="middle" style="fill:var(--ink);font-size:12px">→ f</text><line x1="532" y1="100" x2="600" y2="100" style="stroke:var(--ink2);stroke-width:1.2"/><text x="610" y="104" class="svgt" text-anchor="start" style="fill:var(--blue);font-size:13px">출력</text><text x="500" y="190" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">인공 뉴런</text></svg>
+    <figcaption>강의의 비유를 단순하게 다시 그린 그림. 가지돌기 ↔ 입력과 가중치, 세포체 ↔ 가중합과 활성화 함수, 축삭 ↔ 출력.</figcaption>
+  </figure>
+  <p>강의는 활성화 함수를 거친 값을 뉴런이 신호를 내보내는 빈도(발화율)에 빗댈 수 있다고 말하고, 신경과학자들은 실제 뉴런의 동작과 가장 비슷한 것으로 <b>ReLU</b>(음수에서 0, 양수에서는 그대로인 함수, 3장)를 꼽는다고 덧붙입니다.</p>
+  <p>그러면서 <b>이 비유는 아주 느슨하다</b>고 강조합니다. 생물 뉴런은 종류가 아주 많고, 가지돌기 자체가 복잡한 비선형 계산을 하며, 시냅스는 가중치 숫자 하나가 아니라 복잡한 비선형 동역학계이고, 발화율 하나로는 뉴런이 신호를 주고받는 방식을 충분히 설명하지 못합니다.</p>
+  <p class="take">인공 뉴런은 생물 뉴런에서 착안했지만, 실제로는 가중합과 활성화 함수로 된 단순한 수학 함수입니다.</p>
+
+  <div class="recap"><b>2장 키워드</b>: 뉴런 = σ(Σ xᵢwᵢ + b). 가중치는 연결의 세기, 바이어스는 더해지는 값이고, 둘 다 훈련으로 조정되는 파라미터입니다. 1차의 직선은 활성화 함수 없는 뉴런 하나와 같은 모양입니다. 생물 뉴런과의 비유는 느슨합니다.<br>다음 장에서는 뉴런을 그냥 많이 쌓으면 왜 안 되는지, 그리고 <b>활성화 함수</b>가 그 문제를 어떻게 푸는지 봅니다.</div>
+</section>
+
+<section class="page ch" id="ch3" hidden>
+  <p class="chno">3장</p>
+  <h2>활성화 함수</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=DaixewJTF8k" target="_blank" rel="noopener">Why Do We Need Activation Functions in Neural Networks?</a> 전체 · <a href="https://www.youtube.com/watch?v=d14TUNcbn1k&t=3277" target="_blank" rel="noopener">Stanford CS231n 2017, Lecture 4</a> 54:37~57:00</p>
+  <div class="card"><div><span>질문</span>뉴런을 그냥 많이 쌓으면 왜 안 될까요?</div><div><span>키워드</span>선형 결합 · 비선형 · 시그모이드 · tanh · ReLU</div><div><span>연결</span>2장의 뉴런을 여러 개, 여러 층으로 연결할 때의 문제입니다.</div></div>
+
+  <h3>작은 신경망</h3>
+  <p class="ask">뉴런을 두 개만 연결해 보면요?</p>
+  <p>NeuralNine 영상은 아주 작은 신경망으로 시작합니다. 입력 <span class="m">x</span> 하나가 은닉 뉴런 두 개로 들어가고, 두 뉴런의 출력이 출력 뉴런 하나로 모여 <span class="m">y</span>가 됩니다. 연결마다 가중치 <span class="m">w₁ ~ w₄</span>가, 뉴런마다 바이어스 <span class="m">b₁ ~ b₃</span>가 있습니다. 영상은 층 번호를 붙이는 정식 표기 대신 간단히 번호만 붙인다고 밝힙니다.</p>
+  <p>활성화 함수 없이 순전파를 하면 곱하고 더하는 계산뿐입니다.</p>
+  <div class="eq"><i>y</i> = <i>b</i>₃ + <i>w</i>₃(<i>w</i>₁<i>x</i> + <i>b</i>₁) + <i>w</i>₄(<i>w</i>₂<i>x</i> + <i>b</i>₂)</div>
+  <p class="try"><b>재생해 보기:</b> 이 식을 전개하고 <span class="m">x</span>로 묶으면 어떤 모양이 되는지 봅니다.</p>
+  <figure class="fig" id="f-col">
+    <svg viewBox="0 0 640 230" role="img" aria-label="뉴런 두 개짜리 신경망이 뉴런 하나로 합쳐지는 과정"></svg>
+    <div class="ctrl">
+      <label for="ck">단계</label><input type="range" id="ck" min="0" max="2" step="any" value="0"><output id="ck-o"></output>
+    </div>
+    <div class="read" id="col-read"></div>
+  </figure>
+
+  <h3>선형 결합</h3>
+  <p class="ask">뉴런과 층을 더 늘리면요?</p>
+  <p>영상은 이 결과를 이렇게 정리합니다. <span class="m">w₃w₁ + w₄w₂</span>는 그냥 숫자 하나이므로 <span class="m">w₅</span>라고 부를 수 있고, <span class="m">b₃ + w₃b₁ + w₄b₂</span>도 숫자 하나이므로 <span class="m">b₄</span>라고 부를 수 있습니다. 결국 이 신경망은 가중치 <span class="m">w₅</span>와 바이어스 <span class="m">b₄</span>를 가진 <b>뉴런 하나</b>와 같습니다.</p>
+  <p>뉴런을 다섯 개 더 넣거나 층을 세 개 더 쌓아도 마찬가지입니다. 영상의 표현대로 "선형 결합의 선형 결합의 선형 결합은 선형 결합"이기 때문입니다. 아무리 복잡하게 만들어도 결국 선형 모델이라, 선형 문제밖에 풀지 못합니다. 예를 들어 <span class="m">x²</span> 같은 곡선 모양의 데이터는 뉴런과 층을 아무리 늘려도 맞출 수 없습니다.</p>
+  <p>CS231n 강의도 2층 신경망을 소개하며 같은 점을 짚습니다. 선형층 사이에 비선형 함수를 꼭 넣어야 하고, 그렇지 않으면 선형층을 아무리 쌓아도 하나의 선형 함수로 합쳐진다고 설명합니다.</p>
+  <p class="take">활성화 함수 없이 뉴런을 쌓으면, 몇 개를 쌓든 뉴런 하나(직선)와 같습니다.</p>
+
+  <h3>선형성 깨기</h3>
+  <p class="ask">어떻게 하면 합쳐지지 않게 할 수 있나요?</p>
+  <p>계산 중간에 <b>선형성을 깨는 함수</b>를 넣으면 됩니다. 영상은 이론적으로는 선형만 아니면 어떤 함수든 되지만(다른 조건도 몇 가지 있다고 덧붙임), 흔히 쓰는 것으로 세 가지를 듭니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 190" role="img" aria-label="시그모이드, tanh, ReLU 함수의 모양"><line x1="35" y1="134.3" x2="205" y2="134.3" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="120.0" y1="40" x2="120.0" y2="150" style="stroke:var(--ink2);stroke-width:1.2"/><path d="M35.0 132.9 L37.1 132.7 L39.2 132.6 L41.4 132.4 L43.5 132.2 L45.6 132.0 L47.8 131.7 L49.9 131.5 L52.0 131.2 L54.1 130.9 L56.2 130.6 L58.4 130.2 L60.5 129.8 L62.6 129.3 L64.8 128.9 L66.9 128.3 L69.0 127.8 L71.1 127.1 L73.2 126.4 L75.4 125.7 L77.5 124.9 L79.6 124.1 L81.8 123.1 L83.9 122.1 L86.0 121.1 L88.1 120.0 L90.2 118.7 L92.4 117.5 L94.5 116.1 L96.6 114.7 L98.8 113.2 L100.9 111.6 L103.0 109.9 L105.1 108.2 L107.2 106.4 L109.4 104.6 L111.5 102.8 L113.6 100.8 L115.8 98.9 L117.9 97.0 L120.0 95.0 L122.1 93.0 L124.2 91.1 L126.4 89.2 L128.5 87.2 L130.6 85.4 L132.8 83.6 L134.9 81.8 L137.0 80.1 L139.1 78.4 L141.2 76.8 L143.4 75.3 L145.5 73.9 L147.6 72.5 L149.8 71.3 L151.9 70.0 L154.0 68.9 L156.1 67.9 L158.2 66.9 L160.4 65.9 L162.5 65.1 L164.6 64.3 L166.8 63.6 L168.9 62.9 L171.0 62.2 L173.1 61.7 L175.2 61.1 L177.4 60.7 L179.5 60.2 L181.6 59.8 L183.8 59.4 L185.9 59.1 L188.0 58.8 L190.1 58.5 L192.2 58.3 L194.4 58.0 L196.5 57.8 L198.6 57.6 L200.8 57.4 L202.9 57.3 L205.0 57.1" style="fill:none;stroke:var(--violet);stroke-width:2.2"/><text x="120" y="22" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">시그모이드</text><line x1="116.0" y1="55.7" x2="124.0" y2="55.7" style="stroke:var(--ink2);stroke-width:1.2"/><text x="113.0" y="59.7" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">1</text><text x="120" y="178" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">0 ~ 1</text><text x="205" y="148.3" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:12px">x</text><line x1="245" y1="95.0" x2="415" y2="95.0" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="330.0" y1="40" x2="330.0" y2="150" style="stroke:var(--ink2);stroke-width:1.2"/><path d="M245.0 137.3 L247.1 137.3 L249.2 137.3 L251.4 137.3 L253.5 137.2 L255.6 137.2 L257.8 137.2 L259.9 137.2 L262.0 137.2 L264.1 137.1 L266.2 137.1 L268.4 137.1 L270.5 137.0 L272.6 136.9 L274.8 136.8 L276.9 136.7 L279.0 136.6 L281.1 136.5 L283.2 136.3 L285.4 136.1 L287.5 135.8 L289.6 135.5 L291.8 135.1 L293.9 134.6 L296.0 134.0 L298.1 133.3 L300.2 132.5 L302.4 131.5 L304.5 130.3 L306.6 128.9 L308.8 127.2 L310.9 125.3 L313.0 123.1 L315.1 120.6 L317.2 117.7 L319.4 114.6 L321.5 111.1 L323.6 107.3 L325.8 103.4 L327.9 99.2 L330.0 95.0 L332.1 90.8 L334.2 86.6 L336.4 82.7 L338.5 78.9 L340.6 75.4 L342.8 72.3 L344.9 69.4 L347.0 66.9 L349.1 64.7 L351.2 62.8 L353.4 61.1 L355.5 59.7 L357.6 58.5 L359.8 57.5 L361.9 56.7 L364.0 56.0 L366.1 55.4 L368.2 54.9 L370.4 54.5 L372.5 54.2 L374.6 53.9 L376.8 53.7 L378.9 53.5 L381.0 53.4 L383.1 53.3 L385.2 53.2 L387.4 53.1 L389.5 53.0 L391.6 52.9 L393.8 52.9 L395.9 52.9 L398.0 52.8 L400.1 52.8 L402.2 52.8 L404.4 52.8 L406.5 52.8 L408.6 52.7 L410.8 52.7 L412.9 52.7 L415.0 52.7" style="fill:none;stroke:var(--violet);stroke-width:2.2"/><text x="330" y="22" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">tanh</text><text x="323.0" y="56.7" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">1</text><text x="323.0" y="141.3" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">−1</text><text x="330" y="178" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">−1 ~ 1</text><text x="415" y="109.0" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:12px">x</text><line x1="455" y1="136.2" x2="625" y2="136.2" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="540.0" y1="40" x2="540.0" y2="150" style="stroke:var(--ink2);stroke-width:1.2"/><path d="M455.0 136.2 L457.1 136.2 L459.2 136.2 L461.4 136.2 L463.5 136.2 L465.6 136.2 L467.8 136.2 L469.9 136.2 L472.0 136.2 L474.1 136.2 L476.2 136.2 L478.4 136.2 L480.5 136.2 L482.6 136.2 L484.8 136.2 L486.9 136.2 L489.0 136.2 L491.1 136.2 L493.2 136.2 L495.4 136.2 L497.5 136.2 L499.6 136.2 L501.8 136.2 L503.9 136.2 L506.0 136.2 L508.1 136.2 L510.2 136.2 L512.4 136.2 L514.5 136.2 L516.6 136.2 L518.8 136.2 L520.9 136.2 L523.0 136.2 L525.1 136.2 L527.2 136.2 L529.4 136.2 L531.5 136.2 L533.6 136.2 L535.8 136.2 L537.9 136.2 L540.0 136.2 L542.1 134.0 L544.2 131.7 L546.4 129.4 L548.5 127.1 L550.6 124.8 L552.8 122.5 L554.9 120.2 L557.0 117.9 L559.1 115.6 L561.2 113.3 L563.4 111.0 L565.5 108.8 L567.6 106.5 L569.8 104.2 L571.9 101.9 L574.0 99.6 L576.1 97.3 L578.2 95.0 L580.4 92.7 L582.5 90.4 L584.6 88.1 L586.8 85.8 L588.9 83.5 L591.0 81.2 L593.1 79.0 L595.2 76.7 L597.4 74.4 L599.5 72.1 L601.6 69.8 L603.8 67.5 L605.9 65.2 L608.0 62.9 L610.1 60.6 L612.2 58.3 L614.4 56.0 L616.5 53.8 L618.6 51.5 L620.8 49.2 L622.9 46.9 L625.0 44.6" style="fill:none;stroke:var(--violet);stroke-width:2.2"/><text x="540" y="22" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">ReLU</text><text x="540" y="178" class="svgm" text-anchor="middle" style="fill:var(--ink2);font-size:12px">max(0, x)</text><text x="625" y="150.2" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:12px">x</text></svg>
+    <figcaption>세 활성화 함수의 모양(보충 그림). 시그모이드는 0과 1 사이, tanh는 −1과 1 사이, ReLU는 음수에서 0이고 양수에서는 입력 그대로입니다.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <tr><th>함수</th><th>식</th><th>영상의 설명</th></tr>
+    <tr><td>시그모이드</td><td class="m">σ(x) = 1/(1 + e⁻ˣ)</td><td>0과 1 사이의 값을 냄 (식은 1장)</td></tr>
+    <tr><td>tanh</td><td class="m">tanh(x)</td><td>같은 모양으로 −1과 1 사이</td></tr>
+    <tr><td>ReLU</td><td class="m">max(0, x)</td><td>rectified linear unit. 0 이하이면 0, 그 위로는 입력 그대로. 아주 단순하고 계산이 효율적이지만, 0에서 꺾여 선형이 아님</td></tr>
+  </table></div>
+  <p>ReLU를 은닉 뉴런에 넣으면 식이 이렇게 바뀝니다.</p>
+  <div class="eq"><i>y</i> = <i>b</i>₃ + <i>w</i>₃ · ReLU(<i>w</i>₁<i>x</i> + <i>b</i>₁) + <i>w</i>₄ · ReLU(<i>w</i>₂<i>x</i> + <i>b</i>₂)</div>
+  <p>이제는 전개해서 <span class="m">x</span>를 묶어낼 수 없으므로 모델이 더 이상 선형이 아니고, 더 복잡한 문제를 풀 수 있습니다. 영상은 층이 여러 개면 각 층에 이렇게 ReLU를 씌우고, 출력층에는 활성화 함수를 쓰지 않거나 다른 것을 쓰는 경우가 많다고 덧붙입니다.</p>
+  <p class="try"><b>재생해 보기 (보충 예시 숫자):</b> 같은 신경망에 가중치 <span class="m">w₁</span> = 1, <span class="m">b₁</span> = −1, <span class="m">w₂</span> = −1, <span class="m">b₂</span> = −1, <span class="m">w₃</span> = 1, <span class="m">w₄</span> = 0.5, <span class="m">b₃</span> = 0을 넣고, ReLU가 없을 때와 있을 때 출력 <span class="m">y</span>의 그래프를 비교합니다.</p>
+  <figure class="fig" id="f-relu">
+    <svg viewBox="0 0 640 280" role="img" aria-label="활성화 함수가 없을 때의 직선과 ReLU를 넣었을 때의 꺾인 선"></svg>
+    <div class="ctrl">
+      <label for="rl">직선</label><input type="range" id="rl" min="0" max="1" step="any" value="1"><output id="rl-o"></output>
+      <label for="rr">ReLU</label><input type="range" id="rr" min="0" max="1" step="any" value="0"><output id="rr-o"></output>
+      <label for="rx">x</label><input type="range" id="rx" min="-3" max="3" step="any" value="-2.5"><output id="rx-o"></output>
+    </div>
+    <div class="read" id="relu-read"></div>
+  </figure>
+  <p class="take">활성화 함수는 선형성을 깨서, 뉴런을 쌓을수록 더 복잡한 모양을 표현할 수 있게 합니다.</p>
+
+  <h3>x³ 실험</h3>
+  <p class="ask">실제로 얼마나 차이가 나나요?</p>
+  <p>영상은 PyTorch로 확인합니다. −10에서 10 사이의 <span class="m">x</span>로 <span class="m">y = x³</span>을 학습시키는데, 두 모델은 입력 1개 → 뉴런 50개짜리 층 4개 → 출력 1개로 구조가 같고, 한쪽에만 ReLU를 넣었습니다. 각각 1000 에폭 훈련합니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 230" role="img" aria-label="x³ 곡선과 활성화 함수 없는 모델의 예측 직선"><line x1="70" y1="115.0" x2="430" y2="115.0" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="250.0" y1="20" x2="250.0" y2="210" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="70.0" y1="115.0" x2="70.0" y2="119.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="70.0" y="132.0" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:11px">−10</text><line x1="160.0" y1="115.0" x2="160.0" y2="119.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="160.0" y="132.0" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:11px">−5</text><line x1="340.0" y1="115.0" x2="340.0" y2="119.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="340.0" y="132.0" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:11px">5</text><line x1="430.0" y1="115.0" x2="430.0" y2="119.0" style="stroke:var(--ink2);stroke-width:1.2"/><text x="430.0" y="132.0" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:11px">10</text><line x1="246.0" y1="205.5" x2="250.0" y2="205.5" style="stroke:var(--ink2);stroke-width:1.2"/><text x="243.0" y="209.5" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">−1000</text><line x1="246.0" y1="160.2" x2="250.0" y2="160.2" style="stroke:var(--ink2);stroke-width:1.2"/><text x="243.0" y="164.2" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">−500</text><line x1="246.0" y1="69.8" x2="250.0" y2="69.8" style="stroke:var(--ink2);stroke-width:1.2"/><text x="243.0" y="73.8" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">500</text><line x1="246.0" y1="24.5" x2="250.0" y2="24.5" style="stroke:var(--ink2);stroke-width:1.2"/><text x="243.0" y="28.5" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:11px">1000</text><path d="M70.0 205.5 L73.6 200.2 L77.2 195.0 L80.8 190.1 L84.4 185.5 L88.0 181.0 L91.6 176.7 L95.2 172.5 L98.8 168.6 L102.4 164.9 L106.0 161.3 L109.6 157.9 L113.2 154.7 L116.8 151.7 L120.4 148.8 L124.0 146.0 L127.6 143.4 L131.2 141.0 L134.8 138.7 L138.4 136.6 L142.0 134.5 L145.6 132.7 L149.2 130.9 L152.8 129.2 L156.4 127.7 L160.0 126.3 L163.6 125.0 L167.2 123.8 L170.8 122.7 L174.4 121.7 L178.0 120.8 L181.6 120.0 L185.2 119.2 L188.8 118.6 L192.4 118.0 L196.0 117.4 L199.6 117.0 L203.2 116.6 L206.8 116.3 L210.4 116.0 L214.0 115.7 L217.6 115.5 L221.2 115.4 L224.8 115.2 L228.4 115.2 L232.0 115.1 L235.6 115.0 L239.2 115.0 L242.8 115.0 L246.4 115.0 L250.0 115.0 L253.6 115.0 L257.2 115.0 L260.8 115.0 L264.4 115.0 L268.0 114.9 L271.6 114.8 L275.2 114.8 L278.8 114.6 L282.4 114.5 L286.0 114.3 L289.6 114.0 L293.2 113.7 L296.8 113.4 L300.4 113.0 L304.0 112.6 L307.6 112.0 L311.2 111.4 L314.8 110.8 L318.4 110.0 L322.0 109.2 L325.6 108.3 L329.2 107.3 L332.8 106.2 L336.4 105.0 L340.0 103.7 L343.6 102.3 L347.2 100.8 L350.8 99.1 L354.4 97.3 L358.0 95.5 L361.6 93.4 L365.2 91.3 L368.8 89.0 L372.4 86.6 L376.0 84.0 L379.6 81.2 L383.2 78.3 L386.8 75.3 L390.4 72.1 L394.0 68.7 L397.6 65.1 L401.2 61.4 L404.8 57.5 L408.4 53.3 L412.0 49.0 L415.6 44.5 L419.2 39.9 L422.8 35.0 L426.4 29.8 L430.0 24.5" style="fill:none;stroke:var(--blue);stroke-width:2.2"/><path d="M70.0 169.3 L430.0 60.7" style="fill:none;stroke:var(--violet);stroke-width:2.2"/><text x="460" y="60" class="svgt" text-anchor="start" style="fill:var(--blue);font-size:13px">실제 y = x³</text><text x="460" y="84" class="svgt" text-anchor="start" style="fill:var(--violet);font-size:13px">활성화 함수 없는 모델</text><text x="460" y="104" class="svgt" text-anchor="start" style="fill:var(--violet);font-size:13px">의 예측: 직선</text><text x="460" y="140" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:13px">ReLU 모델은 x³ 곡선과</text><text x="460" y="160" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:13px">거의 겹침 (영상 설명)</text></svg>
+    <figcaption>영상 화면(13:05)의 "Neural Network without Activation Functions" 그래프를 다시 그린 것. 파랑이 실제 x³, 보라가 활성화 함수 없는 모델의 예측입니다. 직선은 [−10, 10]에서 x³에 가장 가까운 직선 y = 60x로 계산해 그렸습니다(보충).</figcaption>
+  </figure>
+  <p>결과는 분명합니다. 활성화 함수가 없는 모델은 직선, 즉 선형회귀가 되었습니다. 아마 가능한 직선 가운데 가장 나은 직선이겠지만, 손실은 약 22,944에서 더 내려가지 않았고, 뉴런과 층을 아무리 늘려도 <span class="m">x³</span>에 가까워질 수 없습니다. ReLU를 넣은 모델은 <span class="m">x³</span> 곡선과 거의 겹칠 만큼 잘 맞췄습니다. 영상은 ReLU처럼 아주 단순한 활성화 함수 하나가 이만큼 차이를 만든다는 말로 마칩니다.</p>
+
+  <div class="recap"><b>3장 키워드</b>: 활성화 함수 없이 뉴런을 쌓으면 w₅x + b₄ 꼴의 뉴런 하나로 합쳐집니다. 시그모이드, tanh, ReLU 같은 비선형 함수를 넣으면 선형성이 깨져 곡선도 표현할 수 있습니다. x³ 실험에서 활성화 함수 없는 모델은 직선에 머물렀고, ReLU 모델은 곡선을 거의 그대로 맞췄습니다.<br>다음 장에서는 뉴런과 활성화 함수로 <b>첫 신경망</b>을 만듭니다.</div>
+</section>
+
+<section class="page ch" id="ch4" hidden>
+  <p class="chno">4장</p>
+  <h2>첫 신경망</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=d14TUNcbn1k&t=3277" target="_blank" rel="noopener">Stanford CS231n 2017, Lecture 4</a> 54:37~64:20, 70:16~73:59 · 총 복습: 3Blue1Brown 한국어 DL1~4 (링크)</p>
+  <div class="card"><div><span>질문</span>뉴런과 활성화 함수로 만든 신경망은 어떤 모양이고, 어떻게 학습할까요?</div><div><span>키워드</span>2층 신경망 · 은닉층 · 완전연결층 · 행렬 표기 · 총 복습</div><div><span>연결</span>1장의 역전파, 2장의 뉴런, 3장의 활성화 함수, 1차의 경사하강법을 합칩니다.</div></div>
+
+  <h3>2층 신경망</h3>
+  <p class="ask">선형 함수에서 신경망으로 어떻게 넘어가나요?</p>
+  <p>CS231n 강의는 지금까지 써 온 선형 점수 함수 <span class="m">f = Wx</span>에서 출발합니다. 가장 단순한 신경망은 이것을 두 번 쌓은 것입니다. 먼저 <span class="m">W₁</span>을 곱하고, 비선형 함수 <span class="m">max(0, ·)</span>(3장의 ReLU)를 거친 뒤, 다시 <span class="m">W₂</span>를 곱합니다. 이것이 <b>2층 신경망</b>입니다.</p>
+  <div class="eq"><i>f</i> = <span class="c-violet"><i>W</i>₂</span> max(0, <span class="c-violet"><i>W</i>₁</span> <span class="c-blue"><i>x</i></span>)</div>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 150" role="img" aria-label="2층 신경망의 계산 흐름"><text x="30" y="80" class="svgm" text-anchor="middle" style="fill:var(--blue);font-size:16px">x</text><line x1="42" y1="75" x2="90" y2="75" style="stroke:var(--ink2);stroke-width:1.2"/><rect x="90" y="55" width="90" height="40" rx="6" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="135.0" y="80.0" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">× W₁</text><line x1="180" y1="75" x2="215" y2="75" style="stroke:var(--ink2);stroke-width:1.2"/><rect x="215" y="55" width="120" height="40" rx="6" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="275.0" y="80.0" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">max(0, ·)</text><line x1="335" y1="75" x2="385" y2="75" style="stroke:var(--ink2);stroke-width:1.2"/><text x="360" y="65" class="svgm" text-anchor="middle" style="fill:var(--blue);font-size:15px">h</text><rect x="385" y="55" width="90" height="40" rx="6" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="430.0" y="80.0" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:13px">× W₂</text><line x1="475" y1="75" x2="530" y2="75" style="stroke:var(--ink2);stroke-width:1.2"/><text x="545" y="80" class="svgm" text-anchor="middle" style="fill:var(--blue);font-size:16px">f</text><text x="135" y="125" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">1층 (완전연결)</text><text x="275" y="125" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">비선형 함수</text><text x="430" y="125" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">2층 (완전연결)</text></svg>
+    <figcaption>2층 신경망의 계산 흐름. 중간값 h가 은닉층입니다.</figcaption>
+  </figure>
+  <p>강의는 신경망을 "단순한 함수를 계층적으로 쌓아 만든 더 복잡한 비선형 함수"라고 정리합니다. 한 번 더 쌓으면 3층 신경망이고, 이렇게 층을 깊게 쌓을 수 있어서 "딥" 신경망이라는 이름이 붙었습니다.</p>
+  <div class="eq"><i>f</i> = <i>W</i>₃ max(0, <i>W</i>₂ max(0, <i>W</i>₁<i>x</i>))</div>
+  <p>강의는 2층 신경망 전체를 구현하는 데 코드 약 20줄이면 충분하다고 소개합니다. 순전파, 1장의 역전파, 그리고 그래디언트로 가중치를 바꾸는 경사하강법이 전부입니다.</p>
+
+  <h3>템플릿</h3>
+  <p class="ask">층을 하나 더 두면 무엇이 좋아지나요?</p>
+  <p>강의는 이전 강의의 선형 분류기에서 <span class="m">W</span>의 각 행이 클래스 하나의 "템플릿"이었다고 상기시킵니다. 예를 들어 자동차 클래스의 템플릿은 흐릿한 빨간 차 모양이었습니다. 문제는 클래스마다 템플릿이 하나뿐이라는 점입니다. 실제 자동차는 빨간 차도 노란 차도 있습니다.</p>
+  <p>2층 신경망에서는 <span class="m">W₁</span>이 여러 템플릿(빨간 차, 노란 차, 왼쪽을 본 말, 오른쪽을 본 말…)을 가질 수 있고, 중간값 <span class="m">h</span>는 입력에 각 템플릿이 얼마나 들어 있는지의 점수가 됩니다. 그 위의 <span class="m">W₂</span>가 이 점수들의 <b>가중합</b>(최댓값이 아님)으로 최종 클래스 점수를 냅니다. 그래서 어느 방향을 본 말이든 높은 점수를 줄 수 있습니다. 강의는 실제로는 비선형 함수 등이 섞여 정확히 이렇지는 않지만 대략 이런 해석이 가능하다고 덧붙입니다.</p>
+
+  <h3>층과 이름</h3>
+  <p class="ask">"2층 신경망"에서 층은 어떻게 세나요?</p>
+  <p>강의는 행렬 곱을 하는 층을 <b>완전연결층(fully-connected layer)</b>이라고 부릅니다. 앞 층의 모든 뉴런이 다음 층의 모든 뉴런과 연결되어 있다는 뜻입니다. 층을 세는 방식은 두 가지입니다.</p>
+  <div class="tbl"><table>
+    <tr><th>행렬 곱(완전연결층) 수로 세기</th><th>은닉층 수로 세기</th></tr>
+    <tr><td>2층 신경망</td><td>은닉층 1개 신경망</td></tr>
+    <tr><td>3층 신경망</td><td>은닉층 2개 신경망</td></tr>
+  </table></div>
+  <p>강의는 둘 다 쓰지만 "2층 신경망" 쪽이 조금 더 흔하다고 말합니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 230" role="img" aria-label="입력층, 은닉층 2개, 출력층으로 된 완전연결 신경망"><line x1="101" y1="68.0" x2="229" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="68.0" x2="229" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="68.0" x2="229" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="68.0" x2="229" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="110.0" x2="229" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="110.0" x2="229" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="110.0" x2="229" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="110.0" x2="229" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="152.0" x2="229" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="152.0" x2="229" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="152.0" x2="229" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="101" y1="152.0" x2="229" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="47.0" x2="379" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="47.0" x2="379" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="47.0" x2="379" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="47.0" x2="379" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="89.0" x2="379" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="89.0" x2="379" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="89.0" x2="379" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="89.0" x2="379" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="131.0" x2="379" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="131.0" x2="379" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="131.0" x2="379" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="131.0" x2="379" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="173.0" x2="379" y2="47.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="173.0" x2="379" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="173.0" x2="379" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="251" y1="173.0" x2="379" y2="173.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="47.0" x2="529" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="47.0" x2="529" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="89.0" x2="529" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="89.0" x2="529" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="131.0" x2="529" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="131.0" x2="529" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="173.0" x2="529" y2="89.0" style="stroke:var(--ink2);stroke-width:0.8"/><line x1="401" y1="173.0" x2="529" y2="131.0" style="stroke:var(--ink2);stroke-width:0.8"/><circle cx="90" cy="68.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="90" cy="110.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="90" cy="152.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="90" y="222" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">입력층</text><circle cx="240" cy="47.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="240" cy="89.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="240" cy="131.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="240" cy="173.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="240" y="222" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">은닉층 1</text><circle cx="390" cy="47.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="390" cy="89.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="390" cy="131.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="390" cy="173.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="390" y="222" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">은닉층 2</text><circle cx="540" cy="89.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><circle cx="540" cy="131.0" r="11" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="540" y="222" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">출력층</text></svg>
+    <figcaption>은닉층 2개인 완전연결 신경망(3층 신경망)의 모양. 강의 화면과 같은 구조이며 뉴런 수는 예시입니다.</figcaption>
+  </figure>
+  <p>각 은닉층은 뉴런들의 벡터로 볼 수 있습니다. 2장의 뉴런 계산을 한 층 전체에 대해 하면 행렬 곱 한 번이 되므로, 뉴런이 10개든 100개든 층 하나를 한 번에 효율적으로 계산할 수 있습니다. 강의의 마지막 식은 활성화 함수 <span class="m">f</span>를 시그모이드로 둔 3층 신경망입니다.</p>
+  <div class="eq"><i>h</i>₁ = <i>f</i>(<span class="c-violet"><i>W</i>₁</span><i>x</i> + <span class="c-violet"><i>b</i>₁</span>), &nbsp; <i>h</i>₂ = <i>f</i>(<span class="c-violet"><i>W</i>₂</span><i>h</i>₁ + <span class="c-violet"><i>b</i>₂</span>), &nbsp; 출력 = <span class="c-violet"><i>W</i>₃</span><i>h</i>₂ + <span class="c-violet"><i>b</i>₃</span></div>
+  <p>강의는 신경망을 쓰는 데 필요한 것은 이것이 전부이고, 역방향은 1장의 역전파로 모든 그래디언트를 구하면 된다고 마무리합니다. 생물과의 비유는 느슨할 뿐 신경망이 실제로 "신경"인 것은 아니라는 점도 다시 강조합니다.</p>
+  <p class="take">신경망은 "가중합 + 바이어스 → 활성화 함수"인 층을 쌓은 함수이고, 역전파로 그래디언트를 구해 경사하강법으로 학습합니다.</p>
+
+  <h3>총 복습</h3>
+  <p class="ask">이 모든 걸 실제 신경망 하나로 보면요?</p>
+  <p>커리큘럼은 배운 뉴런과 활성화 함수로 첫 완전한 신경망을 만들고, 경사하강법으로 학습시키는 과정을 3Blue1Brown 한국어 DL 시리즈 네 편으로 복습합니다. 이 노트에서는 영상 링크와, 1~3장에 나오지 않은 개념이 어느 영상에 나오는지만 정리합니다.</p>
+  <div class="tbl"><table>
+    <tr><th>영상</th><th>내용</th><th>새로 나오는 것</th></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=wrguEHxk_EI" target="_blank" rel="noopener">DL1</a><br>18:33</td><td>손글씨 숫자(MNIST)를 맞추는 784-16-16-10 신경망의 구조. 가중치는 어떤 픽셀 패턴을 볼지, 바이어스는 얼마나 커야 켜질지를 정함</td><td>액티베이션, 멀티레이어 퍼셉트론(MLP), <span class="m">a⁽¹⁾ = σ(Wa⁽⁰⁾ + b)</span>, 파라미터 13,002개</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=8861RzFOFs8" target="_blank" rel="noopener">DL2</a><br>20:07</td><td>코스트 함수를 경사하강법으로 줄이는 학습. 그래디언트 성분의 부호와 크기의 의미, 처음 보는 이미지에서 약 96% 정답</td><td>신경망의 코스트(출력 10개와 정답의 차 제곱 합의 평균), 지역 최솟값, 노이즈 이미지를 자신 있게 "5"라고 답하는 한계</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=tkH7KgLZc0E" target="_blank" rel="noopener">DL3</a><br>13:02</td><td>역전파를 수식 없이 직관으로. 출력 뉴런 하나를 키우는 세 방법(바이어스, 가중치, 이전 층 액티베이션)과 그 바람을 모아 앞 층으로 전하기</td><td><b>미니배치</b>, <b>확률적 경사하강법(SGD)</b></td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=HKqdFQfXVhw" target="_blank" rel="noopener">DL4</a><br>10:04</td><td>층마다 뉴런이 하나인 신경망에서 연쇄법칙으로 <span class="m">∂C₀/∂w⁽ᴸ⁾</span> 구하기, 뉴런이 여럿일 때로 넓히기</td><td>층 번호 위첨자 표기 <span class="m">a⁽ᴸ⁾</span>, <span class="m">z⁽ᴸ⁾ = w⁽ᴸ⁾a⁽ᴸ⁻¹⁾ + b⁽ᴸ⁾</span></td></tr>
+  </table></div>
+  <aside class="wait"><b>잠깐, 한국어판에서 주의할 곳이 있나요?</b> 세 군데입니다. DL1 10:46쯤 "시그모이드는 0에서 0"이라는 말은 설명란에서 정정한 대로 0.5가 맞습니다. DL1 12:17쯤 자막의 "13,2개"는 13,002개의 음성 인식 오류입니다(784×16 + 16 + 16×16 + 16 + 16×10 + 10). DL4 8:45쯤 화면의 Σ 아래 "모든 레이어의 합"은 원본(sum over layer L)의 뜻으로는 "L층의 모든 뉴런에 대한 합"입니다.</aside>
+  <aside class="wait"><b>(한국어판 추가)</b> 원본 영상 끝의 인터뷰 대신 번역자가 직접 설명한 내용입니다. DL1 끝에서는 시그모이드가 요즘은 많이 쓰이지 않고 ReLU 계열을 주로 쓴다고, 시그모이드는 훈련이 느리고 그래디언트가 사라지기도 한다고 설명합니다. DL2 끝에서는 레이블을 무작위로 섞은 데이터로도 신경망이 훈련 데이터를 외울 수 있다는 연구와, 무작위 레이블에서는 손실이 천천히, 제대로 된 데이터에서는 빠르게 떨어진다는 연구를 소개합니다.</aside>
+
+  <div class="recap"><b>4장 키워드</b>: 2층 신경망 f = W₂ max(0, W₁x), 층을 더 쌓으면 딥 신경망. 층은 완전연결층이고, 층 하나는 행렬 곱 한 번으로 계산합니다. "2층" = "은닉층 1개". 이 신경망의 그래디언트는 역전파로, 학습은 경사하강법으로 합니다.<br>2차는 여기까지입니다. 총 복습 영상 DL1~4에서 손글씨 숫자 신경망으로 전체 과정을 다시 확인할 수 있습니다.</div>
+</section>
+
+<section class="page" id="glossary" hidden>
+  <p class="chno">부록</p>
+  <h2>용어·기호</h2>
+  <p>2차 노트에 나오는 용어와 기호입니다. 오른쪽 칸은 처음 나오는 장입니다. 1차의 용어는 <a href="ai-stage1.html#glossary">1차 용어·기호</a>에 있습니다.</p>
+  <h3>용어</h3>
+  <div class="tbl"><table>
+    <tr><th>용어</th><th>뜻</th><th>장</th></tr>
+    <tr><td>연쇄법칙</td><td>함수 안의 함수를 미분할 때 바깥 미분과 안쪽 미분을 곱하는 규칙</td><td><a href="#intro">개요</a></td></tr>
+    <tr><td>수치적 그래디언트 · 해석적 그래디언트</td><td>값을 조금 바꿔 차이로 근사한 그래디언트 · 미분 식으로 정확히 구한 그래디언트</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>계산 그래프</td><td>함수를 계산 단계(노드)와 값이 흐르는 선으로 나타낸 그림</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>노드 · 게이트</td><td>계산 그래프의 계산 단계 하나. 강의는 두 말을 섞어 씀</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>순전파 (forward pass)</td><td>입력값을 넣어 앞에서부터 값을 계산하는 것</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>역전파 (backpropagation)</td><td>끝에서부터 연쇄법칙을 거듭 적용해 모든 변수의 그래디언트를 구하는 방법</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>국소 그래디언트 (local gradient)</td><td>노드 출력을 그 노드의 입력으로 미분한 값</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>상류 그래디언트 (upstream gradient)</td><td>역전파 중 뒤쪽에서 넘어온, 최종 출력의 이 노드 출력에 대한 그래디언트</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>시그모이드 함수</td><td>σ(x) = 1/(1 + e⁻ˣ). 미분은 (1 − σ(x))σ(x)</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>야코비 행렬 (Jacobian)</td><td>출력 벡터의 각 성분을 입력 벡터의 각 성분으로 미분한 값을 모은 행렬</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>위상 정렬</td><td>각 노드의 입력이 그 노드보다 먼저 오도록 노드를 늘어놓은 순서</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>뉴런</td><td>입력에 가중치를 곱해 더하고 바이어스를 더한 뒤 활성화 함수를 거쳐 출력을 내는 신경망의 기본 단위</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>가중치 (weight)</td><td>연결의 세기. 입력에 곱하는 값</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>바이어스 (bias)</td><td>가중합에 더하는 값</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>가중합</td><td>입력에 가중치를 곱해 모두 더한 값</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>활성화 함수 (activation function)</td><td>가중합(+바이어스)을 받아 뉴런의 출력으로 바꾸는 함수. 선형성을 깨는 역할</td><td><a href="#ch2">2</a>, <a href="#ch3">3</a></td></tr>
+    <tr><td>파라미터</td><td>훈련으로 조정되는 값. 가중치와 바이어스</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>선형 결합</td><td>변수에 숫자를 곱해 더한 꼴(ax + b). 선형 결합을 다시 선형 결합해도 선형 결합</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>tanh</td><td>시그모이드와 같은 모양으로 −1과 1 사이의 값을 내는 함수</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>ReLU</td><td>rectified linear unit. max(0, x): 음수는 0, 양수는 그대로</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>에폭 (epoch)</td><td>훈련 데이터 전체를 한 번 다 쓰는 학습 단위</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>은닉층 (hidden layer)</td><td>입력층과 출력층 사이의 층</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>완전연결층 (fully-connected layer)</td><td>앞 층의 모든 뉴런이 다음 층의 모든 뉴런과 연결된 층. 행렬 곱 한 번으로 계산</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>딥 신경망</td><td>층을 여러 개 깊게 쌓은 신경망</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>미니배치 · 확률적 경사하강법 (SGD)</td><td>훈련 데이터를 작은 묶음으로 나눠 묶음마다 한 걸음씩 가는 경사하강법 (DL3)</td><td><a href="#ch4">4</a></td></tr>
+  </table></div>
+  <h3>기호</h3>
+  <div class="tbl"><table>
+    <tr><th>기호</th><th>뜻</th><th>장</th></tr>
+    <tr><td class="m">∂f/∂x</td><td>f를 x로 편미분한 값. x만 조금 바꿀 때 f의 변화율</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">σ(x)</td><td>시그모이드 함수</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">‖v‖²</td><td>벡터 v의 성분을 제곱해 더한 값</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">xᵀ, Wᵀ</td><td>전치. 행과 열을 바꾼 것</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">Σ xᵢwᵢ</td><td>입력과 가중치를 곱해 모두 더한 가중합</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td class="m">max(0, x)</td><td>ReLU</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td class="m">W₁, W₂, h</td><td>1층·2층 가중치 행렬, 은닉층 값</td><td><a href="#ch4">4</a></td></tr>
+  </table></div>
+</section>
+
+<nav class="pager" id="pager" aria-label="이전·다음 장"></nav>
+<footer>원문: Stanford CS231n (2017) Lecture 4 · Architecture Bytes - AI, What is a Neuron? · NeuralNine, Why Do We Need Activation Functions in Neural Networks? · 3Blue1Brown 한국어, DL1~4 · 3Blue1Brown 한국어, 미적분학의 본질 4편</footer>
+</main>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const f=(n,d)=>{let v=Number(n).toFixed(d);if(/^-0(\.0+)?$/.test(v))v=v.slice(1);return v.replace('-','−');};
+const T=(x,y,s,o)=>{o=o||{};return `<text x="${x}" y="${y}" class="${o.m?'svgm':'svgt'}" ${o.a?`text-anchor="${o.a}"`:''} style="${o.c?`fill:var(--${o.c})`:''}">${s}</text>`;};
+const L=(x1,y1,x2,y2,c,w,d)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--${c||'ink2'});stroke-width:${w||1}" ${d?'stroke-dasharray="5 4"':''}/>`;
+const C=(x,y,r,c,op)=>`<circle cx="${x}" cy="${y}" r="${r}" style="fill:var(--${c})${op!==undefined?`;opacity:${op}`:''}"/>`;
+const bind=(ids,fn)=>{ids.forEach(i=>$(i).addEventListener('input',fn));fn();};
+
+/* ---------- 라우팅 · 목차 ---------- */
+const pages=[...document.querySelectorAll('main .page')];
+const order=['intro','ch1','ch2','ch3','ch4','glossary'];
+const names={intro:'개요',ch1:'1장. 계산 그래프와 역전파',ch2:'2장. 뉴런',ch3:'3장. 활성화 함수',ch4:'4장. 첫 신경망',glossary:'용어·기호'};
+const SITE='2차 역전파와 신경망 · AI 기초 노트';
+pages.forEach(pg=>{pg.querySelectorAll('h3').forEach((h,i)=>{if(!h.id) h.id=`${pg.id}-k${i+1}`;});});
+const nav=$('sidenav'); let html='';
+order.forEach(id=>{
+  if(id==='glossary') html+='<div class="sep"></div>';
+  html+=`<a href="#${id}" data-p="${id}">${names[id]}</a>`;
+  if(/^ch/.test(id)) html+=`<div class="kw" data-kw="${id}" hidden>`+[...$(id).querySelectorAll('h3')].map(h=>`<a href="#${h.id}">${h.textContent}</a>`).join('')+'</div>';
+  if(id==='intro') html+='<div class="sep"></div>';
+});
+nav.innerHTML=html;
+const side=$('side'), btn=$('navbtn');
+btn.addEventListener('click',()=>{const o=side.classList.toggle('open');btn.setAttribute('aria-expanded',o);});
+function route(){
+  const id=decodeURIComponent(location.hash.slice(1))||'intro';
+  let target=document.getElementById(id), pg=target?target.closest('.page'):null;
+  if(!pg){pg=$('intro');target=pg;}
+  pages.forEach(p=>p.hidden=(p!==pg));
+  nav.querySelectorAll('a[data-p]').forEach(a=>a.classList.toggle('on',a.dataset.p===pg.id));
+  nav.querySelectorAll('.kw').forEach(k=>k.hidden=(k.dataset.kw!==pg.id));
+  const i=order.indexOf(pg.id), pv=order[i-1], nx=order[i+1];
+  $('pager').innerHTML=(pv?`<a href="#${pv}"><small>이전</small>${names[pv]}</a>`:'')+(nx?`<a class="next" href="#${nx}"><small>다음</small>${names[nx]}</a>`:'');
+  side.classList.remove('open');btn.setAttribute('aria-expanded','false');
+  document.title=(pg.id==='intro'?'':names[pg.id]+' · ')+SITE;
+  requestAnimationFrame(()=>{if(target!==pg) target.scrollIntoView(); else window.scrollTo(0,0);});
+}
+window.addEventListener('hashchange',route); route();
+
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+const topGap=()=>(window.innerWidth<=900?side.getBoundingClientRect().height:0)+40;
+nav.addEventListener('click',e=>{
+  const a=e.target.closest('.kw a'); if(!a) return;
+  const el=document.getElementById(a.getAttribute('href').slice(1));
+  if(!el||el.closest('.page').hidden) return;
+  e.preventDefault(); side.classList.remove('open');btn.setAttribute('aria-expanded','false');
+  window.scrollTo({top:Math.max(0,window.scrollY+el.getBoundingClientRect().top-topGap()),behavior:reduceMotion.matches?'auto':'smooth'});
+  history.pushState(null,'','#'+el.id);
+});
+let spyTick=false;
+function spy(){
+  spyTick=false;
+  const pg=pages.find(p=>!p.hidden); if(!pg) return;
+  const hs=[...pg.querySelectorAll('h3')]; if(!hs.length) return;
+  const line=window.innerWidth<=900?110:90; let cur=null;
+  hs.forEach(hd=>{ if(hd.getBoundingClientRect().top<=line) cur=hd; });
+  if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4) cur=hs[hs.length-1];
+  nav.querySelectorAll('.kw a').forEach(a=>a.classList.toggle('on',!!cur&&a.getAttribute('href')==='#'+cur.id));
+  const on=nav.querySelector('.kw a.on');
+  if(on&&window.innerWidth>900){const sb=side.getBoundingClientRect(),r=on.getBoundingClientRect();if(r.top<sb.top+40||r.bottom>sb.bottom-20) on.scrollIntoView({block:'nearest'});}
+}
+window.addEventListener('scroll',()=>{ if(!spyTick){spyTick=true;requestAnimationFrame(spy);} },{passive:true});
+window.addEventListener('hashchange',()=>requestAnimationFrame(()=>requestAnimationFrame(spy)));
+requestAnimationFrame(spy);
+
+
+/* ---------- 공통: 계산 그래프 그리기 ---------- */
+const op01=(k,i)=>Math.max(0,Math.min(1,k-i+1));
+const NODE=(x,y,r,label,fs)=>`<circle cx="${x}" cy="${y}" r="${r}" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="${x}" y="${y+4}" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:${fs||13}px">${label}</text>`;
+// 선과 위(값)·아래(그래디언트) 라벨
+function EDGE(x1,y1,x2,y2,val,vo,grad,go,pos){
+  pos=pos??0.5;
+  const mx=x1+(x2-x1)*pos, my=y1+(y2-y1)*pos, dx=x2-x1, dy=y2-y1, L0=Math.hypot(dx,dy)||1;
+  let nx=dy/L0, ny=-dx/L0; if(ny>0){nx=-nx;ny=-ny;}
+  let s=L(x1,y1,x2,y2,'ink2',1.2);
+  if(vo>0) s+=`<g style="opacity:${vo}">${T((mx+nx*9).toFixed(1),(my+ny*9-1).toFixed(1),val,{a:'middle',c:'blue'})}</g>`;
+  if(go>0) s+=`<g style="opacity:${go}">${T((mx-nx*9).toFixed(1),(my-ny*9+11).toFixed(1),grad,{a:'middle',c:'green'})}</g>`;
+  return s;
+}
+
+/* ---------- 1. f = (x + y)z ---------- */
+function g1(){
+  const k=+$('g1k').value;
+  const fw=op01(k,1), fq=op01(k,2), ff=op01(k,3);
+  const gf=op01(k,4), gz=op01(k,5), gq=op01(k,6), gy=op01(k,7), gx=op01(k,8);
+  let s='';
+  const X=[60,60,60], Y=[55,135,225];
+  s+=T(40,Y[0]+5,'x',{m:1,a:'end'})+T(40,Y[1]+5,'y',{m:1,a:'end'})+T(40,Y[2]+5,'z',{m:1,a:'end'});
+  s+=EDGE(48,Y[0],218,90,'−2',fw,'−4',gx,0.35);
+  s+=EDGE(48,Y[1],218,104,'5',fw,'−4',gy,0.35);
+  s+=EDGE(48,Y[2],386,168,'−4',fw,'3',gz,0.3);
+  s+=EDGE(250,104,385,152,'3',fq,'−4',gq,0.5);
+  s+=EDGE(418,160,540,160,'−12',ff,'1',gf,0.5);
+  s+=NODE(234,98,17,'+',16)+NODE(402,160,17,'×',16);
+  s+=T(550,164,'f',{m:1});
+  s+=T(318,98,'q',{m:1});
+  // 국소 미분 표
+  s+=T(470,40,'q = x + y',{m:1})+T(470,60,'∂q/∂x = 1, ∂q/∂y = 1',{m:1,c:'amber'});
+  s+=T(470,230,'f = q · z',{m:1})+T(470,250,'∂f/∂q = z, ∂f/∂z = q',{m:1,c:'amber'});
+  $('f-g1').querySelector('svg').innerHTML=s;
+  $('g1k-o').textContent=f(k,1);
+  const R=[];
+  if(k>=1) R.push('<span class="c-blue">x = −2, y = 5, z = −4</span>');
+  if(k>=3) R.push('<span class="c-blue">q = 3, f = −12</span>');
+  if(k>=8) R.push('<span class="c-green">∂f/∂x = −4, ∂f/∂y = −4, ∂f/∂z = 3</span>');
+  $('g1-read').innerHTML=R.join(' · ')||'f(x, y, z) = (x + y)z';
+}
+bind(['g1k'],g1);
+
+/* ---------- 2. 시그모이드 예 ---------- */
+function g2(){
+  const k=+$('g2k').value, fw=op01(k,1);
+  const G=i=>op01(k,i);
+  let s='';
+  const IN=[['w₀',30],['x₀',98],['w₁',140],['x₁',208],['w₂',262]];
+  IN.forEach(([n,y])=>{s+=T(26,y+5,n,{m:1,a:'end'});});
+  const M1=[140,63], M2=[140,173], A1=[214,118], A2=[284,178], NG=[352,178], EX=[420,178], P1=[488,178], IV=[556,178];
+  const r=15;
+  // 입력 선
+  s+=EDGE(32,30,M1[0]-r,M1[1]-4,'2.00',fw,'−0.20',G(7),0.3);
+  s+=EDGE(32,98,M1[0]-r,M1[1]+5,'−1.00',fw,'0.40',G(7),0.3);
+  s+=EDGE(32,140,M2[0]-r,M2[1]-5,'−3.00',fw,'−0.40',G(8),0.3);
+  s+=EDGE(32,208,M2[0]-r,M2[1]+4,'−2.00',fw,'−0.60',G(8),0.3);
+  s+=EDGE(32,262,A2[0]-12,A2[1]+9,'−3.00',fw,'0.20',G(6),0.18);
+  s+=EDGE(M1[0]+12,M1[1]+9,A1[0]-11,A1[1]-10,'−2.00',fw,'0.20',G(6),0.5);
+  s+=EDGE(M2[0]+12,M2[1]-9,A1[0]-11,A1[1]+10,'6.00',fw,'0.20',G(6),0.5);
+  s+=EDGE(A1[0]+11,A1[1]+10,A2[0]-11,A2[1]-10,'4.00',fw,'0.20',G(6),0.45);
+  s+=EDGE(A2[0]+r,178,NG[0]-r,178,'1.00',fw,'0.20',G(5));
+  s+=EDGE(NG[0]+r,178,EX[0]-r,178,'−1.00',fw,'−0.20',G(4));
+  s+=EDGE(EX[0]+r,178,P1[0]-r,178,'0.37',fw,'−0.53',G(3));
+  s+=EDGE(P1[0]+r,178,IV[0]-r,178,'1.37',fw,'−0.53',G(2));
+  s+=EDGE(IV[0]+r,178,612,178,'0.73',fw,'1.00',G(2));
+  s+=NODE(...M1,r,'×',14)+NODE(...M2,r,'×',14)+NODE(...A1,r,'+',15)+NODE(...A2,r,'+',15);
+  s+=NODE(...NG,r,'×−1',11)+NODE(...EX,r,'exp',11)+NODE(...P1,r,'+1',12)+NODE(...IV,r,'1/x',11);
+  s+=T(380,40,'위: 순전파 값',{c:'blue'})+T(380,62,'아래: 그래디언트',{c:'green'});
+  $('f-g2').querySelector('svg').innerHTML=s;
+  $('g2k-o').textContent=f(k,1);
+  $('g2-read').innerHTML=k<1?'f(w, x) = 1 / (1 + e^−(w₀x₀ + w₁x₁ + w₂))':`<span class="c-blue">출력 0.73</span>`+(k>=7?' · <span class="c-green">∂f/∂w₀ = −0.20, ∂f/∂x₀ = 0.40</span>':'')+(k>=8?' · <span class="c-green">∂f/∂w₁ = −0.40, ∂f/∂x₁ = −0.60 (보충 계산)</span>':'')+(k>=6?' · <span class="c-green">∂f/∂w₂ = 0.20</span>':'');
+}
+bind(['g2k'],g2);
+
+
+/* ---------- 3. 뉴런 하나 ---------- */
+const sig=z=>1/(1+Math.exp(-z));
+function neu(){
+  const k=+$('nk').value, b=+$('nb').value;
+  const X=[0.8,0.2,0.5], W=[0.5,-1.0,1.5], Y=[45,130,215], P=X.map((x,i)=>x*W[i]), S=P.reduce((a,c)=>a+c,0), Z=S+b, A=sig(Z);
+  const cx=300, cy=130, R=40;
+  let s='';
+  const nm=['x₁','x₂','x₃'], wn=['w₁','w₂','w₃'];
+  X.forEach((x,i)=>{
+    const y=Y[i], ex=cx-R*Math.cos(Math.atan2(cy-y,cx-60)), ey=cy-R*Math.sin(Math.atan2(cy-y,cx-60));
+    s+=L(60,y,ex.toFixed(1),ey.toFixed(1),'ink2',1.2);
+    s+=T(48,y+5,nm[i],{m:1,a:'end'});
+    s+=T(66,y-9,f(x,1),{c:'blue'});
+    const mx=60+(ex-60)*0.55, my=y+(ey-y)*0.55;
+    s+=T(mx.toFixed(1),(my-9).toFixed(1),`${wn[i]} = ${f(W[i],1)}`,{c:'violet',a:'middle'});
+    s+=`<g style="opacity:${op01(k,1)}">${T(14,y+29,`× ${f(W[i],1)} = ${f(P[i],2)}`,{c:'blue'})}</g>`;
+  });
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.4"/>`;
+  s+=T(cx,cy-4,'Σ xᵢwᵢ + b',{m:1,a:'middle'})+T(cx,cy+16,'→ σ',{m:1,a:'middle'});
+  s+=L(cx+R,cy,600,cy,'ink2',1.2);
+  s+=`<g style="opacity:${op01(k,2)}">${T(390,46,`가중합 ${f(P[0],2)} + (${f(P[1],2)}) + ${f(P[2],2)} = ${f(S,2)}`,{c:'blue'})}</g>`;
+  s+=`<g style="opacity:${op01(k,3)}">${T(390,70,`+ 바이어스 (${f(b,2)}) = ${f(Z,2)}`,{c:'blue'})}</g>`;
+  s+=`<g style="opacity:${op01(k,4)}">${T(390,94,`σ(${f(Z,2)}) = ${f(A,2)}`,{c:'blue'})}</g>`;
+  s+=`<g style="opacity:${op01(k,5)}">${T(560,cy-9,f(A,2),{c:'blue',a:'middle'})+T(560,cy+20,'출력',{a:'middle'})}</g>`;
+  s+=T(cx,cy+64,`바이어스 b = ${f(b,2)}`,{c:'violet',a:'middle'});
+  $('f-neu').querySelector('svg').innerHTML=s;
+  $('nk-o').textContent=f(k,1); $('nb-o').textContent=f(b,2);
+  $('neu-read').innerHTML=`가중합 ${f(S,2)} + 바이어스 ${f(b,2)} = ${f(Z,2)} → σ → <b class="c-blue">${f(A,3)}</b> (보충 예시)`;
+}
+bind(['nk','nb'],neu);
+
+/* ---------- 4. 두 뉴런이 하나로 ---------- */
+function col(){
+  const k=+$('ck').value, o2=op01(k,2), o1=1-0.6*o2;
+  let s='';
+  const X0=[50,115], H1=[200,55], H2=[200,175], YO=[340,115];
+  s+=`<g style="opacity:${o1}">`;
+  s+=L(X0[0]+12,X0[1]-6,H1[0]-18,H1[1]+8)+L(X0[0]+12,X0[1]+6,H2[0]-18,H2[1]-8);
+  s+=L(H1[0]+18,H1[1]+8,YO[0]-18,YO[1]-6)+L(H2[0]+18,H2[1]-8,YO[0]-18,YO[1]+6);
+  s+=NODE(...X0,13,'x',14)+NODE(...H1,17,'',12)+NODE(...H2,17,'',12)+NODE(...YO,17,'',12);
+  s+=T(115,72,'w₁',{m:1,c:'violet',a:'middle'})+T(115,170,'w₂',{m:1,c:'violet',a:'middle'});
+  s+=T(275,72,'w₃',{m:1,c:'violet',a:'middle'})+T(275,170,'w₄',{m:1,c:'violet',a:'middle'});
+  s+=T(H1[0],H1[1]-24,'b₁',{m:1,c:'violet',a:'middle'})+T(H2[0],H2[1]+33,'b₂',{m:1,c:'violet',a:'middle'})+T(YO[0],YO[1]-25,'b₃',{m:1,c:'violet',a:'middle'});
+  s+=L(YO[0]+17,YO[1],YO[0]+50,YO[1])+T(YO[0]+58,YO[1]+5,'y',{m:1});
+  s+='</g>';
+  s+=T(200,227,'뉴런 3개, 가중치 4개, 바이어스 3개',{a:'middle'});
+  s+=`<g style="opacity:${o2}">`;
+  s+=NODE(450,115,13,'x',14)+L(463,115,557,115)+NODE(575,115,17,'',12)+L(592,115,615,115)+T(622,120,'y',{m:1});
+  s+=T(510,105,'w₅',{m:1,c:'violet',a:'middle'})+T(575,88,'b₄',{m:1,c:'violet',a:'middle'});
+  s+=T(530,227,'뉴런 하나와 같음',{a:'middle'});
+  s+='</g>';
+  $('f-col').querySelector('svg').innerHTML=s;
+  $('ck-o').textContent=f(k,1);
+  $('col-read').innerHTML=k>=2?'<i>w</i>₅ = <i>w</i>₃<i>w</i>₁ + <i>w</i>₄<i>w</i>₂, &nbsp;<i>b</i>₄ = <i>b</i>₃ + <i>w</i>₃<i>b</i>₁ + <i>w</i>₄<i>b</i>₂':'활성화 함수 없는 신경망: 입력 1 → 은닉 뉴런 2 → 출력 1';
+}
+bind(['ck'],col);
+
+/* ---------- 5. ReLU가 있을 때와 없을 때 ---------- */
+const RL=v=>Math.max(0,v);
+const ylin=x=>(x-1)+0.5*(-x-1), yrel=x=>RL(x-1)+0.5*RL(-x-1);
+function relu(){
+  const lo=+$('rl').value, ro=+$('rr').value, x=+$('rx').value;
+  const X0=60,X1=420,Y0=30,Y1=260, px=v=>X0+(v+3)/6*(X1-X0), py=v=>Y0+(2.4-v)/5.6*(Y1-Y0);
+  let s=`<defs><clipPath id="cp-rl"><rect x="${X0}" y="${Y0}" width="${X1-X0}" height="${Y1-Y0}"/></clipPath></defs>`;
+  [-3,-2,-1,1,2,3].forEach(v=>{s+=L(px(v),py(0),px(v),py(0)+4)+T(px(v),py(0)+17,String(v).replace('-','−'),{a:'middle'});});
+  [-3,-2,-1,1,2].forEach(v=>{s+=L(px(0)-4,py(v),px(0),py(v))+T(px(0)-7,py(v)+4,String(v).replace('-','−'),{a:'end'});});
+  s+=L(X0,py(0),X1,py(0))+L(px(0),Y0,px(0),Y1)+T(X1,py(0)-7,'x',{m:1,a:'end'})+T(px(0)+7,Y0+10,'y',{m:1});
+  const path=fn=>{let d='';for(let i=0;i<=120;i++){const v=-3+6*i/120;d+=(i?'L':'M')+px(v).toFixed(1)+' '+py(fn(v)).toFixed(1);}return d;};
+  if(lo>0) s+=`<g clip-path="url(#cp-rl)" style="opacity:${lo}"><path d="${path(ylin)}" style="fill:none;stroke:var(--ink2);stroke-width:2" stroke-dasharray="6 4"/></g>`;
+  if(ro>0) s+=`<g clip-path="url(#cp-rl)" style="opacity:${ro}"><path d="${path(yrel)}" style="fill:none;stroke:var(--violet);stroke-width:2.4"/></g>`;
+  if(lo>0) s+=`<g style="opacity:${lo}">${C(px(x),py(ylin(x)),4.5,'ink2')}</g>`;
+  if(ro>0) s+=`<g style="opacity:${ro}">${C(px(x),py(yrel(x)),5,'violet')}</g>`;
+  s+=`<g style="opacity:${lo}">`+T(445,50,'ReLU 없음 (점선)')+T(445,72,'y = 0.5x − 1.5',{m:1})+'</g>';
+  s+=`<g style="opacity:${ro}">`+T(445,112,'ReLU 있음',{c:'violet'})+T(445,134,'y = ReLU(x − 1)',{m:1,c:'violet'})+T(445,156,'  + 0.5 · ReLU(−x − 1)',{m:1,c:'violet'})+'</g>';
+  s+=T(445,206,`x = ${f(x,2)}`)+(lo>0?T(445,228,`ReLU 없음: y = ${f(ylin(x),2)}`):'')+(ro>0?T(445,250,`ReLU 있음: y = ${f(yrel(x),2)}`,{c:'violet'}):'');
+  $('f-relu').querySelector('svg').innerHTML=s;
+  $('rl-o').textContent=f(lo,2); $('rr-o').textContent=f(ro,2); $('rx-o').textContent=f(x,2);
+  $('relu-read').innerHTML=`은닉 뉴런 1: w₁x + b₁ = ${f(x-1,2)} → ReLU ${f(RL(x-1),2)} · 은닉 뉴런 2: w₂x + b₂ = ${f(-x-1,2)} → ReLU ${f(RL(-x-1),2)} (보충 예시)`;
+}
+bind(['rl','rr','rx'],relu);
+})();
+</script>
+
+<script id="scenes">
+(function(){
+/* ================= scene player =================
+   SCENES[figId] = [{dur, cap, line, clear, set:{sliderId:to}, cut:{sliderId:v}, move:[a,b]}]
+   - set: 장면 안에서 move 구간(기본 0.1~0.85) 동안 이전 값 → to 로 부드럽게 이동
+   - cut: 장면 시작에서 바로 바뀜
+   - line: 식 한 줄(HTML) 또는 함수(v, lv) → HTML. v는 슬라이더 값, lv(id,hi,lo)는 로그 슬라이더 실제 값
+   - clear: 이 장면에서 식 줄을 비우고 새로 시작
+   - hl: (v, lv, op) → SVG 문자열. 꼭 필요한 장면에만, 면 채우기만 부드럽게 깜빡임(테두리·글자·화살표 없음). blink:false면 고정
+   - cap에는 <b class="c-red">…</b>처럼 강조색을 넣어 그림의 강조 색과 맞춤
+   - click: 이 장면부터 적용할 모드 버튼(선택자). 모드가 바뀔 때만 한 번 누름 */
+const SCENES={};
+function initScenes(){
+  const $=id=>document.getElementById(id);
+  const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+  const clamp=u=>Math.max(0,Math.min(1,u));
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  const players=[];
+  Object.keys(SCENES).forEach(fid=>{
+    const fig=$(fid); if(!fig) return;
+    const scenes=SCENES[fid];
+    fig.classList.add('sc');
+    const inputs=[...fig.querySelectorAll('input[type=range]')];
+    const mkLv=v=>(id,hi,lo)=>hi*Math.pow(lo/hi,v[id]/100);
+    // 장면 시작 시점의 값 미리 계산
+    const starts=[],base=[],ends=[]; let TOT=0, cur={}; inputs.forEach(i=>cur[i.id]=+i.value);
+    scenes.forEach(s=>{
+      Object.assign(cur,s.cut||{}); starts.push(TOT); base.push({...cur});
+      Object.assign(cur,s.set||{}); ends.push({...cur}); TOT+=s.dur;
+    });
+    // 식 줄 목록(장면별로 보일 줄 번호)
+    const shown=[]; let acc=[];
+    scenes.forEach((s,i)=>{ if(s.clear) acc=[]; if(s.line) acc=acc.concat(i); shown.push(acc.slice()); });
+    const freeze=scenes.map((s,k)=>{let m=k+1;while(m<scenes.length&&!scenes[m].line&&!scenes[m].clear)m++;return ends[m-1];});
+    const maxLines=Math.max(1,...shown.map(a=>a.length));
+    // UI
+    const svg=fig.querySelector('svg');
+    const lines=document.createElement('div'); lines.className='sc-lines'; lines.style.minHeight=(maxLines*1.55)+'em';
+    const cap=document.createElement('p'); cap.className='sc-cap'; cap.setAttribute('aria-live','polite');
+    const bar=document.createElement('div'); bar.className='sc-bar';
+    bar.innerHTML=`<button type="button" class="sc-prev" aria-label="이전 장면">⏮</button><button type="button" class="sc-play">▶ 재생</button><button type="button" class="sc-next" aria-label="다음 장면">⏭</button><input type="range" min="0" max="1000" step="any" value="0" aria-label="재생 위치"><div class="sc-dots">${scenes.map((s,i)=>`<button type="button" aria-label="장면 ${i+1}" title="장면 ${i+1}"></button>`).join('')}</div>`;
+    const ctrl=fig.querySelector('.ctrl')||fig.querySelector('.btns');
+    const anchor=ctrl||svg.nextSibling;
+    fig.insertBefore(lines,anchor); fig.insertBefore(cap,anchor); fig.insertBefore(bar,anchor);
+    const btn=bar.querySelector('.sc-play'), seek=bar.querySelector('input'), dots=[...bar.querySelectorAll('.sc-dots button')];
+    let vals={}, t=0, raf=0, last=0, ci=-1, lineKey='', enter=0;
+    const svgEl=svg;
+    function overlay(now){
+      const old=svgEl.querySelector('g.sc-hl'); if(old) old.remove();
+      const s=scenes[ci]; if(!s||!s.hl) return;
+      const fade=Math.min(1,(now-enter)/450), ph=0.5-0.5*Math.cos(2*Math.PI*(now-enter)/1400);
+      const op=fade*(reduce.matches||s.blink===false?0.8:(0.3+0.7*ph));
+      svgEl.insertAdjacentHTML('beforeend',`<g class="sc-hl" pointer-events="none">${s.hl(vals,mkLv(vals),op)}</g>`);
+    }
+    function apply(nv){
+      inputs.forEach(inp=>{
+        const v=nv[inp.id]; if(v===undefined) return;
+        if(Math.abs(+inp.value-v)>1e-9||vals[inp.id]===undefined){ inp.value=v; inp.dispatchEvent(new Event('input')); }
+      });
+      vals={}; inputs.forEach(i=>vals[i.id]=+i.value);
+    }
+    const modeAt=[]; let md=null; scenes.forEach(s=>{ if(s.click) md=s.click; modeAt.push(md); });
+    let mode=null;
+    function render(tt){
+      t=Math.max(0,Math.min(TOT,tt));
+      let i=scenes.length-1; for(let k=0;k<scenes.length;k++){ if(t<starts[k]+scenes[k].dur){i=k;break;} }
+      const s=scenes[i], u=(t-starts[i])/s.dur, mv=s.move||[0.1,0.85], e=ease(clamp((u-mv[0])/(mv[1]-mv[0])));
+      if(modeAt[i]&&modeAt[i]!==mode){ mode=modeAt[i]; const el=fig.querySelector(mode)||document.querySelector(mode); if(el) el.click(); }
+      const nv={...base[i]};
+      for(const k in (s.set||{})) nv[k]=base[i][k]+(s.set[k]-base[i][k])*e;
+      apply(nv);
+      if(i!==ci){
+        ci=i; enter=performance.now(); cap.style.opacity=0;
+        setTimeout(()=>{cap.innerHTML=s.cap||'';cap.style.opacity=1;},110);
+        dots.forEach((d,k)=>{d.classList.toggle('on',k<i);d.classList.toggle('now',k===i);});
+      }
+      const key=shown[i].join(',');
+      if(key!==lineKey){ lineKey=key; lines.innerHTML=shown[i].map(k=>`<div class="sc-ln${k===shown[i][shown[i].length-1]?' cur':''}" data-k="${k}"></div>`).join(''); }
+      lines.querySelectorAll('.sc-ln').forEach(el=>{
+        const k=+el.dataset.k, L=scenes[k].line, last=k===shown[i][shown[i].length-1], v=last?vals:freeze[k], h=typeof L==='function'?L(v,mkLv(v)):L;
+        if(el.innerHTML!==h) el.innerHTML=h;
+      });
+      seek.value=t/TOT*1000;
+      overlay(performance.now());
+    }
+    const setBtn=()=>{btn.textContent=raf?'❚❚ 멈춤':(t>=TOT?'↺ 다시':'▶ 재생');};
+    function frame(now){ t+=(now-last)/1000; last=now; render(t); if(t<TOT){raf=requestAnimationFrame(frame);} else {raf=0;setBtn();} }
+    function pause(){ if(raf) cancelAnimationFrame(raf); raf=0; setBtn(); }
+    function go(i){ pause(); i=Math.max(0,Math.min(scenes.length-1,i)); render(starts[i]+(reduce.matches?scenes[i].dur-1e-3:0)); setBtn(); }
+    function play(){
+      players.forEach(p=>p!==api&&p.pause());
+      if(t>=TOT) t=0;
+      if(reduce.matches){ go(ci+(t>starts[ci]?1:0)); return; }
+      last=performance.now(); raf=requestAnimationFrame(frame); setBtn();
+    }
+    btn.addEventListener('click',()=>raf?pause():play());
+    bar.querySelector('.sc-prev').addEventListener('click',()=>go(t-starts[ci]>0.6&&!reduce.matches?ci:ci-1));
+    bar.querySelector('.sc-next').addEventListener('click',()=>go(ci+1));
+    seek.addEventListener('input',()=>{pause();render(+seek.value/1000*TOT);setBtn();});
+    dots.forEach((d,k)=>d.addEventListener('click',()=>go(k)));
+    const api={pause,tick:now=>{ if(scenes[ci]&&scenes[ci].hl&&fig.offsetParent!==null) overlay(now); }};
+    players.push(api);
+    render(0); setBtn();
+  });
+  window.addEventListener('hashchange',()=>players.forEach(p=>p.pause()));
+  (function loop(now){ players.forEach(p=>p.tick(now)); requestAnimationFrame(loop); })(performance.now());
+}
+
+/* ---- 강조: 면 채우기만 (테두리·글자 외곽선·화살표 없음) ---- */
+const hFill=(d,c,op,a)=>`<path d="${d}" style="fill:var(--${c});fill-opacity:${(a??0.45)*op};stroke:none"/>`;
+const hBox=(x,y,w,h,c,op,a)=>`<rect x="${Math.min(x,x+w)}" y="${Math.min(y,y+h)}" width="${Math.abs(w)}" height="${Math.abs(h)}" style="fill:var(--${c});fill-opacity:${(a??0.45)*op};stroke:none"/>`;
+const hPts=pts=>'M'+pts.map(p=>(+p[0]).toFixed(1)+' '+(+p[1]).toFixed(1)).join('L')+'Z';
+const hBand=(x1,y1,x2,y2,c,op,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--${c});stroke-opacity:${0.55*op};stroke-width:${w||8};stroke-linecap:round"/>`;
+
+const n3=(x,d)=>{x=Number(x);if(Math.abs(x)<0.5*Math.pow(10,-d))x=0;return `<span class="num">${x.toFixed(d).replace('-','−')}</span>`;};
+const bc=(c,t)=>`<b class="c-${c}">${t}</b>`;
+const M=s=>s; // 식 줄 그대로
+
+SCENES['f-g1']=[
+  {dur:4.5, cut:{g1k:0}, cap:'f(x, y, z) = (x + y)z를 계산 그래프로 그립니다. 덧셈 노드 다음에 곱셈 노드가 옵니다.', line:'<i>f</i> = (<i>x</i> + <i>y</i>)<i>z</i>'},
+  {dur:4, set:{g1k:1}, cap:`입력 x = −2, y = 5, z = −4를 ${bc('blue','선 위')}에 적습니다.`},
+  {dur:5, set:{g1k:3}, cap:`순전파: 앞에서부터 계산합니다. 중간값 q = x + y = 3, 출력 f = q · z = −12입니다.`, line:'<i>q</i> = −2 + 5 = 3, &nbsp;<i>f</i> = 3 × (−4) = −12'},
+  {dur:4.5, clear:true, set:{g1k:4}, cap:`역전파는 맨 끝에서 시작합니다. f를 f로 미분하면 1입니다. 그래디언트는 ${bc('green','선 아래')}에 적습니다.`, line:'∂<i>f</i>/∂<i>f</i> = 1'},
+  {dur:5, set:{g1k:5}, cap:'f = qz이므로 z에 대한 미분은 q, 즉 3입니다.', line:'∂<i>f</i>/∂<i>z</i> = <i>q</i> = 3'},
+  {dur:5, set:{g1k:6}, cap:'q에 대한 미분은 z, 즉 −4입니다.', line:'∂<i>f</i>/∂<i>q</i> = <i>z</i> = −4'},
+  {dur:6, set:{g1k:7}, cap:'y는 f에 바로 연결되어 있지 않고 q를 거칩니다. 연쇄법칙으로 두 미분을 곱합니다.', line:`∂<i>f</i>/∂<i>y</i> = ∂<i>f</i>/∂<i>q</i> · ${bc('amber','∂<i>q</i>/∂<i>y</i>')} = −4 × 1 = −4`},
+  {dur:5, set:{g1k:8}, cap:'x도 같은 덧셈 노드를 지나므로 −4 × 1 = −4입니다.', line:`∂<i>f</i>/∂<i>x</i> = −4 × ${bc('amber','1')} = −4`}
+];
+
+SCENES['f-g2']=[
+  {dur:4.5, cut:{g2k:0}, cap:'곱셈, 덧셈, ×(−1), 지수, +1, 역수 노드로 이루어진 계산 그래프입니다.', line:'<i>f</i> = 1 / (1 + <i>e</i><sup>−(<i>w</i>₀<i>x</i>₀ + <i>w</i>₁<i>x</i>₁ + <i>w</i>₂)</sup>)'},
+  {dur:6, set:{g2k:1}, cap:`순전파: 입력값으로 앞에서부터 계산하면 ${bc('blue','출력은 0.73')}입니다.`, line:'−2 + 6 − 3 = 1 → −1 → 0.37 → 1.37 → 0.73'},
+  {dur:6, clear:true, set:{g2k:2}, cap:'끝의 그래디언트 1에서 시작합니다. 1/x 노드의 국소 그래디언트는 −1/x²이고, 순전파 값 1.37을 넣습니다.', line:`${bc('amber','−1/1.37²')} × 1 = −0.53`},
+  {dur:5, set:{g2k:3}, cap:'+1 노드의 국소 그래디언트는 1이라 −0.53이 그대로 전해집니다.', line:`${bc('amber','1')} × (−0.53) = −0.53`},
+  {dur:5.5, set:{g2k:4}, cap:'지수 노드의 국소 그래디언트는 eˣ입니다. 순전파 값 x = −1을 넣으면 e⁻¹ ≈ 0.37입니다.', line:`${bc('amber','<i>e</i>⁻¹')} × (−0.53) = −0.20`},
+  {dur:5, set:{g2k:5}, cap:'×(−1) 노드의 국소 그래디언트는 −1입니다.', line:`${bc('amber','−1')} × (−0.20) = 0.20`},
+  {dur:5, clear:true, set:{g2k:6}, cap:'덧셈 노드는 들어온 그래디언트 0.20을 모든 입력에 그대로 나눠 줍니다.', line:'0.20 → 0.20, 0.20'},
+  {dur:6, set:{g2k:7}, cap:'곱셈 노드에서 한 입력의 그래디언트는 상대편 입력의 값 × 상류 그래디언트입니다.', line:`<i>w</i>₀: ${bc('amber','−1')} × 0.2 = −0.2, &nbsp;<i>x</i>₀: ${bc('amber','2')} × 0.2 = 0.4`},
+  {dur:5.5, set:{g2k:8}, cap:'아래 곱셈 노드도 같은 방법입니다. (보충 계산)', line:`<i>w</i>₁: ${bc('amber','−2')} × 0.2 = −0.4, &nbsp;<i>x</i>₁: ${bc('amber','−3')} × 0.2 = −0.6`}
+];
+
+SCENES['f-neu']=[
+  {dur:4.5, cut:{nk:0,nb:-0.3}, cap:`입력 세 개가 ${bc('violet','가중치')}가 붙은 연결을 따라 뉴런으로 들어갑니다.`, line:'출력 = <i>σ</i>(Σ <i>x</i><sub><i>i</i></sub><i>w</i><sub><i>i</i></sub> + <i>b</i>)'},
+  {dur:5, set:{nk:1}, cap:'입력마다 자기 가중치를 곱합니다.', line:'0.8 × 0.5 = 0.40, &nbsp;0.2 × (−1.0) = −0.20, &nbsp;0.5 × 1.5 = 0.75'},
+  {dur:4.5, set:{nk:2}, cap:'곱한 값을 모두 더합니다. 이것이 가중합입니다.', line:'0.40 − 0.20 + 0.75 = 0.95'},
+  {dur:4.5, set:{nk:3}, cap:`${bc('violet','바이어스')}를 더합니다.`, line:'0.95 + (−0.30) = 0.65'},
+  {dur:5, set:{nk:5}, cap:'활성화 함수(여기서는 시그모이드)를 거친 값이 이 뉴런의 출력입니다.', line:'<i>σ</i>(0.65) ≈ 0.66'},
+  {dur:6, set:{nb:-2.3}, cap:'바이어스를 낮추면 같은 입력에도 출력이 작아집니다. 가중치와 바이어스가 훈련으로 조정되는 값입니다.', line:v=>`<i>σ</i>(0.95 + (${n3(v.nb,2)})) = ${n3(1/(1+Math.exp(-(0.95+v.nb))),2)}`}
+];
+
+SCENES['f-col']=[
+  {dur:5, cut:{ck:0}, cap:'입력 x → 은닉 뉴런 2개 → 출력 y. 활성화 함수 없이 계산하면 이렇게 됩니다.', line:'<i>y</i> = <i>b</i>₃ + <i>w</i>₃(<i>w</i>₁<i>x</i> + <i>b</i>₁) + <i>w</i>₄(<i>w</i>₂<i>x</i> + <i>b</i>₂)'},
+  {dur:5, set:{ck:1}, cap:'괄호를 풀어 전개합니다.', line:'= <i>b</i>₃ + <i>w</i>₃<i>w</i>₁<i>x</i> + <i>w</i>₃<i>b</i>₁ + <i>w</i>₄<i>w</i>₂<i>x</i> + <i>w</i>₄<i>b</i>₂'},
+  {dur:5.5, cap:'x가 들어 있는 항과 들어 있지 않은 항으로 나눠 x를 묶어냅니다.', line:'= (<i>w</i>₃<i>w</i>₁ + <i>w</i>₄<i>w</i>₂)<i>x</i> + (<i>b</i>₃ + <i>w</i>₃<i>b</i>₁ + <i>w</i>₄<i>b</i>₂)'},
+  {dur:6, set:{ck:2}, cap:'괄호 안은 각각 숫자 하나일 뿐입니다. 결국 가중치 w₅, 바이어스 b₄인 뉴런 하나와 같습니다.', line:'= <i>w</i>₅<i>x</i> + <i>b</i>₄'}
+];
+
+SCENES['f-relu']=[
+  {dur:4.5, cut:{rl:1,rr:0,rx:-2.5}, cap:'활성화 함수가 없으면 출력은 y = 0.5x − 1.5, 직선입니다.', line:'ReLU 없음: <i>y</i> = 0.5<i>x</i> − 1.5'},
+  {dur:5.5, set:{rx:2.5}, cap:'x가 어디로 움직여도 같은 기울기의 직선 위에 있습니다.'},
+  {dur:5.5, set:{rr:1}, cap:`두 은닉 뉴런에 ReLU를 넣으면 출력이 ${bc('violet','꺾인 선')}이 됩니다.`, line:'ReLU 있음: <i>y</i> = ReLU(<i>x</i> − 1) + 0.5 · ReLU(−<i>x</i> − 1)'},
+  {dur:7, set:{rx:-2.5}, move:[0.05,0.95], cap:'x가 1보다 크면 첫 뉴런만, −1보다 작으면 둘째 뉴런만 켜지고, 그 사이에서는 둘 다 0입니다.'},
+  {dur:4.5, cap:'선형 결합으로는 만들 수 없는 모양입니다. 뉴런이 많아질수록 더 복잡한 모양을 만들 수 있습니다.'}
+];
+
+initScenes();
+})();
+</script>
+</body>
+</html>
