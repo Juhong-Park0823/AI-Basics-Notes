@@ -375,6 +375,10 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <tr><td>곱셈</td><td>스위처 (switcher)</td><td>상류 그래디언트에 <b>상대편 입력의 값</b>을 곱해 보냄</td></tr>
   </table></div>
   <p>한 노드의 출력이 여러 노드로 갈라져 들어가면, 역전파 때 각 갈래에서 돌아오는 그래디언트를 <b>더합니다</b>. 그 노드를 조금 바꾸면 연결된 모든 노드가 함께 바뀌기 때문이고, 다변수 연쇄법칙이 이를 보장합니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 200" role="img" aria-label="x가 두 갈래로 쓰일 때 두 갈래에서 돌아오는 그래디언트를 더하는 그림"><line x1="50" y1="100" x2="110" y2="100" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="110" y1="100" x2="224" y2="47" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="110" y1="100" x2="224" y2="153" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="256" y1="40" x2="386" y2="94" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="256" y1="160" x2="386" y2="106" style="stroke:var(--ink2);stroke-width:1.2"/><line x1="418" y1="100" x2="520" y2="100" style="stroke:var(--ink2);stroke-width:1.2"/><circle cx="240" cy="40" r="17" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="240" y="45" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:12px">× 3</text><circle cx="240" cy="160" r="17" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="240" y="165" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:12px">× 4</text><circle cx="402" cy="100" r="17" style="fill:var(--paper);stroke:var(--ink2);stroke-width:1.3"/><text x="402" y="105" class="svgt" text-anchor="middle" style="fill:var(--ink);font-size:16px">+</text><text x="40" y="104" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:13px">x</text><text x="530" y="105" class="svgm" text-anchor="start" style="fill:var(--ink2);font-size:13px">f</text><text x="80" y="92" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">2</text><text x="80" y="120" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">3 + 4 = 7</text><text x="150" y="64" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">2</text><text x="185" y="82" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">3</text><text x="150" y="108" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">2</text><text x="185" y="150" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">4</text><text x="316" y="55" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">6</text><text x="326" y="84" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">1</text><text x="326" y="124" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">8</text><text x="316" y="152" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">1</text><text x="470" y="92" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">14</text><text x="470" y="120" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">1</text></svg>
+    <figcaption>보충 예시. <i>x</i> = 2가 × 3과 × 4 두 갈래로 쓰여 <i>f</i> = 3<i>x</i> + 4<i>x</i>입니다. 역전파 때 두 갈래에서 돌아오는 3과 4를 더해 ∂<i>f</i>/∂<i>x</i> = 7입니다. 실제로 <i>f</i> = 7<i>x</i>이므로 맞습니다. 위는 순전파 값, 아래는 그래디언트입니다.</figcaption>
+  </figure>
   <aside class="wait"><b>잠깐, 가중치는 언제 바꾸나요?</b> 강의 중에 나온 질문입니다. 역전파는 그래디언트를 구하는 데까지입니다. 가중치를 실제로 바꾸는 일은 지난 강의의 최적화, 즉 1차에서 본 경사하강법이 그래디언트를 받아서 합니다.</aside>
 
   <h3>벡터</h3>
@@ -518,8 +522,8 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
 <section class="page ch" id="ch4" hidden>
   <p class="chno">4장</p>
   <h2>첫 신경망</h2>
-  <p class="src">영상: <a href="https://www.youtube.com/watch?v=d14TUNcbn1k&t=3277" target="_blank" rel="noopener">Stanford CS231n 2017, Lecture 4</a> 54:37~64:20, 70:16~73:59 · 총 복습: 3Blue1Brown 한국어 DL1~4 (링크)</p>
-  <div class="card"><div><span>질문</span>뉴런과 활성화 함수로 만든 신경망은 어떤 모양이고, 어떻게 학습할까요?</div><div><span>키워드</span>2층 신경망 · 은닉층 · 완전연결층 · 행렬 표기 · 총 복습</div><div><span>연결</span>1장의 역전파, 2장의 뉴런, 3장의 활성화 함수, 1차의 경사하강법을 합칩니다.</div></div>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=d14TUNcbn1k&t=3277" target="_blank" rel="noopener">Stanford CS231n 2017, Lecture 4</a> 54:37~64:20, 70:16~73:59 · 뉴런 사슬의 역전파: 3Blue1Brown 한국어 DL4 0:04~5:44 · 총 복습: DL1~4 (링크)</p>
+  <div class="card"><div><span>질문</span>뉴런과 활성화 함수로 만든 신경망은 어떤 모양이고, 어떻게 학습할까요?</div><div><span>키워드</span>2층 신경망 · 은닉층 · 완전연결층 · 행렬 표기 · 뉴런 사슬의 역전파 · 총 복습</div><div><span>연결</span>1장의 역전파, 2장의 뉴런, 3장의 활성화 함수, 1차의 경사하강법을 합칩니다.</div></div>
 
   <h3>2층 신경망</h3>
   <p class="ask">선형 함수에서 신경망으로 어떻게 넘어가나요?</p>
@@ -556,6 +560,24 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <p>강의는 신경망을 쓰는 데 필요한 것은 이것이 전부이고, 역방향은 1장의 역전파로 모든 그래디언트를 구하면 된다고 마무리합니다. 생물과의 비유는 느슨할 뿐 신경망이 실제로 "신경"인 것은 아니라는 점도 다시 강조합니다.</p>
   <p class="take">신경망은 "가중합 + 바이어스 → 활성화 함수"인 층을 쌓은 함수이고, 역전파로 그래디언트를 구해 경사하강법으로 학습합니다.</p>
 
+  <h3>뉴런 사슬의 역전파</h3>
+  <p class="ask">신경망 안에서 가중치 하나의 그래디언트는 어떻게 구하나요?</p>
+  <p>CS231n 강의는 신경망의 구조까지 보여 주고, 그래디언트는 1장의 역전파로 구하면 된다고 마무리합니다. 이 계산을 신경망 위에서 직접 보여 주는 것은 3Blue1Brown DL4입니다. 이 절은 DL4의 앞부분(0:04~5:44)을 정리했습니다.</p>
+  <p>DL4는 층마다 뉴런이 하나뿐인 가장 단순한 신경망에서 마지막 가중치 하나의 그래디언트를 구합니다. 마지막 층에서는 이전 뉴런의 출력(액티베이션) <span class="m">a<sup>(L−1)</sup></span>에 가중치 <span class="m">w<sup>(L)</sup></span>를 곱하고 바이어스 <span class="m">b<sup>(L)</sup></span>를 더해 <span class="m">z<sup>(L)</sup></span>를 만들고, 시그모이드를 거쳐 출력 <span class="m">a<sup>(L)</sup></span>가 됩니다. 출력과 정답 <span class="m">y</span>의 차를 제곱한 것이 이 예시 하나의 <b>코스트(cost)</b> <span class="m">C₀</span>입니다. 코스트는 손실과 같은 뜻이고, 위첨자 (L)은 지수가 아니라 층 번호입니다.</p>
+  <div class="eq"><i>z</i><sup>(L)</sup> = <i>w</i><sup>(L)</sup><i>a</i><sup>(L−1)</sup> + <i>b</i><sup>(L)</sup>, &nbsp;&nbsp; <i>a</i><sup>(L)</sup> = σ(<i>z</i><sup>(L)</sup>), &nbsp;&nbsp; <i>C</i>₀ = (<i>a</i><sup>(L)</sup> − <i>y</i>)²</div>
+  <p>가중치를 조금 바꾸면 <span class="m">z</span>가 바뀌고, <span class="m">z</span>가 바뀌면 출력 <span class="m">a</span>가, <span class="m">a</span>가 바뀌면 코스트가 바뀝니다. 그래서 영상은 연쇄법칙으로 세 미분을 곱합니다.</p>
+  <div class="eq"><span class="frac"><span>∂<i>C</i>₀</span><span>∂<i>w</i><sup>(L)</sup></span></span> = <span class="c-amber"><i>a</i><sup>(L−1)</sup></span> · <span class="c-amber">σ′(<i>z</i><sup>(L)</sup>)</span> · <span class="c-amber">2(<i>a</i><sup>(L)</sup> − <i>y</i>)</span></div>
+  <p class="try"><b>재생해 보기 (보충 그림):</b> 같은 계산을 1장의 계산 그래프로 그리고, 끝에서부터 상류 × 국소를 곱해 갑니다. 값은 영상 화면(4:42)의 숫자이고, 그래디언트는 직접 계산했습니다.</p>
+  <figure class="fig" id="f-chain">
+    <svg viewBox="0 0 640 240" role="img" aria-label="층마다 뉴런 하나인 신경망의 마지막 층을 계산 그래프로 그리고 코스트에서 가중치까지 그래디언트를 구하는 과정"></svg>
+    <div class="ctrl">
+      <label for="ck2">단계</label><input type="range" id="ck2" min="0" max="6" step="any" value="0"><output id="ck2-o"></output>
+    </div>
+    <div class="read" id="chain-read"></div>
+  </figure>
+  <p>영상은 이 식을 하나씩 읽습니다. 마지막 항 <span class="m">a<sup>(L−1)</sup></span>는 이전 뉴런이 밝을수록(값이 클수록) 이 가중치의 영향이 크다는 뜻입니다. 바이어스로 미분하면 <span class="m">∂z/∂b</span> = 1이라 그 자리에 1이 들어가고, 이전 뉴런으로 미분하면 <span class="m">∂z/∂a<sup>(L−1)</sup></span> = <span class="m">w<sup>(L)</sup></span>가 들어갑니다. 이전 뉴런의 출력은 직접 바꿀 수 없지만, 이 값을 알면 같은 과정을 앞 층의 가중치와 바이어스로 이어 갈 수 있습니다. 이것이 역전파입니다. 전체 코스트는 모든 훈련 예시의 평균이므로, 그래디언트도 예시마다 구한 값의 평균입니다.</p>
+  <p class="take">신경망의 역전파도 1장과 같습니다. 노드마다 국소 그래디언트를 곱해 앞으로 넘기면, 모든 가중치와 바이어스의 그래디언트가 나옵니다.</p>
+
   <h3>총 복습</h3>
   <p class="ask">지금까지 배운 것이 실제 신경망에서는 어떻게 쓰이나요?</p>
   <p>커리큘럼은 배운 뉴런과 활성화 함수로 첫 완전한 신경망을 만들고, 경사하강법으로 학습시키는 과정을 3Blue1Brown 한국어 DL 시리즈 네 편으로 복습합니다. 이 노트에서는 영상 링크와, 1~3장에 나오지 않은 개념이 어느 영상에 나오는지만 정리합니다.</p>
@@ -569,7 +591,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <aside class="wait"><b>잠깐, 한국어판에서 주의할 곳이 있나요?</b> 세 군데입니다. DL1 10:46쯤 "시그모이드는 0에서 0"이라는 말은 설명란에서 정정한 대로 0.5가 맞습니다. DL1 12:17쯤 자막의 "13,2개"는 13,002개의 음성 인식 오류입니다(784×16 + 16 + 16×16 + 16 + 16×10 + 10). DL4 8:45쯤 화면의 Σ 아래 "모든 레이어의 합"은 원본(sum over layer L)의 뜻으로는 "L층의 모든 뉴런에 대한 합"입니다.</aside>
   <aside class="wait"><b>(한국어판 추가)</b> 원본 영상 끝의 인터뷰 대신 번역자가 직접 설명한 내용입니다. DL1 끝에서는 시그모이드가 요즘은 많이 쓰이지 않고 ReLU 계열을 주로 쓴다고, 시그모이드는 훈련이 느리고 그래디언트가 사라지기도 한다고 설명합니다. DL2 끝에서는 레이블을 무작위로 섞은 데이터로도 신경망이 훈련 데이터를 외울 수 있다는 연구와, 무작위 레이블에서는 손실이 천천히, 제대로 된 데이터에서는 빠르게 떨어진다는 연구를 소개합니다.</aside>
 
-  <div class="recap"><b>4장 키워드</b>: 2층 신경망 f = W₂ max(0, W₁x), 층을 더 쌓으면 딥 신경망. 층은 완전연결층이고, 층 하나는 행렬 곱 한 번으로 계산합니다. "2층" = "은닉층 1개". 이 신경망의 그래디언트는 역전파로, 학습은 경사하강법으로 합니다.<br>2차는 여기까지입니다. 총 복습 영상 DL1~4에서 손글씨 숫자 신경망으로 전체 과정을 다시 확인할 수 있습니다.</div>
+  <div class="recap"><b>4장 키워드</b>: 2층 신경망 f = W₂ max(0, W₁x), 층을 더 쌓으면 딥 신경망. 층은 완전연결층이고, 층 하나는 행렬 곱 한 번으로 계산합니다. "2층" = "은닉층 1개". 이 신경망의 그래디언트는 역전파로, 학습은 경사하강법으로 합니다. 뉴런 사슬에서 ∂C₀/∂w = a<sup>(L−1)</sup> · σ′(z) · 2(a − y)는 국소 그래디언트 세 개의 곱입니다.<br>2차는 여기까지입니다. 총 복습 영상 DL1~4에서 손글씨 숫자 신경망으로 전체 과정을 다시 확인할 수 있습니다.</div>
 </section>
 
 <section class="page" id="glossary" hidden>
@@ -602,6 +624,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <tr><td>에폭 (epoch)</td><td>훈련 데이터 전체를 한 번 다 쓰는 학습 단위</td><td><a href="#ch3">3</a></td></tr>
     <tr><td>은닉층 (hidden layer, 히든 레이어)</td><td>입력층과 출력층 사이의 층</td><td><a href="#ch4">4</a></td></tr>
     <tr><td>완전연결층 (fully-connected layer, 풀리 커넥티드 레이어)</td><td>앞 층의 모든 뉴런이 다음 층의 모든 뉴런과 연결된 층. 행렬 곱 한 번으로 계산</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>코스트 (cost, 코스트)</td><td>손실과 같은 뜻. 3Blue1Brown이 쓰는 말</td><td><a href="#ch4">4</a></td></tr>
     <tr><td>딥 신경망</td><td>층을 여러 개 깊게 쌓은 신경망</td><td><a href="#ch4">4</a></td></tr>
     <tr><td>미니배치 (mini-batch) · 확률적 경사하강법 (SGD, 에스지디)</td><td>훈련 데이터를 작은 묶음으로 나눠 묶음마다 한 걸음씩 가는 경사하강법 (DL3)</td><td><a href="#ch4">4</a></td></tr>
   </table></div>
@@ -850,6 +873,39 @@ function relu(){
   $('relu-read').innerHTML=`은닉 뉴런 1: w₁x + b₁ = ${f(x-1,2)} → ReLU ${f(RL(x-1),2)} · 은닉 뉴런 2: w₂x + b₂ = ${f(-x-1,2)} → ReLU ${f(RL(-x-1),2)} (보충 예시)`;
 }
 bind(['rl','rr','rx'],relu);
+
+/* ---------- 6. 뉴런 사슬의 역전파 (DL4) ---------- */
+const SUP=(b,s)=>`${b}<tspan dy="-6" style="font-size:10px">${s}</tspan>`;
+function chain(){
+  const k=+$('ck2').value, fw=op01(k,1), gC=op01(k,2), gL=op01(k,3), gS=op01(k,4), gA=op01(k,5), gM=op01(k,6);
+  let s='';
+  s+=EDGE(52,62,155,103,'0.48',fw,'−0.15w',gM,0.45);
+  s+=EDGE(52,158,155,117,'',0,'−0.073',gM,0.45);
+  s+=EDGE(186,110,254,110,'',0,'−0.15',gA,0.5);
+  s+=EDGE(232,200,262,125,'',0,'',0,0.5);
+  s+=EDGE(286,110,364,110,'z',fw,'−0.15',gS,0.5);
+  s+=EDGE(396,110,488,110,'0.66',fw,'−0.68',gL,0.5);
+  s+=L(510,200,510,132,'ink2',1.2);
+  s+=EDGE(532,110,596,110,'0.12',fw,'1.00',gC,0.5);
+  if(fw>0) s+=`<g style="opacity:${fw}">${T(520,175,'1.00',{c:'blue'})}</g>`;
+  if(gA>0) s+=`<g style="opacity:${gA}">${T(232,170,'−0.15',{c:'green',a:'end'})}</g>`;
+  s+=NODE(170,110,16,'×',16)+NODE(270,110,16,'+',16)+NODE(380,110,16,'σ',15)+NODE(510,110,22,'(·−y)²',11);
+  s+=T(44,66,SUP('a','(L−1)'),{m:1,a:'end'})+T(44,163,SUP('w','(L)'),{m:1,a:'end'});
+  s+=T(232,222,SUP('b','(L)'),{m:1,a:'middle'})+T(510,222,'y',{m:1,a:'middle'})+T(604,115,'C₀',{m:1});
+  const ann=(o,x,y,str)=>o>0?`<g style="opacity:${o}">${T(x,y,str,{c:'amber',a:'middle'})}</g>`:'';
+  s+=ann(gL,520,62,'∂C₀/∂a = 2(a − y)');
+  s+=ann(gS,380,36,"σ′ = a(1 − a) ≈ 0.22");
+  s+=ann(gA,262,62,'∂z/∂b = 1');
+  s+=ann(gM,160,36,'∂z/∂w = a(L−1)');
+  $('f-chain').querySelector('svg').innerHTML=s;
+  $('ck2-o').textContent=f(k,1);
+  const R=[];
+  if(k>=1) R.push('<span class="c-blue">a(L−1) = 0.48, a(L) = 0.66, y = 1.00, C₀ ≈ 0.12</span>');
+  if(k>=6) R.push('<span class="c-green">∂C₀/∂w ≈ −0.073, ∂C₀/∂b ≈ −0.15</span>');
+  $('chain-read').innerHTML=(R.join(' · ')||'z = w·a(L−1) + b, a = σ(z), C₀ = (a − y)²')+(k>=1?' (값은 영상, 그래디언트는 보충 계산)':'');
+}
+bind(['ck2'],chain);
+
 })();
 </script>
 
@@ -1016,6 +1072,16 @@ SCENES['f-relu']=[
   {dur:5.5, set:{rr:1}, cap:`두 은닉 뉴런에 ReLU를 넣으면 출력이 ${bc('violet','꺾인 선')}이 됩니다.`, line:'ReLU 있음: <i>y</i> = ReLU(<i>x</i> − 1) + 0.5 · ReLU(−<i>x</i> − 1)'},
   {dur:7, set:{rx:-2.5}, move:[0.05,0.95], cap:'x가 1보다 크면 첫 뉴런만, −1보다 작으면 둘째 뉴런만 켜지고, 그 사이에서는 둘 다 0입니다.'},
   {dur:4.5, cap:'선형 결합으로는 만들 수 없는 모양입니다. 뉴런이 많아질수록 더 복잡한 모양을 만들 수 있습니다.'}
+];
+
+SCENES['f-chain']=[
+  {dur:5.5, cut:{ck2:0}, cap:'DL4의 가장 단순한 신경망: 층마다 뉴런이 하나입니다. 마지막 층의 계산을 1장처럼 계산 그래프로 그립니다.', line:'<i>z</i> = <i>w</i>·<i>a</i><sup>(L−1)</sup> + <i>b</i>, &nbsp;<i>a</i> = σ(<i>z</i>), &nbsp;<i>C</i>₀ = (<i>a</i> − <i>y</i>)²'},
+  {dur:5.5, set:{ck2:1}, cap:`순전파: 이전 뉴런 0.48, 출력 0.66, 정답 1.00입니다(영상 4:42). 코스트는 (0.66 − 1)² ≈ 0.12입니다(보충 계산).`},
+  {dur:4.5, set:{ck2:2}, cap:`역전파는 끝에서 시작합니다. ${bc('green','∂C₀/∂C₀ = 1')}입니다.`, line:'∂<i>C</i>₀/∂<i>C</i>₀ = 1'},
+  {dur:5.5, set:{ck2:3}, cap:`코스트 노드의 ${bc('amber','국소 그래디언트')}는 2(a − y) = 2 × (0.66 − 1) = −0.68입니다. 1 × (−0.68)을 앞으로 넘깁니다.`, line:'∂<i>C</i>₀/∂<i>a</i> = 2(<i>a</i> − <i>y</i>) = −0.68'},
+  {dur:6, set:{ck2:4}, cap:`시그모이드 노드의 국소 그래디언트는 1장에서 본 σ′ = a(1 − a) = 0.66 × 0.34 ≈ 0.22입니다. 상류 −0.68에 곱하면 −0.15입니다.`, line:'∂<i>C</i>₀/∂<i>z</i> = −0.68 × 0.22 ≈ −0.15'},
+  {dur:5.5, set:{ck2:5}, cap:`덧셈 노드는 분배기라 −0.15를 양쪽에 그대로 넘깁니다. 바이어스의 그래디언트는 −0.15입니다.`, line:'∂<i>C</i>₀/∂<i>b</i> ≈ −0.15'},
+  {dur:7, set:{ck2:6}, cap:`곱셈 노드는 스위처라 w 쪽에는 상대편 값 0.48을 곱해 −0.073을, 이전 뉴런 쪽에는 w를 곱해 넘깁니다. 세 국소 그래디언트를 곱한 DL4의 식과 같습니다.`, line:'∂<i>C</i>₀/∂<i>w</i> = <i>a</i><sup>(L−1)</sup> · σ′(<i>z</i>) · 2(<i>a</i> − <i>y</i>) ≈ 0.48 × 0.22 × (−0.68) ≈ −0.073'}
 ];
 
 initScenes();
