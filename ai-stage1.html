@@ -307,7 +307,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <p class="ask">직선은 식으로 어떻게 쓰나요?</p>
   <p>3분 선형회귀 영상은 익숙한 일차함수 식으로 설명합니다.</p>
   <div class="eq"><i>y</i> = <i>m</i><i>x</i> + <i>b</i></div>
-  <p><span class="m">y</span>는 출력 변수로, <b>종속 변수</b>라고도 부르고 <span class="m">f(x)</span>로 쓰기도 합니다. <span class="m">x</span>는 입력 변수로, <b>독립 변수</b>라고도 부릅니다. 영상은 두 계수 <span class="m">m</span>과 <span class="m">b</span>를 각각 <span class="m">β₁</span>, <span class="m">β₀</span>으로 쓰는 경우도 많다고 덧붙입니다.</p>
+  <p><span class="m">y</span>는 출력 변수로, <b>종속 변수</b>라고도 부르고 <span class="m">f(x)</span>로 쓰기도 합니다. <span class="m">x</span>는 입력 변수로, <b>독립 변수</b>라고도 부릅니다. 영상은 두 계수 <span class="m">m</span>과 <span class="m">b</span>를 각각 <span class="m">β₁</span>(베타 원), <span class="m">β₀</span>(베타 제로)으로 쓰는 경우도 많다고 덧붙입니다.</p>
   <p>StatQuest 영상은 같은 직선을 기호 대신 말로 씁니다. 이 노트도 3장부터는 이 표기를 씁니다.</p>
   <div class="eq">예측 키 = <span class="c-violet">절편</span> + <span class="c-violet">기울기</span> × 몸무게</div>
   <div class="tbl"><table>
@@ -335,7 +335,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
 
   <h3>여러 입력</h3>
   <p class="ask">입력이 몸무게 하나가 아니라 여러 개면요?</p>
-  <p>영상은 입력 변수를 <span class="m">x₁, x₂, x₃, …</span>로 늘릴 수 있고, 변수마다 <span class="m">β₁, β₂, β₃, …</span>가 그 변수의 기울기 역할을 한다고 설명합니다. 화면에는 입력이 다섯 개인 식이 나옵니다.</p>
+  <p>영상은 입력 변수를 <span class="m">x₁, x₂, x₃, …</span>(엑스 원, 엑스 투, …)로 늘릴 수 있고, 변수마다 <span class="m">β₁, β₂, β₃, …</span>가 그 변수의 기울기 역할을 한다고 설명합니다. 화면에는 입력이 다섯 개인 식이 나옵니다.</p>
   <div class="eq"><i>y</i> = <i>β</i>₅<i>x</i>₅ + <i>β</i>₄<i>x</i>₄ + <i>β</i>₃<i>x</i>₃ + <i>β</i>₂<i>x</i>₂ + <i>β</i>₁<i>x</i>₁ + <i>β</i>₀</div>
   <p>이렇게 차원이 높아지면 직선 대신 <b>초평면(hyperplane)</b>으로 시각화한다고 영상은 설명합니다. 입력이 두 개면 점들이 3차원 공간에 놓이고, 직선 대신 평면을 맞춥니다(보충).</p>
   <figure class="fig mini">
@@ -564,7 +564,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     </div>
     <div class="read" id="slice-read"></div>
   </figure>
-  <aside class="need"><b>필요한 미분</b><a href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html#ch5" target="_blank" rel="noopener">미적분 5장. 합·곱·합성의 미분</a> — 연쇄법칙<br>편미분 (보충) — 변수가 여러 개인 함수에서 하나만 변수로 보고 나머지는 상수로 둔 채 미분하는 것. 영상은 이 이름을 쓰지 않고 "절편에 대해(with respect to the intercept)", "기울기에 대해"라고 말합니다. 기호로는 <span class="m">∂SSR/∂<span class="k">절편</span></span>처럼 d 대신 ∂를 씁니다.</aside>
+  <aside class="need"><b>필요한 미분</b><a href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html#ch5" target="_blank" rel="noopener">미적분 5장. 합·곱·합성의 미분</a> — 연쇄법칙<br>편미분 (보충) — 변수가 여러 개인 함수에서 하나만 변수로 보고 나머지는 상수로 둔 채 미분하는 것. 영상은 이 이름을 쓰지 않고 "절편에 대해(with respect to the intercept)", "기울기에 대해"라고 말합니다. 기호로는 <span class="m">∂SSR/∂<span class="k">절편</span></span>처럼 d 대신 ∂(파셜, 라운드 디)를 씁니다.</aside>
 
   <h3>그래디언트</h3>
   <p class="ask">"경사하강법"이라는 이름은 어디서 왔나요?</p>
@@ -635,35 +635,36 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <tr><td>선형회귀</td><td>출력 변수와 입력 변수 사이의 관계를 직선(입력이 여러 개면 초평면)으로 모델링하는 기법</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>출력 변수 · 종속 변수</td><td>예측하려는 값 <span class="m">y</span>. 예: 키</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>입력 변수 · 독립 변수</td><td>예측에 쓰는 값 <span class="m">x</span>. 예: 몸무게</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>기울기 (slope)</td><td>직선의 기울기 <span class="m">m</span>, <span class="m">β₁</span></td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>절편 (intercept) · bias</td><td>직선이 세로축과 만나는 높이 <span class="m">b</span>, <span class="m">β₀</span></td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>초평면 (hyperplane)</td><td>입력이 여러 개일 때 직선 대신 맞추는 평평한 면</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>기울기 (slope, 슬로프)</td><td>직선의 기울기 <span class="m">m</span>, <span class="m">β₁</span></td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>절편 (intercept, 인터셉트) · bias (바이어스)</td><td>직선이 세로축과 만나는 높이 <span class="m">b</span>, <span class="m">β₀</span></td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>초평면 (hyperplane, 하이퍼플레인)</td><td>입력이 여러 개일 때 직선 대신 맞추는 평평한 면</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>훈련 데이터 · 테스트 데이터</td><td>직선을 맞추는 데 쓰는 데이터 · 맞춘 직선을 확인하는 데 쓰는 데이터</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>잔차 (residual)</td><td>실제 값과 직선의 예측값의 차이 <span class="m">y − ŷ</span></td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>손실함수 (loss function)</td><td>직선이 데이터와 얼마나 어긋나는지를 나타내는 숫자. 이를 가장 작게 만드는 계수를 찾음</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>SSR · SSE</td><td>잔차 제곱의 합(StatQuest) · 제곱 오차의 합(3분 선형회귀). 같은 값</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>평균 제곱 오차 (MSE)</td><td>잔차 제곱의 평균. cantus 영상은 ½을 곱한 1/(2m) Σ(y − ŷ)²을 씀</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>평균 절대 오차 (MAE)</td><td>잔차의 크기 |y − ŷ|의 평균</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>경사하강법 (gradient descent)</td><td>시작값에서 손실 곡선의 기울기를 보고 한 걸음씩 움직여 손실이 가장 작은 곳을 찾는 방법</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td>최소제곱법 (least squares)</td><td>SSR 곡선의 기울기가 0인 곳을 바로 풀어 구하는 방법</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td>학습률 (learning rate)</td><td>기울기에 곱해 걸음 크기를 정하는 작은 수. 3장 예시는 0.1</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td>Step Size</td><td>한 번에 움직이는 양. 기울기 × 학습률</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>잔차 (residual, 레지듀얼)</td><td>실제 값과 직선의 예측값의 차이 <span class="m">y − ŷ</span></td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>손실함수 (loss function, 로스 펑션)</td><td>직선이 데이터와 얼마나 어긋나는지를 나타내는 숫자. 이를 가장 작게 만드는 계수를 찾음</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>SSR (에스에스알) · SSE (에스에스이)</td><td>잔차 제곱의 합(StatQuest) · 제곱 오차의 합(3분 선형회귀). 같은 값</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>평균 제곱 오차 (MSE, 엠에스이)</td><td>잔차 제곱의 평균. cantus 영상은 ½을 곱한 1/(2m) Σ(y − ŷ)²을 씀</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>평균 절대 오차 (MAE, 엠에이이)</td><td>잔차의 크기 |y − ŷ|의 평균</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>경사하강법 (gradient descent, 그레이디언트 디센트)</td><td>시작값에서 손실 곡선의 기울기를 보고 한 걸음씩 움직여 손실이 가장 작은 곳을 찾는 방법</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>최소제곱법 (least squares, 리스트 스퀘어스)</td><td>SSR 곡선의 기울기가 0인 곳을 바로 풀어 구하는 방법</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>학습률 (learning rate, 러닝 레이트)</td><td>기울기에 곱해 걸음 크기를 정하는 작은 수. 3장 예시는 0.1</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>Step Size (스텝 사이즈)</td><td>한 번에 움직이는 양. 기울기 × 학습률</td><td><a href="#ch3">3</a></td></tr>
     <tr><td>파라미터</td><td>경사하강법으로 구하는 값. 여기서는 절편과 기울기</td><td><a href="#ch4">4</a></td></tr>
     <tr><td>편미분</td><td>변수가 여럿인 함수에서 하나만 변수로 보고 나머지는 상수로 둔 채 미분하는 것 (영상에는 이 용어가 나오지 않음)</td><td><a href="#ch4">4</a></td></tr>
-    <tr><td>그래디언트 (gradient)</td><td>한 함수를 각 파라미터로 미분한 값들의 묶음</td><td><a href="#ch4">4</a></td></tr>
-    <tr><td>확률적 경사하강법 (SGD)</td><td>매 걸음마다 데이터 일부를 무작위로 골라 미분을 계산하는 경사하강법</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>그래디언트 (gradient, 그레이디언트)</td><td>한 함수를 각 파라미터로 미분한 값들의 묶음</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>확률적 경사하강법 (SGD, 에스지디)</td><td>매 걸음마다 데이터 일부를 무작위로 골라 미분을 계산하는 경사하강법</td><td><a href="#ch4">4</a></td></tr>
   </table></div>
   <h3>기호</h3>
+  <p class="note">읽는 법은 흔히 쓰는 읽기입니다. 여러 가지로 읽는 기호는 함께 적었습니다. (보충)</p>
   <div class="tbl"><table>
-    <tr><th>기호</th><th>뜻</th><th>장</th></tr>
-    <tr><td class="m">y = mx + b</td><td>기울기 m, 절편 b인 직선</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td class="m">β₀, β₁</td><td>절편 b, 기울기 m의 다른 표기</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td class="m">ŷ</td><td>와이 햇. 직선의 예측값</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td class="m">Σ</td><td>시그마. 뒤의 값을 모두 더함</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td class="m">m (2<span class="k">장</span>)</td><td>cantus 식에서 데이터 개수. 1장의 기울기 m과 다름</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td class="m">d SSR / d <span class="k">절편</span></td><td>SSR을 절편으로 미분한 것. 그 절편에서 SSR 곡선의 기울기</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td class="m">∂</td><td>편미분 기호 (보충). ∂SSR/∂절편</td><td><a href="#ch4">4</a></td></tr>
-    <tr><td class="m">x₁, x₂, …</td><td>여러 입력 변수</td><td><a href="#ch1">1</a></td></tr>
+    <tr><th>기호</th><th>읽는 법</th><th>뜻</th><th>장</th></tr>
+    <tr><td class="m">y = mx + b</td><td>와이 이퀄 엠엑스 플러스 비</td><td>기울기 m, 절편 b인 직선</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">β₀, β₁</td><td>베타 제로(베타 노트), 베타 원</td><td>절편 b, 기울기 m의 다른 표기</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">x₁, x₂, …</td><td>엑스 원, 엑스 투</td><td>여러 입력 변수</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">ŷ</td><td>와이 햇</td><td>직선의 예측값</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td class="m">Σ</td><td>시그마</td><td>뒤의 값을 모두 더함</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td class="m">m (2<span class="k">장</span>)</td><td>엠</td><td>cantus 식에서 데이터 개수. 1장의 기울기 m과 다름</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td class="m">d SSR / d <span class="k">절편</span></td><td>디 에스에스알 디 절편</td><td>SSR을 절편으로 미분한 것. 그 절편에서 SSR 곡선의 기울기</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td class="m">∂</td><td>파셜 (라운드 디, 델)</td><td>편미분 기호 (보충). ∂SSR/∂절편</td><td><a href="#ch4">4</a></td></tr>
   </table></div>
 </section>
 

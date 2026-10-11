@@ -301,7 +301,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <div class="eq"><i>f</i>(<i>x</i>, <i>y</i>, <i>z</i>) = (<i>x</i> + <i>y</i>)<i>z</i>, &nbsp;&nbsp; <i>x</i> = −2, <i>y</i> = 5, <i>z</i> = −4</div>
   <p>먼저 계산 그래프를 그립니다. 덧셈 노드에서 <span class="m">x + y</span>를 계산하고, 그 결과에 곱셈 노드에서 <span class="m">z</span>를 곱합니다. 중간값에는 이름을 붙입니다. 덧셈 노드의 출력을 <span class="m">q</span>라고 하면 <span class="m">q = x + y</span>, <span class="m">f = qz</span>입니다. 입력값을 넣어 앞에서부터 계산하는 것을 <b>순전파(forward pass)</b>라고 합니다. <span class="m">q</span> = −2 + 5 = 3, <span class="m">f</span> = 3 × (−4) = −12입니다.</p>
   <p>각 노드의 미분도 적어 둡니다. 덧셈 <span class="m">q = x + y</span>는 <span class="m">∂q/∂x = 1</span>, <span class="m">∂q/∂y = 1</span>이고, 곱셈 <span class="m">f = qz</span>는 <span class="m">∂f/∂q = z</span>, <span class="m">∂f/∂z = q</span>입니다. 구하려는 것은 <span class="m">∂f/∂x</span>, <span class="m">∂f/∂y</span>, <span class="m">∂f/∂z</span>입니다.</p>
-  <aside class="wait"><b>잠깐, ∂는 무엇인가요?</b> (보충) 변수가 여럿인 함수에서 한 변수만 바꾸며 미분할 때 d 대신 쓰는 기호로, "편미분"이라고 읽습니다. 1차 4장에서 절편과 기울기를 하나씩 미분한 것과 같습니다. <span class="m">∂f/∂x</span>는 "<span class="m">x</span>를 조금 바꿀 때 <span class="m">f</span>가 얼마나 변하는가"입니다.</aside>
+  <aside class="wait"><b>잠깐, ∂는 무엇인가요?</b> (보충) 변수가 여럿인 함수에서 한 변수만 바꾸며 미분할 때 d 대신 쓰는 기호로, "파셜"(또는 "라운드 디", "델")이라고 읽고 편미분을 나타냅니다. 1차 4장에서 절편과 기울기를 하나씩 미분한 것과 같습니다. <span class="m">∂f/∂x</span>는 "<span class="m">x</span>를 조금 바꿀 때 <span class="m">f</span>가 얼마나 변하는가"입니다.</aside>
 
   <h3>역전파</h3>
   <p class="ask">뒤에서부터 미분을 구하면요?</p>
@@ -356,7 +356,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
 
   <h3>노드 묶기</h3>
   <p class="ask">노드는 꼭 덧셈·곱셈 단위로 쪼개야 하나요?</p>
-  <p>아닙니다. 국소 그래디언트만 적을 수 있으면 노드를 원하는 크기로 묶을 수 있습니다. 강의는 위 예의 뒷부분이 <b>시그모이드 함수</b>라는 점을 보여 줍니다.</p>
+  <p>아닙니다. 국소 그래디언트만 적을 수 있으면 노드를 원하는 크기로 묶을 수 있습니다. 강의는 위 예의 뒷부분이 <b>시그모이드 함수</b> σ(시그마)라는 점을 보여 줍니다.</p>
   <div class="eq"><i>σ</i>(<i>x</i>) = <span class="frac"><span>1</span><span>1 + <i>e</i><sup>−<i>x</i></sup></span></span>, &nbsp;&nbsp; <span class="frac"><span><i>dσ</i>(<i>x</i>)</span><span><i>dx</i></span></span> = (1 − <i>σ</i>(<i>x</i>)) <i>σ</i>(<i>x</i>)</div>
   <p>×(−1), 지수, +1, 역수의 네 노드를 시그모이드 노드 하나로 바꾸면, 입력 1에서 출력 0.73이고 국소 그래디언트는 (1 − 0.73) × 0.73 ≈ 0.2입니다. 상류 그래디언트 1을 곱하면 0.2로, 네 노드로 쪼개 계산한 값과 같습니다. 노드를 크게 묶으면 그래프가 간결해지지만 국소 그래디언트를 미리 유도해야 하고, 작게 쪼개면 각 국소 그래디언트가 단순해집니다. 강의는 이것을 둘 사이의 선택이라고 설명합니다.</p>
   <p>강의자는 그래디언트를 구하기 어려울 때마다 계산 그래프로 쪼개고 연쇄법칙을 쓰면 된다는 점이 마음을 편하게 해 준다고 말합니다.</p>
@@ -380,7 +380,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <h3>벡터</h3>
   <p class="ask">변수가 숫자가 아니라 벡터면요?</p>
   <p>흐름은 똑같고, 그래디언트가 <b>야코비 행렬(Jacobian)</b>이 된다는 점만 다릅니다. 야코비 행렬은 출력의 각 성분을 입력의 각 성분으로 미분한 값을 모은 행렬입니다. 강의의 예로, 4096차원 벡터에 원소마다 <span class="m">max(0, x)</span>를 적용하는 노드는 야코비 행렬이 4096 × 4096이고, 입력 100개를 한 번에 처리하면 409,600 × 409,600이 됩니다. 하지만 원소별 연산이라 입력의 한 성분은 출력의 같은 성분에만 영향을 주므로 이 행렬은 대각 행렬이고, 실제로는 만들지 않습니다.</p>
-  <p>강의는 <span class="m">f(x, W) = ‖W·x‖²</span>(<span class="m">x</span>는 n차원, <span class="m">W</span>는 n × n)도 같은 방법으로 풉니다. <span class="m">q = Wx</span>로 두면 <span class="m">∂f/∂q = 2q</span>, <span class="m">∂f/∂W = 2q·xᵀ</span>, <span class="m">∂f/∂x = 2Wᵀq</span>입니다. 그리고 <b>변수에 대한 그래디언트는 그 변수와 모양이 같다</b>는 점을 검산에 쓰라고 권합니다. 그래디언트의 각 성분은 변수의 그 성분이 최종 출력에 얼마나 영향을 주는지를 나타내기 때문입니다.</p>
+  <p>강의는 <span class="m">f(x, W) = ‖W·x‖²</span>(<span class="m">x</span>는 n차원, <span class="m">W</span>는 n × n)도 같은 방법으로 풉니다. <span class="m">q = Wx</span>로 두면 <span class="m">∂f/∂q = 2q</span>, <span class="m">∂f/∂W = 2q·xᵀ</span>, <span class="m">∂f/∂x = 2Wᵀq</span>입니다. ᵀ는 "트랜스포즈"(전치), ‖ ‖²는 "노름 제곱"이라고 읽습니다. 그리고 <b>변수에 대한 그래디언트는 그 변수와 모양이 같다</b>는 점을 검산에 쓰라고 권합니다. 그래디언트의 각 성분은 변수의 그 성분이 최종 출력에 얼마나 영향을 주는지를 나타내기 때문입니다.</p>
 
   <h3>구현</h3>
   <p class="ask">코드로는 어떻게 짜나요?</p>
@@ -583,38 +583,39 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <tr><td>수치적 그래디언트 · 해석적 그래디언트</td><td>값을 조금 바꿔 차이로 근사한 그래디언트 · 미분 식으로 정확히 구한 그래디언트</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>계산 그래프</td><td>함수를 계산 단계(노드)와 값이 흐르는 선으로 나타낸 그림</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>노드 · 게이트</td><td>계산 그래프의 계산 단계 하나. 강의는 두 말을 섞어 씀</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>순전파 (forward pass)</td><td>입력값을 넣어 앞에서부터 값을 계산하는 것</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>역전파 (backpropagation)</td><td>끝에서부터 연쇄법칙을 거듭 적용해 모든 변수의 그래디언트를 구하는 방법</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>국소 그래디언트 (local gradient)</td><td>노드 출력을 그 노드의 입력으로 미분한 값</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>상류 그래디언트 (upstream gradient)</td><td>역전파 중 뒤쪽에서 넘어온, 최종 출력의 이 노드 출력에 대한 그래디언트</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>시그모이드 함수</td><td>σ(x) = 1/(1 + e⁻ˣ). 미분은 (1 − σ(x))σ(x)</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td>야코비 행렬 (Jacobian)</td><td>출력 벡터의 각 성분을 입력 벡터의 각 성분으로 미분한 값을 모은 행렬</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>순전파 (forward pass, 포워드 패스)</td><td>입력값을 넣어 앞에서부터 값을 계산하는 것</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>역전파 (backpropagation, 백프로퍼게이션)</td><td>끝에서부터 연쇄법칙을 거듭 적용해 모든 변수의 그래디언트를 구하는 방법</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>국소 그래디언트 (local gradient, 로컬 그레이디언트)</td><td>노드 출력을 그 노드의 입력으로 미분한 값</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>상류 그래디언트 (upstream gradient, 업스트림 그레이디언트)</td><td>역전파 중 뒤쪽에서 넘어온, 최종 출력의 이 노드 출력에 대한 그래디언트</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>시그모이드 함수 (sigmoid)</td><td>σ(x) = 1/(1 + e⁻ˣ). 미분은 (1 − σ(x))σ(x)</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>야코비 행렬 (Jacobian, 야코비안)</td><td>출력 벡터의 각 성분을 입력 벡터의 각 성분으로 미분한 값을 모은 행렬</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>위상 정렬</td><td>각 노드의 입력이 그 노드보다 먼저 오도록 노드를 늘어놓은 순서</td><td><a href="#ch1">1</a></td></tr>
     <tr><td>뉴런</td><td>입력에 가중치를 곱해 더하고 바이어스를 더한 뒤 활성화 함수를 거쳐 출력을 내는 신경망의 기본 단위</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>가중치 (weight)</td><td>연결의 세기. 입력에 곱하는 값</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>가중치 (weight, 웨이트)</td><td>연결의 세기. 입력에 곱하는 값</td><td><a href="#ch2">2</a></td></tr>
     <tr><td>바이어스 (bias)</td><td>가중합에 더하는 값</td><td><a href="#ch2">2</a></td></tr>
     <tr><td>가중합</td><td>입력에 가중치를 곱해 모두 더한 값</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td>활성화 함수 (activation function)</td><td>가중합(+바이어스)을 받아 뉴런의 출력으로 바꾸는 함수. 선형성을 깨는 역할</td><td><a href="#ch2">2</a>, <a href="#ch3">3</a></td></tr>
+    <tr><td>활성화 함수 (activation function, 액티베이션 펑션)</td><td>가중합(+바이어스)을 받아 뉴런의 출력으로 바꾸는 함수. 선형성을 깨는 역할</td><td><a href="#ch2">2</a>, <a href="#ch3">3</a></td></tr>
     <tr><td>파라미터</td><td>훈련으로 조정되는 값. 가중치와 바이어스</td><td><a href="#ch2">2</a></td></tr>
     <tr><td>선형 결합</td><td>변수에 숫자를 곱해 더한 꼴(ax + b). 선형 결합을 다시 선형 결합해도 선형 결합</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td>tanh</td><td>시그모이드와 같은 모양으로 −1과 1 사이의 값을 내는 함수</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td>ReLU</td><td>rectified linear unit. max(0, x): 음수는 0, 양수는 그대로</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>tanh (탄에이치, 하이퍼볼릭 탄젠트)</td><td>시그모이드와 같은 모양으로 −1과 1 사이의 값을 내는 함수</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>ReLU (렐루)</td><td>rectified linear unit. max(0, x): 음수는 0, 양수는 그대로</td><td><a href="#ch3">3</a></td></tr>
     <tr><td>에폭 (epoch)</td><td>훈련 데이터 전체를 한 번 다 쓰는 학습 단위</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td>은닉층 (hidden layer)</td><td>입력층과 출력층 사이의 층</td><td><a href="#ch4">4</a></td></tr>
-    <tr><td>완전연결층 (fully-connected layer)</td><td>앞 층의 모든 뉴런이 다음 층의 모든 뉴런과 연결된 층. 행렬 곱 한 번으로 계산</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>은닉층 (hidden layer, 히든 레이어)</td><td>입력층과 출력층 사이의 층</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>완전연결층 (fully-connected layer, 풀리 커넥티드 레이어)</td><td>앞 층의 모든 뉴런이 다음 층의 모든 뉴런과 연결된 층. 행렬 곱 한 번으로 계산</td><td><a href="#ch4">4</a></td></tr>
     <tr><td>딥 신경망</td><td>층을 여러 개 깊게 쌓은 신경망</td><td><a href="#ch4">4</a></td></tr>
-    <tr><td>미니배치 · 확률적 경사하강법 (SGD)</td><td>훈련 데이터를 작은 묶음으로 나눠 묶음마다 한 걸음씩 가는 경사하강법 (DL3)</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>미니배치 (mini-batch) · 확률적 경사하강법 (SGD, 에스지디)</td><td>훈련 데이터를 작은 묶음으로 나눠 묶음마다 한 걸음씩 가는 경사하강법 (DL3)</td><td><a href="#ch4">4</a></td></tr>
   </table></div>
   <h3>기호</h3>
+  <p class="note">읽는 법은 흔히 쓰는 읽기입니다. 여러 가지로 읽는 기호는 함께 적었습니다. (보충)</p>
   <div class="tbl"><table>
-    <tr><th>기호</th><th>뜻</th><th>장</th></tr>
-    <tr><td class="m">∂f/∂x</td><td>f를 x로 편미분한 값. x만 조금 바꿀 때 f의 변화율</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td class="m">σ(x)</td><td>시그모이드 함수</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td class="m">‖v‖²</td><td>벡터 v의 성분을 제곱해 더한 값</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td class="m">xᵀ, Wᵀ</td><td>전치. 행과 열을 바꾼 것</td><td><a href="#ch1">1</a></td></tr>
-    <tr><td class="m">Σ xᵢwᵢ</td><td>입력과 가중치를 곱해 모두 더한 가중합</td><td><a href="#ch2">2</a></td></tr>
-    <tr><td class="m">max(0, x)</td><td>ReLU</td><td><a href="#ch3">3</a></td></tr>
-    <tr><td class="m">W₁, W₂, h</td><td>1층·2층 가중치 행렬, 은닉층 값</td><td><a href="#ch4">4</a></td></tr>
+    <tr><th>기호</th><th>읽는 법</th><th>뜻</th><th>장</th></tr>
+    <tr><td class="m">∂f/∂x</td><td>파셜 에프 파셜 엑스 (라운드 디 에프 라운드 디 엑스, 델 에프 델 엑스)</td><td>f를 x로 편미분한 값. x만 조금 바꿀 때 f의 변화율</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">σ(x)</td><td>시그마 엑스 (소문자 시그마)</td><td>시그모이드 함수</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">‖v‖²</td><td>브이의 노름 제곱</td><td>벡터 v의 성분을 제곱해 더한 값</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">xᵀ, Wᵀ</td><td>엑스 트랜스포즈, 더블유 트랜스포즈</td><td>전치. 행과 열을 바꾼 것</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">Σ xᵢwᵢ</td><td>시그마 엑스 아이 더블유 아이</td><td>입력과 가중치를 곱해 모두 더한 가중합</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td class="m">max(0, x)</td><td>맥스 제로 엑스</td><td>ReLU</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td class="m">W₁, W₂, h</td><td>더블유 원, 더블유 투, 에이치</td><td>1층·2층 가중치 행렬, 은닉층 값</td><td><a href="#ch4">4</a></td></tr>
   </table></div>
 </section>
 
