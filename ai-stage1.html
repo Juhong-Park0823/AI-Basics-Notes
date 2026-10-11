@@ -950,7 +950,7 @@ function surf(){
   const lab=(e,vals,name)=>{const A=G[e.a],B=G[e.c],ga=GC[e.a],gb=GC[e.c];
     let o='';const mid=[(A[0]+B[0])/2,(A[1]+B[1])/2],dx=mid[0]-ctr[0],dy=mid[1]-ctr[1],dl=Math.hypot(dx,dy)||1,ox=dx/dl,oy=dy/dl;
     vals.forEach(v=>{const t=e.t==='b'?(v-ga[0])/(gb[0]-ga[0]):(v-ga[1])/(gb[1]-ga[1]); if(t<0||t>1) return;
-      const x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t; o+=L(x.toFixed(1),y.toFixed(1),(x+ox*5).toFixed(1),(y+oy*5).toFixed(1),'ink2',1)+T((x+ox*15).toFixed(1),(y+oy*15+4).toFixed(1),v,{a:'middle'});});
+      const x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t; o+=L(x.toFixed(1),y.toFixed(1),(x+ox*5).toFixed(1),(y+oy*5).toFixed(1),'ink2',1)+T((x+ox*18).toFixed(1),(y+oy*18+4).toFixed(1),v,{a:'middle'});});
     o+=T((mid[0]+ox*36).toFixed(1),(mid[1]+oy*36+4).toFixed(1),name,{a:'middle'});return o;};
   s+=lab(eb,[0,1],'절편')+lab(em,[0.5,1],'기울기');
   s+=items.map(o=>o.surf&&op<1?o.s.replace('<path ',`<path opacity="${op}" `):o.s).join('');
@@ -1066,7 +1066,7 @@ function slice(){
   const lab=(e,vals,name)=>{const A=G[e.a],B=G[e.c],ga=GC[e.a],gb=GC[e.c];
     let o='';const mid=[(A[0]+B[0])/2,(A[1]+B[1])/2],dx=mid[0]-ctr[0],dy=mid[1]-ctr[1],dl=Math.hypot(dx,dy)||1,ox=dx/dl,oy=dy/dl;
     vals.forEach(v=>{const t=e.t==='b'?(v-ga[0])/(gb[0]-ga[0]):(v-ga[1])/(gb[1]-ga[1]); if(t<0||t>1) return;
-      const x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t; o+=L(x.toFixed(1),y.toFixed(1),(x+ox*5).toFixed(1),(y+oy*5).toFixed(1),'ink2',1)+T((x+ox*15).toFixed(1),(y+oy*15+4).toFixed(1),v,{a:'middle'});});
+      const x=A[0]+(B[0]-A[0])*t,y=A[1]+(B[1]-A[1])*t; o+=L(x.toFixed(1),y.toFixed(1),(x+ox*5).toFixed(1),(y+oy*5).toFixed(1),'ink2',1)+T((x+ox*18).toFixed(1),(y+oy*18+4).toFixed(1),v,{a:'middle'});});
     o+=T((mid[0]+ox*36).toFixed(1),(mid[1]+oy*36+4).toFixed(1),name,{a:'middle'});return o;};
   s+=lab(eb,[-0.5,0.5],'절편')+lab(em,[0.5,1.5],'기울기');
   s+=items.map(o=>o.s).join('');
