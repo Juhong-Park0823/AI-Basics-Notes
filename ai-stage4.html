@@ -356,6 +356,15 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <h3>학습 과정<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=207" target="_blank" rel="noopener">3:27~3:56</a></span></h3>
   <p class="ask">학습하면 복원은 어떻게 바뀌나요?</p>
   <p>오토인코더는 이미지를 하나씩 처리하며 MSE를 줄이는 방향으로 배웁니다(방법은 1·2차의 경사하강법과 역전파입니다). 처음에는 가중치가 무작위라 복원 오차가 큽니다. 학습이 진행될수록 오차가 줄고, 복원한 이미지가 입력과 거의 같아집니다. 영상은 손실이 epoch마다 줄어드는 그래프와 숫자 0, 7의 복원 결과를 보여 줍니다.</p>
+  <p class="try"><b>재생해 보기:</b> 작은 숫자 이미지 하나가 인코더 → 숫자 2개 → 디코더를 거쳐 복원되고, MSE를 구한 뒤 학습으로 복원이 좋아지는 과정을 봅니다. 픽셀 값과 z는 보충 예시입니다.</p>
+  <figure class="fig" id="f-ae">
+    <svg viewBox="0 0 640 226" role="img" aria-label="5×5 숫자 7이 인코더를 거쳐 숫자 2개가 되고 디코더가 복원, MSE를 구하고 학습할수록 복원이 좋아짐"></svg>
+    <div class="ctrl">
+      <label for="aek">단계</label><input type="range" id="aek" min="0" max="3" step="any" value="0"><output id="aek-o"></output>
+      <label for="aet">학습</label><input type="range" id="aet" min="0" max="1" step="any" value="0"><output id="aet-o"></output>
+    </div>
+    <div class="read" id="ae-read"></div>
+  </figure>
   <p class="take">오토인코더는 인코더로 입력을 작은 표현으로 줄이고, 디코더로 다시 복원하며, 입력과 복원의 차이(MSE)를 줄이도록 학습합니다. 비교 대상이 입력 자신이라 정답이 필요 없습니다.</p>
 
   <p class="note">여기까지가 1장의 핵심입니다. 아래는 이미지용 오토인코더에 관한 커리큘럼 설명입니다.</p>
@@ -387,10 +396,16 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <p class="ask">잠재 공간은 어떻게 그려 볼 수 있나요?</p>
   <p>오토인코더의 큰 장점은 데이터의 <b>차원 축소</b>입니다. 잠재 공간의 차원은 병목 층의 뉴런 수로 정해집니다. 뉴런이 2개면 잠재 공간은 2차원이고, 뉴런 하나의 값을 가로축, 다른 하나를 세로축으로 삼아 이미지 하나를 평면 위 점 하나로 그릴 수 있습니다. 첫 뉴런이 강하게 활성화되면 점은 오른쪽에, 둘째 뉴런이 강하면 위쪽에 놓입니다.</p>
   <p>영상은 숫자 7 이미지들을 예로 듭니다. 잘 학습된 오토인코더라면 7들은 잠재 공간의 같은 영역에 모입니다. 숫자 4들도 무리(cluster)를 이루고, 이상적으로는 다른 숫자의 무리와 멀리 떨어집니다. 학습하는 동안 잠재 공간이 숫자마다 자기 영역을 갖도록 "정리"되는 것입니다.</p>
-  <figure class="fig mini">
-    <svg viewBox="0 0 640 262" role="img" aria-label="잠재 공간 평면에 숫자 1, 4, 7이 무리를 이루고 새 이미지는 가장 가까운 7 무리로 분류"><line x1="70" y1="230" x2="290" y2="230" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="290.0,230.0 283.7,233.0 283.7,227.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="70" y1="230" x2="70" y2="10" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="70.0,10.0 73.0,16.3 67.0,16.3" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="294" y="234" class="svgm" text-anchor="start" style="fill:var(--ink2);font-size:15px">z₁</text><text x="62" y="12" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:15px">z₂</text><text x="170.0" y="252" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">뉴런 1의 값</text><text x="58" y="130.0" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:12px">뉴런 2</text><circle cx="218.0" cy="64.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="238.0" cy="50.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="244.0" cy="68.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="224.0" cy="46.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="230.0" cy="74.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="214.0" cy="52.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="240.0" cy="60.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="226.0" cy="56.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="118.0" cy="114.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="138.0" cy="100.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="144.0" cy="118.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="124.0" cy="96.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="130.0" cy="124.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="114.0" cy="102.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="140.0" cy="110.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="126.0" cy="106.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="188.0" cy="154.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="208.0" cy="140.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="214.0" cy="158.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="194.0" cy="136.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="200.0" cy="164.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="184.0" cy="142.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="210.0" cy="150.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="196.0" cy="146.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><text x="252.0" y="48.0" class="svgt" text-anchor="start" style="fill:var(--blue);font-size:12px">숫자 1</text><text x="108.0" y="96.0" class="svgt" text-anchor="end" style="fill:var(--violet);font-size:12px">숫자 4</text><text x="224.0" y="172.0" class="svgt" text-anchor="start" style="fill:var(--amber);font-size:12px">숫자 7</text><line x1="190.0" y1="136.0" x2="200.0" y2="150.0" style="stroke:var(--ink);stroke-width:1.2" stroke-dasharray="5 4"/><circle cx="190.0" cy="136.0" r="6" style="fill:var(--paper);stroke:var(--ink);stroke-width:2"/><text x="174.0" y="156.0" class="svgt" text-anchor="end" style="fill:var(--ink);font-size:12px">새 이미지</text><text x="380" y="60" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">같은 숫자는 가까이 모이고</text><text x="380" y="82" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">다른 숫자와는 떨어집니다.</text><text x="380" y="124" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">새 이미지는 가장 가까운</text><text x="380" y="142" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">무리(7)로 분류할 수 있습니다</text><text x="380" y="160" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">(최근접 이웃).</text></svg>
-    <figcaption>잠재 차원 2인 잠재 공간의 개념도 (보충). 점 하나가 이미지 하나이고, 위치는 병목 뉴런 두 개의 값입니다. 영상의 실제 그림은 숫자 0~9 열 가지가 섞여 있습니다.</figcaption>
+  <p class="try"><b>재생해 보기:</b> 학습이 진행되며 흩어진 점들이 숫자별 무리로 모이고, 새 이미지가 가장 가까운 무리로 분류되는 과정을 봅니다 (개념도, 보충).</p>
+  <figure class="fig" id="f-lat">
+    <svg viewBox="0 0 640 262" role="img" aria-label="잠재 공간에서 학습이 진행되며 숫자 1, 4, 7이 무리를 이루고 새 이미지는 가장 가까운 7 무리로 분류"></svg>
+    <div class="ctrl">
+      <label for="lte">학습</label><input type="range" id="lte" min="0" max="1" step="any" value="0"><output id="lte-o"></output>
+      <label for="ltn">새 이미지</label><input type="range" id="ltn" min="0" max="1" step="any" value="0"><output id="ltn-o"></output>
+    </div>
+    <div class="read" id="lt-read"></div>
   </figure>
+  <p class="note">점 하나가 이미지 하나이고, 위치는 병목 뉴런 두 개의 값입니다. 영상의 실제 그림은 숫자 0~9 열 가지가 섞여 있습니다.</p>
 
   <h3>학습하며 정리되는 공간<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=323" target="_blank" rel="noopener">5:23~6:00</a></span></h3>
   <p class="ask">학습하는 동안 잠재 공간은 어떻게 변하나요?</p>
@@ -454,14 +469,27 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <h3>한계 ②: 중간 지점<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=624" target="_blank" rel="noopener">10:24~10:54</a></span></h3>
   <p class="ask">잠재 공간의 두 점 사이를 복원하면 무엇이 나오나요?</p>
   <p>잠재 공간의 두 점을 잡고 그 가운데 점을 복원하면 두 이미지가 섞인 모양이 나오기를 기대하게 됩니다. 하지만 대부분의 중간 지점은 엉뚱한 결과를 냅니다. 영상의 예에서는 0과 6의 중간이 5로 복원되는데, 그 근처에는 5로 인코딩된 점이 하나도 없습니다.</p>
-  <figure class="fig mini">
-    <svg viewBox="0 0 640 220" role="img" aria-label="잠재 공간에서 0과 6 무리의 가운데 점을 디코더로 복원하면 5가 나옴"><line x1="60" y1="200" x2="250" y2="200" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="250.0,200.0 243.7,203.0 243.7,197.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="60" y1="200" x2="60" y2="20" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="60.0,20.0 63.0,26.3 57.0,26.3" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="254" y="204" class="svgm" text-anchor="start" style="fill:var(--ink2);font-size:15px">z₁</text><text x="52" y="22" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:15px">z₂</text><circle cx="83.8" cy="75.9" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="100.8" cy="64.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="105.9" cy="79.3" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="88.9" cy="60.6" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="94.0" cy="84.4" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="80.4" cy="65.7" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="102.5" cy="72.5" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="90.6" cy="69.1" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="194.3" cy="160.9" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="211.3" cy="149.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="216.4" cy="164.3" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="199.4" cy="145.6" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="204.5" cy="169.4" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="190.9" cy="150.7" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="213.0" cy="157.5" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="201.1" cy="154.1" r="4" style="fill:var(--violet);fill-opacity:.7"/><text x="74.0" y="54.5" class="svgt" text-anchor="end" style="fill:var(--blue);font-size:14px;font-weight:600">0</text><text x="226.5" y="143.5" class="svgt" text-anchor="start" style="fill:var(--violet);font-size:14px;font-weight:600">6</text><line x1="94.0" y1="72.5" x2="204.5" y2="157.5" style="stroke:var(--ink2);stroke-width:1.1" stroke-dasharray="5 4"/><circle cx="149.2" cy="115.0" r="6" style="fill:var(--paper);stroke:var(--red);stroke-width:2"/><text x="159.25" y="103.0" class="svgt" text-anchor="start" style="fill:var(--red);font-size:12px">가운데 점</text><line x1="330" y1="120" x2="380" y2="120" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="380.0,120.0 373.7,123.0 373.7,117.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="355" y="108" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">디코더</text><rect x="392" y="96" width="48" height="48" rx="4" style="fill:var(--paper);stroke:var(--red);stroke-width:1.2"/><text x="416.0" y="130.56" class="svgt" text-anchor="middle" style="fill:var(--red);font-size:29px;font-weight:600">5</text><text x="456" y="112" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">0과 6의 중간이 아니라</text><text x="456" y="132" class="svgt" text-anchor="start" style="fill:var(--red);font-size:13px">근처에 없던 5</text></svg>
-    <figcaption>잠재 공간의 중간 지점 (영상 10:24~10:54의 내용을 개념도로 다시 그림, 보충). 무리 사이의 빈 곳은 학습 때 쓰인 적이 없어 디코더가 무엇을 만들지 정해져 있지 않습니다.</figcaption>
+  <p class="try"><b>재생해 보기:</b> 잠재 공간의 점을 0 무리에서 6 무리로 옮기며 디코더가 무엇을 복원하는지 봅니다 (개념도, 보충).</p>
+  <figure class="fig" id="f-int">
+    <svg viewBox="0 0 640 220" role="img" aria-label="잠재 공간에서 0 무리에서 6 무리로 점을 옮기면 가운데에서 5가 복원됨"></svg>
+    <div class="ctrl">
+      <label for="itp">이동</label><input type="range" id="itp" min="0" max="1" step="any" value="0"><output id="itp-o"></output>
+    </div>
+    <div class="read" id="it-read"></div>
   </figure>
+  <p class="note">무리 사이의 빈 곳은 학습 때 쓰인 적이 없어 디코더가 무엇을 만들지 정해져 있지 않습니다. 영상이 보여 주는 것은 가운데의 5이고, 나머지 구간의 "엉뚱한 결과"는 영상의 말을 표시한 것입니다 (보충).</p>
 
   <h3>한계 ③: 잡음<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=654" target="_blank" rel="noopener">10:54~11:20</a></span></h3>
   <p class="ask">입력이 조금만 달라지면 어떻게 되나요?</p>
   <p>영상은 오토인코더가 쓸모없는 특징도 많이 배운다고 말합니다. 그래서 입력에 잡음을 조금만 더해도 제대로 복원하지 못합니다. 영상의 예에서는 잡음이 커질수록 복원이 나빠져, 4와 5가 9로 바뀌어 버립니다.</p>
+  <p class="try"><b>재생해 보기:</b> 숫자 4에 잡음을 점점 크게 넣으며 복원이 어떻게 바뀌는지 봅니다. 이미지와 바뀌는 세기는 보충 예시입니다.</p>
+  <figure class="fig" id="f-noise">
+    <svg viewBox="0 0 640 250" role="img" aria-label="숫자 4에 잡음을 넣으면 처음에는 4로, 잡음이 커지면 9로 복원됨"></svg>
+    <div class="ctrl">
+      <label for="nz">잡음</label><input type="range" id="nz" min="0" max="1" step="any" value="0"><output id="nz-o"></output>
+    </div>
+    <div class="read" id="nz-read"></div>
+  </figure>
 
   <h3>그래서 VAE</h3>
   <p class="ask">이 한계는 어떻게 해결하나요?</p>
@@ -822,6 +850,97 @@ function unet(){
   $('un-read').innerHTML=msg[Math.min(6,Math.round(k))];
 }
 bind(['uk'],unet);
+
+/* ---------- 공통: 사다리꼴, 숫자 상자 ---------- */
+const TRAP=(x,y,w,h1,h2,c,op)=>`<polygon points="${x},${y-h1/2} ${x+w},${y-h2/2} ${x+w},${y+h2/2} ${x},${y+h1/2}" style="fill:var(--${c});fill-opacity:${op??0.12};stroke:var(--${c});stroke-width:1.3"/>`;
+const DIG=(x,y,s,c,sz)=>{sz=sz||46;return R(x,y,sz,sz,null,null,c,1.3)+TX(x+sz/2,y+sz*0.72,s,c,'middle',Math.round(sz*0.62),600);};
+const pgrid=(V,x,y,cs,c)=>{let s='';V.forEach((row,r)=>row.forEach((v,q)=>{s+=R(x+q*cs,y+r*cs,cs,cs,c,Math.max(0,Math.min(1,v))*0.9,'rule');}));return s;};
+const ease=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+
+/* ---------- 1장. 오토인코더 한 바퀴 (보충 예시) ---------- */
+const AE7=[[1,1,1,1,1],[0,0,0,1,0],[0,0,1,0,0],[0,1,0,0,0],[0,1,0,0,0]];
+const AE0=AE7.map((row,r)=>row.map((v,c)=>0.3+0.15*(((r*5+c)*37)%7)/6));
+const AE1=AE7.map(row=>row.map(v=>0.05+0.9*v));
+function aefig(){
+  const k=+$('aek').value, tr=+$('aet').value;
+  const RC=AE7.map((row,r)=>row.map((v,c)=>AE0[r][c]+(AE1[r][c]-AE0[r][c])*ease(tr)));
+  const D=AE7.map((row,r)=>row.map((v,c)=>(v-RC[r][c])**2));
+  const mse=D.flat().reduce((a,b)=>a+b,0)/25;
+  const CS=18, IX=18, IY=58, OX=452, EX=560, ECS=14, Y=103;
+  let s='';
+  s+=TX(IX+2.5*CS,IY-14,'입력 (5 × 5 = 25픽셀)','blue','middle',12)+pgrid(AE7,IX,IY,CS,'blue');
+  const o1=op01(k,1), o2=op01(k,2), o3=op01(k,3);
+  s+=g(o1, AR(IX+5*CS+6,Y,132,Y)+TRAP(136,Y,86,96,34,'violet')+TX(179,Y+5,'인코더','violet','middle')+AR(226,Y,246,Y)
+      +R(250,Y-30,56,60,'green',0.2,'green',1.3)+TX(278,Y-6,'z₁ 0.62','green','middle',12)+TX(278,Y+16,'z₂ 0.31','green','middle',12)+TX(278,Y-40,'숫자 2개','green','middle',12));
+  s+=g(o2, AR(310,Y,330,Y)+TRAP(334,Y,86,34,96,'violet')+TX(377,Y+5,'디코더','violet','middle')+AR(424,Y,446,Y)
+      +TX(OX+2.5*CS,IY-14,'복원','blue','middle',12)+pgrid(RC,OX,IY,CS,'blue'));
+  s+=g(o3, TX(EX+2.5*ECS,IY-14,'차이²','red','middle',12)+pgrid(D.map(r=>r.map(v=>v*2.2)),EX,IY+8,ECS,'red')
+      +TX(320,192,`MSE = 25칸의 차이² 평균 = ${f(mse,3)}`,'red','middle',14,600));
+  s+=g(o3, TX(320,214,tr<0.02?'학습 초반: 가중치가 무작위라 복원이 흐릿함':(tr>0.98?'학습 후: 복원이 입력과 거의 같음':'학습 중: 오차를 줄이도록 가중치를 고침'),'ink2','middle',12));
+  $('f-ae').querySelector('svg').innerHTML=s;
+  $('aek-o').textContent=Math.round(k)+'/3'; $('aet-o').textContent=Math.round(tr*100)+'%';
+  $('ae-read').innerHTML=k<2.5?'입력 → 인코더 → 숫자 2개 → 디코더 → 복원':`MSE <span class="c-red">${f(mse,3)}</span> · 학습 ${Math.round(tr*100)}% (픽셀 값과 z는 보충 예시)`;
+}
+bind(['aek','aet'],aefig);
+
+/* ---------- 2장. 잠재 공간이 정리되는 과정 (개념도) ---------- */
+const LCL=[['숫자 1',0.8,0.85,'blue'],['숫자 4',0.3,0.6,'violet'],['숫자 7',0.65,0.4,'amber']];
+const LOFF=[[-0.06,-0.02],[0.04,0.05],[0.07,-0.04],[-0.03,0.07],[0,-0.07],[-0.08,0.04],[0.05,0],[-0.02,0.02]];
+const LST=[]; for(let i=0;i<24;i++){LST.push([0.08+0.84*(((i*53)%97)/96),0.08+0.84*(((i*29+11)%89)/88)]);}
+function latfig(){
+  const e=+$('lte').value, nw=+$('ltn').value, X0=70,Y0=232,S=200, px=v=>X0+v*S, py=v=>Y0-v*S, te=ease(e);
+  let s=AR(X0,Y0,X0+S+20,Y0)+AR(X0,Y0,X0,Y0-S-20)+TX(X0+S+24,Y0+4,'z₁','ink2','start',15)+TX(X0-8,Y0-S-16,'z₂','ink2','end',15)
+    +TX(X0+S/2,Y0+22,'뉴런 1의 값','ink2','middle',12)+TX(X0-12,Y0-S/2,'뉴런 2','ink2','end',12);
+  LCL.forEach(([nm,cx,cy,c],q)=>LOFF.forEach(([dx,dy],i)=>{const st=LST[q*8+i],x=st[0]+(cx+dx-st[0])*te,y=st[1]+(cy+dy-st[1])*te;
+    s+=`<circle cx="${px(x).toFixed(1)}" cy="${py(y).toFixed(1)}" r="4" style="fill:var(--${c});fill-opacity:.75"/>`;}));
+  const lo=op01(e*4,4);
+  s+=g(lo,TX(px(0.8)+22,py(0.85)-12,'숫자 1','blue')+TX(px(0.3)-22,py(0.6)-14,'숫자 4','violet','end')+TX(px(0.65)+24,py(0.4)+22,'숫자 7','amber'));
+  if(nw>0){const nx=0.6,ny=0.47;
+    s+=g(nw,`<line x1="${px(nx)}" y1="${py(ny)}" x2="${px(0.65)}" y2="${py(0.4)}" style="stroke:var(--ink);stroke-width:1.2" stroke-dasharray="4 3"/><circle cx="${px(nx)}" cy="${py(ny)}" r="6" style="fill:var(--paper);stroke:var(--ink);stroke-width:2"/>`+TX(px(nx)-16,py(ny)+20,'새 이미지','ink','end',12));}
+  s+=TX(380,60,e<0.05?'학습 전: 점들이 흩어져 있음':(e>0.95?'학습 후: 숫자마다 무리를 이룸':'학습 중: 같은 숫자끼리 모여 감'),'ink','start',13);
+  if(nw>0.5) s+=TX(380,90,'새 이미지는 가장 가까운','ink2','start',12)+TX(380,108,'무리(7)로 분류 (최근접 이웃)','ink2','start',12);
+  $('f-lat').querySelector('svg').innerHTML=s;
+  $('lte-o').textContent=Math.round(e*100)+'%'; $('ltn-o').textContent=nw>0.5?'있음':'없음';
+  $('lt-read').innerHTML=`학습 진행 ${Math.round(e*100)}%`+(nw>0.5?' · 새 이미지 (0.6, 0.47)에서 가장 가까운 무리: <span class="c-amber">숫자 7</span> (거리 0.09)':'');
+}
+bind(['lte','ltn'],latfig);
+
+/* ---------- 3장. 중간 지점 (개념도) ---------- */
+function intfig(){
+  const t=+$('itp').value, X0=60,Y0=200,S=170, px=v=>X0+v*S, py=v=>Y0-v*S;
+  const A=[0.2,0.75], B=[0.85,0.25], P=[A[0]+(B[0]-A[0])*t, A[1]+(B[1]-A[1])*t];
+  let s=AR(X0,Y0,X0+S+20,Y0)+AR(X0,Y0,X0,Y0-S-10)+TX(X0+S+24,Y0+4,'z₁','ink2','start',15)+TX(X0-8,Y0-S-8,'z₂','ink2','end',15);
+  [[A,'blue'],[B,'violet']].forEach(([C,c])=>LOFF.forEach(([dx,dy])=>{s+=`<circle cx="${px(C[0]+dx).toFixed(1)}" cy="${py(C[1]+dy).toFixed(1)}" r="4" style="fill:var(--${c});fill-opacity:.7"/>`;}));
+  s+=TX(px(A[0])-20,py(A[1])-18,'0','blue','end',14,600)+TX(px(B[0])+22,py(B[1])-14,'6','violet','start',14,600);
+  s+=`<line x1="${px(A[0])}" y1="${py(A[1])}" x2="${px(B[0])}" y2="${py(B[1])}" style="stroke:var(--ink2);stroke-width:1.1" stroke-dasharray="5 4"/>`;
+  const zone=t<=0.12?0:(t>=0.88?2:(t>=0.4&&t<=0.6?1:3));
+  const col=['blue','red','violet','red'][zone], out=['0','5','6','?'][zone];
+  s+=`<circle cx="${px(P[0]).toFixed(1)}" cy="${py(P[1]).toFixed(1)}" r="6" style="fill:var(--paper);stroke:var(--${col});stroke-width:2"/>`;
+  s+=AR(330,120,380,120)+TX(355,108,'디코더','ink2','middle',12)+DIG(392,96,out,col,48);
+  const msg=[['0 무리 안','0으로 복원'],['0과 6의 가운데','근처에 없던 5 (영상의 예)'],['6 무리 안','6으로 복원'],['무리 사이의 빈 곳','엉뚱한 결과가 나오기 쉬움']][zone];
+  s+=TX(456,112,msg[0],'ink','start',13)+TX(456,132,msg[1],col,'start',13);
+  $('f-int').querySelector('svg').innerHTML=s;
+  $('itp-o').textContent=Math.round(t*100)+'%';
+  $('it-read').innerHTML=`0 무리 → 6 무리로 ${Math.round(t*100)}% 이동 · 복원: <span class="c-${col}">${out==='?'?'알아보기 어려운 모양':out}</span>`;
+}
+bind(['itp'],intfig);
+
+/* ---------- 3장. 잡음 (보충 예시) ---------- */
+const N4=[[0,0,0,0,1,0,0],[0,0,0,1,1,0,0],[0,0,1,0,1,0,0],[0,1,0,0,1,0,0],[1,1,1,1,1,1,0],[0,0,0,0,1,0,0],[0,0,0,0,1,0,0]];
+const NZ=N4.map((row,r)=>row.map((v,c)=>((((r*7+c)*61+17)%23)/11-1)));
+function noisefig(){
+  const a=+$('nz').value, I=N4.map((row,r)=>row.map((v,c)=>Math.max(0,Math.min(1,v+a*NZ[r][c]))));
+  const CS=20, IX=60, IY=50;
+  let s=TX(IX+3.5*CS,IY-14,a<0.01?'입력: 숫자 4':'입력: 4 + 잡음','blue','middle',12)+pgrid(I,IX,IY,CS,'blue');
+  s+=AR(IX+7*CS+10,IY+70,236,IY+70)+TRAP(240,IY+70,70,80,28,'violet')+R(314,IY+56,24,28,'green',0.2,'green',1.2)+TRAP(342,IY+70,70,28,80,'violet')+AR(416,IY+70,440,IY+70);
+  const out=a<0.45?'4':'9', col=a<0.45?'blue':'red';
+  s+=DIG(448,IY+45,out,col,50);
+  s+=TX(320,232,a<0.01?'잡음 없음: 4로 복원':(a<0.45?'잡음 조금: 아직 4로 복원':'잡음이 커지면 9로 바뀜 (영상의 예)'),col,'middle',13);
+  $('f-noise').querySelector('svg').innerHTML=s;
+  $('nz-o').textContent=Math.round(a*100)+'%';
+  $('nz-read').innerHTML=`잡음 세기 ${Math.round(a*100)}% · 복원 <span class="c-${col}">${out}</span> (어느 세기에서 바뀌는지는 보충 예시)`;
+}
+bind(['nz'],noisefig);
 })();
 </script>
 
@@ -957,6 +1076,32 @@ SCENES['f-unet']=[
   {dur:7.5, set:{uk:4}, cap:`${bc('green','transposed convolution')}으로 다시 키우고, 왼쪽의 같은 높이 층 값을 ${bc('blue','그대로 복사')}해 옆에 붙입니다(건너뛰기 연결). 그 뒤 합성곱을 두 번 합니다.`, line:'키우기 + 복사해 붙이기'},
   {dur:6.5, set:{uk:5}, cap:'키우기 → 복사해 붙이기 → 합성곱을 반복해 원래 이미지의 H × W로 돌아옵니다.', line:'올라가는 길'},
   {dur:6, set:{uk:6}, cap:`마지막으로 ${bc('violet','1 × 1 합성곱')}으로 H × W × 클래스 수를 만듭니다. 픽셀마다 클래스별 점수가 하나씩 생깁니다.`, line:'출력: H × W × 클래스 수'}
+];
+
+SCENES['f-ae']=[
+  {dur:4, cut:{aek:0,aet:0}, cap:`${bc('blue','입력')}은 5 × 5 = 25픽셀짜리 숫자 7입니다 (보충 예시).`, line:'입력 25개'},
+  {dur:5, set:{aek:1}, cap:`${bc('violet','인코더')}가 25개를 ${bc('green','숫자 2개')}로 줄입니다. 이것이 병목의 잠재 표현입니다.`, line:'25개 → 2개'},
+  {dur:5.5, set:{aek:2}, cap:`${bc('violet','디코더')}가 숫자 2개에서 25픽셀을 다시 만듭니다. 학습 초반이라 가중치가 무작위여서 복원이 흐릿합니다.`, line:'2개 → 25개 (복원)'},
+  {dur:6, set:{aek:3}, cap:`픽셀마다 입력과 복원의 차이를 제곱하고 평균을 내면 ${bc('red','MSE')}입니다. 이 숫자를 줄이는 것이 학습의 목표입니다.`, line:'MSE = 차이² 25개의 평균'},
+  {dur:7, set:{aet:1}, cap:'경사하강법으로 MSE를 줄이도록 가중치를 고치면 복원이 입력과 거의 같아지고 MSE도 작아집니다. 정답 대신 입력 자신과 비교했다는 점이 핵심입니다.', line:'학습할수록 MSE ↓'}
+];
+
+SCENES['f-lat']=[
+  {dur:4.5, cut:{lte:0,ltn:0}, cap:'잠재 차원이 2면 이미지 하나가 평면 위 점 하나입니다. 학습 전에는 점들이 흩어져 있습니다 (개념도, 보충).', line:'학습 전'},
+  {dur:7, set:{lte:1}, cap:'학습이 진행되면 같은 숫자끼리 모이고 다른 숫자와는 떨어집니다. 영상은 초반에 점들이 많이 움직이다 수렴하면 멈춘다고 설명합니다.', line:'같은 숫자끼리 무리'},
+  {dur:6, set:{ltn:1}, cap:'새 이미지의 점은 가장 가까운 무리로 분류할 수 있습니다. 최근접 이웃입니다.', line:'가장 가까운 무리 → 7'}
+];
+
+SCENES['f-int']=[
+  {dur:4.5, cut:{itp:0}, cap:`잠재 공간의 ${bc('blue','0')} 무리 안의 점은 0으로 복원됩니다.`, line:'0 무리 → 0'},
+  {dur:5.5, set:{itp:0.5}, cap:`0과 6의 가운데로 옮기면 두 숫자가 섞인 모양을 기대하지만, 영상의 예에서는 근처에 없던 ${bc('red','5')}가 나옵니다.`, line:'가운데 → 5'},
+  {dur:5, set:{itp:1}, cap:`${bc('violet','6')} 무리에 닿으면 다시 6으로 복원됩니다. 영상은 대부분의 중간 지점이 엉뚱한 결과를 낸다고 말합니다.`, line:'6 무리 → 6'}
+];
+
+SCENES['f-noise']=[
+  {dur:4, cut:{nz:0}, cap:'잡음 없는 4는 4로 복원됩니다.', line:'잡음 0 → 4'},
+  {dur:5, set:{nz:0.3}, cap:'잡음을 조금 넣어도 아직 4로 복원됩니다 (어느 세기에서 바뀌는지는 보충 예시).', line:'잡음 조금 → 4'},
+  {dur:6, set:{nz:0.8}, cap:`잡음이 더 커지면 숫자가 ${bc('red','9')}로 바뀝니다. 영상은 오토인코더가 쓸모없는 특징까지 배워 잡음에 약하다고 설명합니다.`, line:'잡음 큼 → 9'}
 ];
 
 initScenes();
