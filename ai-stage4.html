@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>4차 오토인코더와 U-Net · AI 기초 노트</title>
+<meta name="description" content="AI 기초 노트 4차: 인코더와 디코더, 오토인코더와 잠재 공간, transposed convolution, U-Net을 유튜브 원문 영상을 따라 장면별로 재생되는 그림과 함께 정리한 노트">
+<meta property="og:title" content="4차 오토인코더와 U-Net · AI 기초 노트">
+<meta property="og:description" content="오토인코더 → 잠재 공간 → 한계 → transposed convolution → U-Net을 장면별로 재생되는 그림과 함께 정리한 공부 노트">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A0%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F7F7; --panel:#F7F7F7; --ink:#1D232B; --ink2:#6B7580; --rule:#E3E6EA;
+  --blue:#2A78BD; --blue-soft:rgba(42,120,189,.16);
+  --amber:#D2920C; --amber-soft:rgba(210,146,12,.35);
+  --green:#2E9460; --green-soft:rgba(46,148,96,.2);
+  --red:#C6473A; --red-soft:rgba(198,71,58,.35);
+  --violet:#7B5EA7; --violet-soft:rgba(123,94,167,.22);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#15181C; --panel:#15181C; --ink:#E6E9ED; --ink2:#9AA3AD; --rule:#2B3138;
+    --blue:#5CA6E6; --blue-soft:rgba(92,166,230,.2);
+    --amber:#EDB53F; --amber-soft:rgba(237,181,63,.38);
+    --green:#5CC28C; --green-soft:rgba(92,194,140,.22);
+    --red:#E5705F; --red-soft:rgba(229,112,95,.38); --violet:#B39AE0; --violet-soft:rgba(179,154,224,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#15181C; --panel:#15181C; --ink:#E6E9ED; --ink2:#9AA3AD; --rule:#2B3138;
+  --blue:#5CA6E6; --blue-soft:rgba(92,166,230,.2);
+  --amber:#EDB53F; --amber-soft:rgba(237,181,63,.38);
+  --green:#5CC28C; --green-soft:rgba(92,194,140,.22);
+  --red:#E5705F; --red-soft:rgba(229,112,95,.38); --violet:#B39AE0; --violet-soft:rgba(179,154,224,.25);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;color:var(--ink);background:var(--paper);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:17px;line-height:1.8;word-break:keep-all;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:56px 22px 96px}
+h1{font-size:clamp(28px,5vw,36px);font-weight:700;line-height:1.3;margin:0 0 12px}
+h2{font-size:clamp(24px,4vw,28px);font-weight:700;line-height:1.35;margin:0 0 4px}
+h3{font-size:19px;font-weight:700;margin:40px 0 8px}
+p{margin:0 0 16px}
+a{color:var(--blue)}
+.lede{color:var(--ink2)}
+nav.toc{margin:24px 0 0;font-size:16px}
+nav.toc a{display:block;padding:3px 0;text-decoration:none}
+nav.toc a small{color:var(--ink2);font-size:14px;margin-left:8px}
+nav.toc a:hover{text-decoration:underline}
+section.ch{margin-top:80px}
+.chno{font-size:14px;color:var(--ink2);margin:0 0 2px}
+.src{font-size:14px;color:var(--ink2);margin-bottom:24px}
+.m{font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;font-style:italic;font-size:1.08em;white-space:nowrap}
+.eq{font-family:"STIX Two Text","Cambria Math","Times New Roman",serif;font-size:20px;text-align:center;margin:18px 0 22px;overflow-x:auto;white-space:nowrap}
+.eq i{font-style:italic}
+.c-violet{color:var(--violet)} .c-blue{color:var(--blue)} .c-amber{color:var(--amber)} .c-green{color:var(--green)} .c-red{color:var(--red)}
+figure.fig{margin:28px 0 32px}
+figure.fig svg{display:block;width:100%;height:auto}
+.ctrl{display:grid;grid-template-columns:minmax(84px,auto) 1fr 64px;align-items:center;gap:4px 14px;font-size:14px;color:var(--ink2);margin-top:8px}
+.ctrl output{font-variant-numeric:tabular-nums;color:var(--ink);text-align:right}
+input[type=range]{width:100%;accent-color:var(--ink2)}
+input[type=range]:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.read{font-size:14px;margin-top:10px;color:var(--ink);line-height:1.8}
+.read b{font-weight:600}
+figcaption{font-size:14px;color:var(--ink2);margin-top:8px;line-height:1.65}
+.svgt{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-size:13px;fill:var(--ink2)}
+.svgm{font-family:"STIX Two Text",serif;font-style:italic;font-size:15px}
+details.q{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:-1px 0 0;padding:0}
+details.q + :not(details.q){margin-top:24px}
+details.q summary{cursor:pointer;padding:12px 0;font-size:16px;list-style:none;display:flex;gap:10px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"+";color:var(--ink2);width:12px;flex:none}
+details.q[open] summary::before{content:"−"}
+details.q > div{padding:0 0 8px 22px;font-size:16px}
+details.quiz{margin:20px 0;font-size:14px}
+details.quiz summary{cursor:pointer;color:var(--ink2)}
+.tbl{overflow-x:auto;margin:8px 0 18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px 8px 0;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink2)}
+.mine{font-size:14px;color:var(--ink2)}
+footer{margin-top:80px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink2)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (max-width:520px){ body{font-size:16px} .ctrl{grid-template-columns:1fr 60px} .ctrl label{grid-column:1 / -1;margin-bottom:-6px} .eq{font-size:17px} }
+.ask{color:var(--ink2);margin:-2px 0 10px}
+.ask::before{content:"Q. ";font-weight:600}
+.take{border-left:3px solid var(--ink);padding-left:14px;margin:18px 0 20px}
+.try{font-size:15px;color:var(--ink2);margin:20px 0 -8px}
+.note{font-size:14px;color:var(--ink2)}
+aside.wait{font-size:15px;color:var(--ink);background:color-mix(in srgb,var(--ink) 4%,var(--paper));border-radius:6px;padding:12px 16px;margin:16px 0 20px;line-height:1.75}
+aside.wait .tbl{display:block}
+.recap{margin:44px 0 16px;padding:16px 0 0;border-top:1px solid var(--rule);font-size:15px;line-height:1.8}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:"STIX Two Text","Cambria Math",serif;font-size:1.05em;line-height:1.15;margin:0 2px}
+.frac > span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.frac > span:last-child{padding:0 3px}
+.frac i{font-style:italic}
+figure.fig.mini{margin:20px 0 26px}
+
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1080px;margin:0 auto}
+aside.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:44px 12px 40px 20px;border-right:1px solid var(--rule)}
+.sidetop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-weight:600;color:var(--ink);text-decoration:none;font-size:15px}
+#navbtn{display:none;font:inherit;font-size:14px;background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 12px;color:var(--ink);cursor:pointer}
+#sidenav a{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2);text-decoration:none;font-size:14px;line-height:1.45;padding:6px 10px;border-radius:5px}
+#sidenav a{transition:background-color .2s ease,color .2s ease}
+#sidenav a:hover{color:var(--ink)}
+#sidenav a.on{color:var(--ink);font-weight:600;background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+#sidenav .kw{margin:2px 0 8px}
+#sidenav .kw a{font-size:13px;padding:4px 10px 4px 22px}
+#sidenav .sep{border-top:1px solid var(--rule);margin:12px 0}
+main{max-width:760px;width:100%;padding:44px 36px max(96px,45vh);margin:0}
+.page h1{margin-top:4px}
+section.page.ch{margin-top:0}
+.card{display:grid;gap:6px;font-size:15px;padding:14px 16px;border:1px solid var(--rule);border-radius:8px;margin:4px 0 8px}
+.card span{display:inline-block;min-width:52px;color:var(--ink2);font-size:13px}
+.chitem{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--rule)}
+.chitem > a:first-child{flex:1;border-bottom:0 !important}
+.chlist a.vid{flex:none;font-size:13px;color:var(--ink2);text-decoration:none;border:1px solid var(--rule);border-radius:5px;padding:3px 9px}
+.chlist a.vid:hover{color:var(--ink);border-color:var(--ink2)}
+.chlist a{display:block;padding:12px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink)}
+.chlist a span{display:block;color:var(--ink2);font-size:15px}
+.chlist a:hover b{color:var(--blue)}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:64px;padding-top:18px;border-top:1px solid var(--rule)}
+.pager a{text-decoration:none;font-size:15px;color:var(--ink);max-width:48%}
+.pager a small{display:block;color:var(--ink2);font-size:13px}
+.pager a.next{text-align:right;margin-left:auto}
+footer{margin-top:40px}
+.page{scroll-margin-top:120px}
+main h3{scroll-margin-top:40px}
+@media (max-width:900px){main h3{scroll-margin-top:100px}}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btns button{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;color:var(--ink2);cursor:pointer}
+.btns button:hover{color:var(--ink);border-color:var(--ink2)}
+td.m{font-family:"STIX Two Text",serif;font-style:italic}
+@media (max-width:900px){
+  .layout{display:block}
+  aside.side{position:sticky;top:0;height:auto;max-height:100vh;border-right:0;border-bottom:1px solid var(--rule);background:var(--paper);padding:10px 18px;z-index:5}
+  .sidetop{margin:0}
+  #navbtn{display:inline-block}
+  #sidenav{display:none;padding:10px 0 14px}
+  aside.side.open #sidenav{display:block}
+  main{padding:28px 20px 80px}
+}
+/* ---- scene player ---- */
+figure.fig.sc .ctrl, figure.fig.sc .btns{display:none}
+.sc-lines{font-family:"STIX Two Text","Cambria Math",serif;font-size:19px;line-height:1.55;margin:12px 0 0;text-align:center}
+.sc-lines i{font-style:italic}
+.sc-lines .num{font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;font-size:.85em}
+.sc-ln{opacity:.32;white-space:nowrap;overflow-x:auto;animation:scin .35s ease both}
+.sc-ln.cur{opacity:1}
+@keyframes scin{from{opacity:0;transform:translateY(6px)}}
+.sc-cap{min-height:3.3em;margin:10px 0 6px;font-size:16px;font-weight:600;color:var(--ink);text-align:center;line-height:1.6;transition:opacity .15s ease}
+.sc-bar{display:grid;grid-template-columns:auto auto auto 1fr auto;gap:8px;align-items:center}
+.sc-bar button{font:inherit;font-size:13px;background:none;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;color:var(--ink);cursor:pointer;line-height:1.6}
+.sc-bar button.sc-play{min-width:78px}
+.sc-bar button:hover{border-color:var(--ink2)}
+.sc-bar button:focus-visible,.sc-dots button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sc-bar input[type=range]{min-width:0}
+.sc-dots{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap}
+.sc-dots button{width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.sc-dots button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rule)}
+.sc-dots button.on::before{background:var(--ink2)}
+.sc-dots button.now::before{background:var(--ink)}
+@media (max-width:620px){.sc-lines{font-size:16px}.sc-bar{grid-template-columns:auto auto auto 1fr}.sc-dots{grid-column:1 / -1;justify-content:center}.sc-cap{font-size:15px}}
+/* ---- AI 노트: 차수 메뉴 ---- */
+.topbar{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--rule);background:var(--paper);transition:transform .25s ease}
+.topbar.hide{transform:translateY(-100%)}
+aside.side{top:var(--tb,0px);transition:top .25s ease}
+@media (min-width:901px){aside.side{height:calc(100vh - var(--tb,0px))}}
+@media (max-width:900px){aside.side{max-height:calc(100vh - var(--tb,0px))}}
+@media (prefers-reduced-motion:reduce){.topbar,aside.side{transition:none}}
+.stagebar{display:flex;align-items:center;gap:2px;max-width:1080px;margin:0 auto;padding:8px 20px;overflow-x:auto;white-space:nowrap;font-size:14px;scrollbar-width:none}
+.stagebar::-webkit-scrollbar{display:none}
+.stagebar a,.stagebar span{padding:4px 10px;border-radius:5px;color:var(--ink2);text-decoration:none;line-height:1.5}
+.stagebar a:hover{color:var(--ink)}
+.stagebar a.home{font-weight:700;color:var(--ink);padding-left:0;margin-right:10px}
+.stagebar a.on{color:var(--ink);font-weight:600;background:color-mix(in srgb,var(--ink) 6%,var(--paper))}
+.stagebar span.off{opacity:.45;cursor:default}
+.stagebar a.ext{margin-left:auto;padding-right:0}
+.stagebar a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.chitem.soon > div:first-child{flex:1;padding:12px 0;color:var(--ink2)}
+.chitem.soon > div:first-child span{display:block;font-size:15px}
+/* ---- 허브 ---- */
+body.hub main{margin:0 auto;max-width:760px}
+.stages{margin:8px 0 0}
+.stage{display:block;padding:16px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:var(--ink)}
+.stage b{font-size:18px}
+.stage span{display:block;color:var(--ink2);font-size:15px}
+a.stage:hover b{color:var(--blue)}
+div.stage{color:var(--ink2)}
+.stage .tag{display:inline-block;font-size:12px;border:1px solid var(--rule);border-radius:4px;padding:0 6px;margin-left:8px;vertical-align:2px;color:var(--ink2)}
+@media (max-width:620px){.stagebar{padding:8px 14px;font-size:13px}.stagebar a,.stagebar span{padding:4px 7px}.stagebar a.home{margin-right:4px}.stagebar .ext .lg{display:none}}
+aside.need{font-size:15px;line-height:1.75;border:1px solid var(--rule);border-radius:6px;padding:12px 16px;margin:16px 0 20px}
+aside.need b{display:block;font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:2px}
+.sum{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 4px}
+.sum > span:first-child,.sum > span:last-child{font-size:.62em}
+.sum > span:nth-child(2){font-size:1.45em;line-height:1.05}
+.m .k,td.m .k{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;font-style:normal;font-size:.93em}
+h3 .ts{font-size:13px;font-weight:400;color:var(--ink2);margin-left:10px;letter-spacing:0}
+h3 .ts a{color:inherit;text-decoration:none;border-bottom:1px dotted currentColor;white-space:nowrap}
+h3 .ts a:hover{color:var(--blue)}
+.fig img.cap{display:block;width:100%;height:auto;border-radius:6px}
+pre.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;background:color-mix(in srgb,var(--ink) 5%,var(--paper));border-radius:6px;padding:14px 16px;overflow-x:auto;margin:14px 0 20px}
+pre.code code{font-family:inherit}
+</style>
+</head>
+<body>
+<header class="topbar"><nav class="stagebar" aria-label="차수"><a class="home" href="ai.html">AI 기초 노트</a><a href="ai-stage1.html">1차</a><a href="ai-stage2.html">2차</a><a href="ai-stage3.html">3차</a><a href="ai-stage4.html" class="on" aria-current="page">4차</a><span class="off" title="준비 중">5차</span><span class="off" title="준비 중">6차</span><a class="ext" href="https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html">미적분<span class="lg"> 노트</span> ↗</a></nav></header><script>
+(function(){const h=document.querySelector('.topbar');if(!h)return;const R=document.documentElement;let last=scrollY,hid=false;
+const set=v=>{hid=v;h.classList.toggle('hide',v);R.style.setProperty('--tb',v?'0px':h.offsetHeight+'px');};
+set(false);
+addEventListener('scroll',()=>{const y=scrollY,d=y-last;
+  if(y<=h.offsetHeight){if(hid)set(false);last=y;return;}
+  if(d>8){if(!hid)set(true);last=y;}else if(d<-8){if(hid)set(false);last=y;}},{passive:true});
+addEventListener('resize',()=>{if(!hid)R.style.setProperty('--tb',h.offsetHeight+'px');});
+h.addEventListener('focusin',()=>{if(hid)set(false);});})();
+</script>
+<div class="layout">
+<aside class="side" id="side">
+  <div class="sidetop"><a href="#intro" class="brand">4차 오토인코더와 U-Net</a><button type="button" id="navbtn" aria-expanded="false" aria-controls="sidenav">목차</button></div>
+  <nav id="sidenav" aria-label="목차"></nav>
+</aside>
+<main id="main">
+
+<section class="page" id="intro" hidden>
+  <p class="chno">AI 기초 노트 · 4차</p>
+  <h1>오토인코더와 U-Net</h1>
+  <p class="lede">유튜브 영상으로 짠 AI 커리큘럼의 4차 노트입니다. 데이터를 작은 숫자 몇 개로 줄였다가 다시 살리는 <b>오토인코더(autoencoder)</b>에서 시작해, 줄인 숫자들이 모인 <b>잠재 공간(latent space)</b>, 오토인코더의 한계, 작은 입력을 키우는 <b>transposed convolution</b>, 그리고 이미지 처리 전반에 쓰이는 <b>U-Net</b>까지 봅니다. 그림은 ▶를 누르면 설명과 함께 장면별로 재생되고, ⏮ ⏭나 아래 점으로 원하는 장면에 멈춰 볼 수 있습니다.</p>
+  <p class="lede">4차의 색은 이렇게 씁니다. <span class="c-blue">파랑</span>은 입력과 복원 결과, <span class="c-violet">보라</span>는 인코더·디코더와 필터(학습되는 값), <span class="c-green">초록</span>은 잠재 표현과 작은 입력, <span class="c-amber">주황</span>은 지금 계산하는 자리와 풀링, <span class="c-red">빨강</span>은 오차와 한계입니다. 처음 보는 용어나 기호는 <a href="#glossary" style="white-space:nowrap">용어·기호</a>에 정리했습니다.</p>
+
+  <h3>문제</h3>
+  <p class="ask">인코더와 디코더는 어디에 쓰이나요?</p>
+  <p>커리큘럼은 인코더와 디코더를 여러 상황에 쓰이는 추상적인 개념이라고 소개하며 세 가지 예를 듭니다.</p>
+  <div class="tbl"><table>
+    <tr><th>쓰이는 곳</th><th>하는 일 (커리큘럼 설명)</th></tr>
+    <tr><td>오토인코더</td><td>잠재 코드(latent code)라는 압축된 표현을 만듦. 정답 없이 학습(unsupervised learning)</td></tr>
+    <tr><td>자연어 처리 (NLP)</td><td>글을 다루는 모델. 예: ChatGPT</td></tr>
+    <tr><td>Diffusion</td><td>사진과 노이즈를 1대1로 대응시킴</td></tr>
+  </table></div>
+  <p>이번 차수는 오토인코더를 먼저 배웁니다. 커리큘럼은 오토인코더가 지금도 동영상 생성 모델에 쓰이는 <b>VAE(variational autoencoder)</b>로 이어지는 중요한 다리라고 설명합니다.</p>
+  <p class="ask">오토인코더는 어떤 문제를 푸나요?</p>
+  <p>커리큘럼은 두 가지 질문으로 시작합니다.</p>
+  <ul>
+    <li><b>압축</b>: 사진은 사진이라는 형식이 표현할 수 있는 것에 비해 아주 작은 정보만 담고 있습니다. 액기스만 남겨 아주 작은 데이터로 나타낼 수는 없을까요?</li>
+    <li><b>정답 없는 학습</b>: 지금까지는 숫자 사진에는 숫자, 고양이 사진에는 "고양이"처럼 정답이 있는 데이터로 훈련했습니다. 이런 데이터를 준비하는 데는 시간이 엄청나게 듭니다. 기계가 스스로 할 수는 없을까요?</li>
+  </ul>
+  <p>커리큘럼은 두 질문의 답이 오토인코더라고 말합니다(물론 완벽하지는 않다고 덧붙입니다).</p>
+
+  <h3>흐름</h3>
+  <p class="ask">4차에서는 무엇을 배우나요?</p>
+  <div class="tbl"><table>
+    <tr><th>장</th><th>질문</th><th>답</th></tr>
+    <tr><td><a href="#ch1">1장</a></td><td>오토인코더는 무엇이고 어떻게 학습하나요?</td><td>인코더 → 병목 → 디코더. 입력과 복원의 차이(MSE)를 줄이도록 학습</td></tr>
+    <tr><td><a href="#ch2">2장</a></td><td>줄인 숫자들은 어떤 모습인가요?</td><td>같은 종류끼리 모이는 잠재 공간. 잠재 차원이 중요</td></tr>
+    <tr><td><a href="#ch3">3장</a></td><td>어디에 쓰고, 무엇이 부족한가요?</td><td>분류에 활용. 무리가 흐릿하고, 중간 지점과 잡음에 약함 → VAE</td></tr>
+    <tr><td><a href="#ch4">4장</a></td><td>작은 입력을 어떻게 키우나요?</td><td>필터를 출력 위에 놓고 겹친 값을 더하는 transposed convolution</td></tr>
+    <tr><td><a href="#ch5">5장</a></td><td>복원에서 디테일을 어떻게 살리나요?</td><td>인코더의 값을 디코더로 복사해 붙이는 U-Net</td></tr>
+  </table></div>
+
+  <h3>3차와 연결</h3>
+  <p class="ask">앞에서 배운 것 중 무엇이 다시 나오나요?</p>
+  <p>1차의 <a href="ai-stage1.html">평균제곱오차(MSE)</a>가 오토인코더의 손실로 다시 나옵니다. 3차의 합성곱과 풀링은 이미지를 작게 줄이는 인코더가 되고, 3차 5장의 판 모양 구조 그림이 U-Net 그림에도 그대로 쓰입니다. 4장의 transposed convolution은 3차 2장의 합성곱과 출력 크기 계산을 반대 방향으로 보는 이야기입니다.</p>
+
+  <h3>장 목록</h3>
+  <div class="chlist">
+    <div class="chitem"><a href="#ch1"><b>1장. 오토인코더</b><span>데이터를 줄였다가 다시 살리며 무엇을 배울까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=38" target="_blank" rel="noopener">Deepia ▶</a></div>
+    <div class="chitem"><a href="#ch2"><b>2장. 잠재 공간</b><span>줄인 숫자들은 어떻게 정리될까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=236" target="_blank" rel="noopener">Deepia ▶</a></div>
+    <div class="chitem"><a href="#ch3"><b>3장. 활용과 한계</b><span>오토인코더는 어디에 쓰고 무엇이 부족할까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=521" target="_blank" rel="noopener">Deepia ▶</a></div>
+    <div class="chitem"><a href="#ch4"><b>4장. Transposed convolution</b><span>2 × 2를 어떻게 4 × 4로 키울까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=qb4nRoEAASA" target="_blank" rel="noopener">Andrew Ng ▶</a></div>
+    <div class="chitem"><a href="#ch5"><b>5장. U-Net</b><span>대략적인 정보와 디테일을 어떻게 함께 쓸까요?</span></a><a class="vid" href="https://www.youtube.com/watch?v=oQxrjl3INEY" target="_blank" rel="noopener">Andrew Ng ▶</a></div>
+  </div>
+
+  <h3>원문 영상</h3>
+  <div class="tbl"><table>
+    <tr><th>영상</th><th>길이</th><th>장</th></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0" target="_blank" rel="noopener">Autoencoders | Deep Learning Animated</a> (Deepia)</td><td>11:40</td><td>1, 2, 3</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=qb4nRoEAASA" target="_blank" rel="noopener">Transpose Convolutions</a> (Andrew Ng, DeepLearning.AI)</td><td>7:39</td><td>4</td></tr>
+    <tr><td><a href="https://www.youtube.com/watch?v=oQxrjl3INEY" target="_blank" rel="noopener">U-Net Architecture</a> (Andrew Ng, DeepLearning.AI)</td><td>7:41</td><td>5</td></tr>
+  </table></div>
+  <p class="note">세 영상 모두 영어이고 자동 생성 자막을 기준으로 정리했으며, 화면에만 있는 숫자는 영상 화면에서 확인했습니다. 노트의 번역과 정리는 영상과 커리큘럼 설명을 따르고, 영상에 없는 설명·그림·숫자 예시는 (보충)으로 표시했습니다.</p>
+</section>
+
+<section class="page ch" id="ch1" hidden>
+  <p class="chno">1장</p>
+  <h2>오토인코더</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=10" target="_blank" rel="noopener">Deepia, Autoencoders</a> 0:10~3:56</p>
+  <div class="card"><div><span>질문</span>데이터를 줄였다가 다시 살리며 무엇을 배울까요?</div><div><span>키워드</span>인코더 · 병목 · 잠재 공간 · 디코더 · 복원 · MSE · 정답 없는 학습</div><div><span>연결</span>1차의 MSE를 손실로 씁니다. 2장에서 줄인 숫자들이 모인 잠재 공간을 봅니다.</div></div>
+
+  <h3>한눈에 보기</h3>
+  <p class="ask">오토인코더는 어떻게 생겼나요?</p>
+  <p>오토인코더는 세 부분으로 되어 있고, 입력을 그대로 다시 만들어 내도록 학습합니다. (보충 요약)</p>
+  <div class="tbl"><table>
+    <tr><th>부분</th><th>하는 일</th><th>숫자 예 (보충)</th></tr>
+    <tr><td class="c-violet">인코더</td><td>입력을 작은 표현으로 줄임</td><td>숫자 이미지 28 × 28 = 784개 → 2개</td></tr>
+    <tr><td class="c-green">병목 (잠재 공간)</td><td>줄인 표현을 담는 가장 작은 층</td><td>숫자 2개 (z₁, z₂)</td></tr>
+    <tr><td class="c-violet">디코더</td><td>작은 표현에서 입력을 다시 만듦(복원)</td><td>2개 → 784개</td></tr>
+    <tr><td class="c-red">손실</td><td>입력과 복원의 차이</td><td>픽셀마다 차이를 제곱해 평균(MSE)</td></tr>
+  </table></div>
+
+  <h3>오토인코더가 하는 일<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=10" target="_blank" rel="noopener">0:10~1:30</a></span></h3>
+  <p class="ask">오토인코더는 무엇을 하나요?</p>
+  <p>영상은 오토인코더를 데이터의 효율적인 표현을 배우는 신경망이라고 정의합니다. 아주 큰 데이터를 <b>가능한 한 적은 특징</b>으로 나타내려는 모델입니다. 15~20년 전 첫 논문이 나왔고, U-Net 같은 구조와 DALL·E, Midjourney 같은 생성 모델도 오토인코더의 원리 위에 있다고 소개합니다.</p>
+  <p>영상의 비유는 친구에게 누군가를 설명하는 상황입니다.</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>설명에 쓰는 것</th><th>개수</th></tr>
+    <tr><td>처음 떠오르는 설명</td><td>머리 모양, 키, 나이, 피부색, …</td><td>많음</td></tr>
+    <tr><td>압축한 설명</td><td>나이, 키</td><td><b>숫자 2개</b></td></tr>
+  </table></div>
+  <p>영상은 이것이 가장 좋은 표현은 아닐 수 있지만 숫자 두 개뿐이라 아주 작은 표현이라고 말합니다. 오토인코더는 같은 일을 다른 데이터에 합니다.</p>
+
+  <h3>세 부분<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=90" target="_blank" rel="noopener">1:30~2:28</a></span></h3>
+  <p class="ask">오토인코더는 어떤 부분으로 되어 있나요?</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 226" role="img" aria-label="입력이 인코더를 거쳐 병목의 숫자 두 개가 되고 디코더가 복원함"><rect x="24" y="76" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="40" y="76" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="56" y="76" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="72" y="76" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="24" y="92" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="40" y="92" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="56" y="92" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="72" y="92" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="24" y="108" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="40" y="108" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="56" y="108" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="72" y="108" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="24" y="124" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="40" y="124" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="56" y="124" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.8;stroke:var(--rule);stroke-width:1"/><rect x="72" y="124" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><text x="56" y="56" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">입력</text><text x="56" y="160" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">픽셀 많음</text><line x1="98" y1="108" x2="128" y2="108" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="128.0,108.0 121.7,111.0 121.7,105.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="134.0,48.0 254.0,86.0 254.0,130.0 134.0,168.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="194.0" y="113" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px">인코더</text><line x1="258" y1="108" x2="284" y2="108" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="284.0,108.0 277.7,111.0 277.7,105.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="290" y="82" width="60" height="52" rx="6" style="fill:var(--green);fill-opacity:0.2;stroke:var(--green);stroke-width:1.3"/><text x="320" y="104" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:15px">z₁</text><text x="320" y="125" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:15px">z₂</text><text x="320" y="56" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:13px">병목 (잠재 표현)</text><text x="320" y="160" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">숫자 몇 개</text><line x1="354" y1="108" x2="380" y2="108" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="380.0,108.0 373.7,111.0 373.7,105.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="386.0,86.0 506.0,48.0 506.0,168.0 386.0,130.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="446.0" y="113" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px">디코더</text><line x1="510" y1="108" x2="540" y2="108" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="540.0,108.0 533.7,111.0 533.7,105.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="552" y="76" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="568" y="76" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="584" y="76" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="600" y="76" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="552" y="92" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="568" y="92" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="584" y="92" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="600" y="92" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="552" y="108" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="568" y="108" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="584" y="108" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="600" y="108" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="552" y="124" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><rect x="568" y="124" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="584" y="124" width="16" height="16" rx="0" style="fill:var(--blue);fill-opacity:0.55;stroke:var(--rule);stroke-width:1"/><rect x="600" y="124" width="16" height="16" rx="0" style="fill:var(--paper);stroke:var(--rule);stroke-width:1"/><text x="584" y="56" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:13px">복원</text><text x="584" y="160" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">입력과 같은 크기</text><line x1="56" y1="186" x2="56" y2="196" style="stroke:var(--red);stroke-width:1.2"/><line x1="56" y1="196" x2="584" y2="196" style="stroke:var(--red);stroke-width:1.2"/><line x1="584" y1="196" x2="584" y2="186" style="stroke:var(--red);stroke-width:1.2"/><text x="320" y="214" class="svgt" text-anchor="middle" style="fill:var(--red);font-size:12px">손실: 입력과 복원의 차이 (MSE)</text></svg>
+    <figcaption>오토인코더의 세 부분 (영상 1:35 그림의 사다리꼴 모양을 따라 다시 그림, 픽셀 예는 보충). 인코더와 디코더의 폭은 층의 크기를 뜻합니다.</figcaption>
+  </figure>
+  <ul>
+    <li><b class="c-violet">인코더(encoder)</b>: 입력을 잠재 공간의 표현으로 <b>압축</b>합니다. 잠재 공간은 입력의 핵심 특징을 담는 낮은 차원의 공간입니다.</li>
+    <li><b class="c-green">병목(bottleneck)</b>: 신경망에서 가장 작은 층으로, 압축된 표현을 담습니다.</li>
+    <li><b class="c-violet">디코더(decoder)</b>: 압축된 표현에서 입력을 다시 만듭니다(<b>복원</b>, reconstruction).</li>
+  </ul>
+  <p>영상은 숫자 4개짜리 데이터(0.11, 0.78, 0.45, 0.52)를 잠재 공간의 점 하나로 줄이는 예에서 시작해, 표 형식 데이터와 토끼 사진처럼 훨씬 큰 데이터도 같은 방식으로 줄인다고 보여 줍니다. 사진이라면 인코더가 이미지를 핵심 특징 몇 개로 줄이고, 병목이 그 특징을 담고, 디코더가 그 특징에서 이미지를 다시 만듭니다.</p>
+
+  <h3>학습: 원본과 복원의 차이<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=148" target="_blank" rel="noopener">2:28~3:27</a></span></h3>
+  <p class="ask">오토인코더는 무엇을 기준으로 학습하나요?</p>
+  <p>학습의 목표는 <b>원본과 복원의 차이를 줄이는 것</b>입니다. 디코더는 압축된 표현에서 원본을 더 정확히 복원하게 되고, 동시에 인코더는 복원에 꼭 필요한 정보를 남기도록 압축하게 됩니다.</p>
+  <p>두 이미지의 차이는 가장 단순하게 픽셀끼리 비교해 잴 수 있습니다. 같은 자리의 픽셀끼리 차이를 구해 제곱하고 평균을 냅니다. 1차에서 본 <b>평균제곱오차(MSE)</b>입니다. 제곱은 값을 모두 양수로 만들고, 결과는 두 이미지가 얼마나 다른지 나타내는 숫자 하나입니다.</p>
+  <div class="tbl"><table>
+    <tr><th>픽셀</th><th>1</th><th>2</th><th>3</th><th>4</th><th></th></tr>
+    <tr><td>원본</td><td>0</td><td>1</td><td>1</td><td>0</td><td></td></tr>
+    <tr><td>복원</td><td>0.1</td><td>0.8</td><td>0.9</td><td>0.2</td><td></td></tr>
+    <tr><td>차이의 제곱</td><td>0.01</td><td>0.04</td><td>0.01</td><td>0.04</td><td>합 0.10</td></tr>
+    <tr><td class="c-red">MSE</td><td colspan="4">0.10 ÷ 4</td><td class="c-red"><b>0.025</b></td></tr>
+  </table></div>
+  <p class="note">픽셀 4개짜리 숫자 예시는 보충입니다. 실제 이미지는 픽셀 수만큼 같은 계산을 합니다.</p>
+
+  <h3>정답이 필요 없는 이유</h3>
+  <p class="ask">왜 정답(레이블)이 없어도 학습할 수 있나요?</p>
+  <p>손실을 계산할 때 비교하는 대상이 <b>입력 자기 자신</b>이기 때문입니다. 지금까지의 학습과 나란히 놓으면 차이가 보입니다. (보충 정리)</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>입력</th><th>맞춰야 할 답</th><th>사람이 준비할 것</th></tr>
+    <tr><td>1~3차의 학습</td><td>숫자 이미지</td><td>"7" 같은 정답</td><td>이미지마다 정답 달기</td></tr>
+    <tr><td>오토인코더</td><td>숫자 이미지</td><td><b>그 이미지 자신</b></td><td>이미지만 있으면 됨</td></tr>
+  </table></div>
+  <p>그래서 커리큘럼은 오토인코더를 정답 없는 학습(unsupervised learning)으로 소개합니다.</p>
+
+  <h3>학습 과정<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=207" target="_blank" rel="noopener">3:27~3:56</a></span></h3>
+  <p class="ask">학습하면 복원은 어떻게 바뀌나요?</p>
+  <p>오토인코더는 이미지를 하나씩 처리하며 MSE를 줄이는 방향으로 배웁니다(방법은 1·2차의 경사하강법과 역전파입니다). 처음에는 가중치가 무작위라 복원 오차가 큽니다. 학습이 진행될수록 오차가 줄고, 복원한 이미지가 입력과 거의 같아집니다. 영상은 손실이 epoch마다 줄어드는 그래프와 숫자 0, 7의 복원 결과를 보여 줍니다.</p>
+  <p class="take">오토인코더는 인코더로 입력을 작은 표현으로 줄이고, 디코더로 다시 복원하며, 입력과 복원의 차이(MSE)를 줄이도록 학습합니다. 비교 대상이 입력 자신이라 정답이 필요 없습니다.</p>
+
+  <p class="note">여기까지가 1장의 핵심입니다. 아래는 이미지용 오토인코더에 관한 커리큘럼 설명입니다.</p>
+
+  <h3>이미지용 오토인코더</h3>
+  <p class="ask">이미지에는 어떤 오토인코더를 쓰나요?</p>
+  <p>커리큘럼은 이미지에 오토인코더를 쓰면서 인코더와 디코더를 CNN으로 만든 <b>합성곱 오토인코더(convolutional autoencoder)</b>를 썼다고 설명합니다. 목적은 이미지를 똑같이 복원하도록 학습해서 잠재 특징을 뽑는 것이었습니다.</p>
+  <p>여기서 커리큘럼은 질문을 던집니다. 인코더는 3차의 CNN처럼 출력이 작아지니 만들기 어렵지 않아 보입니다. 그런데 디코더는 작은 입력에서 원래 크기로 <b>커져야</b> 합니다. 커지는 CNN도 있을까요? 그 답이 <a href="#ch4">4장</a>의 transposed convolution입니다.</p>
+  <aside class="wait"><b>잠깐, 영상에 합성곱 층이 나오나요?</b> 커리큘럼은 "위의 동영상에서 나왔듯이"라고 이어 쓰지만, 영상이 보여 주는 것은 이미지를 복원하며 잠재 특징을 뽑는 목적까지입니다. 영상의 그림은 인코더·병목·디코더를 사다리꼴과 상자로만 그리고, 안의 층이 합성곱인지는 따로 말하지 않습니다. (보충)</aside>
+</section>
+
+<section class="page ch" id="ch2" hidden>
+  <p class="chno">2장</p>
+  <h2>잠재 공간</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=236" target="_blank" rel="noopener">Deepia, Autoencoders</a> 3:56~8:41</p>
+  <div class="card"><div><span>질문</span>줄인 숫자들은 어떻게 정리될까요?</div><div><span>키워드</span>차원 축소 · 잠재 공간 · 무리(cluster) · 최근접 이웃 · 잠재 차원 · 복원 품질</div><div><span>연결</span>1장의 병목이 만든 숫자들을 좌표로 봅니다. 3장에서 이 공간의 한계를 봅니다.</div></div>
+
+  <h3>한눈에 보기</h3>
+  <p class="ask">잠재 공간에서 무엇을 봐야 하나요?</p>
+  <div class="tbl"><table>
+    <tr><th>질문</th><th>답</th></tr>
+    <tr><td>잠재 공간의 차원은?</td><td>병목 층의 뉴런 수. 2개면 평면 위의 점</td></tr>
+    <tr><td>학습하면 어떻게 되나요?</td><td>같은 숫자끼리 모이고 다른 숫자와 떨어짐</td></tr>
+    <tr><td>무엇에 쓰나요?</td><td>가까운 무리를 찾는 방식으로 분류</td></tr>
+    <tr><td>차원은 얼마로?</td><td>너무 작으면 복원도, 정리도 나빠짐</td></tr>
+  </table></div>
+
+  <h3>차원 줄이기<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=236" target="_blank" rel="noopener">3:56~5:23</a></span></h3>
+  <p class="ask">잠재 공간은 어떻게 그려 볼 수 있나요?</p>
+  <p>오토인코더의 큰 장점은 데이터의 <b>차원 축소</b>입니다. 잠재 공간의 차원은 병목 층의 뉴런 수로 정해집니다. 뉴런이 2개면 잠재 공간은 2차원이고, 뉴런 하나의 값을 가로축, 다른 하나를 세로축으로 삼아 이미지 하나를 평면 위 점 하나로 그릴 수 있습니다. 첫 뉴런이 강하게 활성화되면 점은 오른쪽에, 둘째 뉴런이 강하면 위쪽에 놓입니다.</p>
+  <p>영상은 숫자 7 이미지들을 예로 듭니다. 잘 학습된 오토인코더라면 7들은 잠재 공간의 같은 영역에 모입니다. 숫자 4들도 무리(cluster)를 이루고, 이상적으로는 다른 숫자의 무리와 멀리 떨어집니다. 학습하는 동안 잠재 공간이 숫자마다 자기 영역을 갖도록 "정리"되는 것입니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 262" role="img" aria-label="잠재 공간 평면에 숫자 1, 4, 7이 무리를 이루고 새 이미지는 가장 가까운 7 무리로 분류"><line x1="70" y1="230" x2="290" y2="230" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="290.0,230.0 283.7,233.0 283.7,227.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="70" y1="230" x2="70" y2="10" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="70.0,10.0 73.0,16.3 67.0,16.3" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="294" y="234" class="svgm" text-anchor="start" style="fill:var(--ink2);font-size:15px">z₁</text><text x="62" y="12" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:15px">z₂</text><text x="170.0" y="252" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">뉴런 1의 값</text><text x="58" y="130.0" class="svgt" text-anchor="end" style="fill:var(--ink2);font-size:12px">뉴런 2</text><circle cx="218.0" cy="64.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="238.0" cy="50.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="244.0" cy="68.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="224.0" cy="46.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="230.0" cy="74.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="214.0" cy="52.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="240.0" cy="60.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="226.0" cy="56.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="118.0" cy="114.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="138.0" cy="100.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="144.0" cy="118.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="124.0" cy="96.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="130.0" cy="124.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="114.0" cy="102.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="140.0" cy="110.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="126.0" cy="106.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="188.0" cy="154.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="208.0" cy="140.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="214.0" cy="158.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="194.0" cy="136.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="200.0" cy="164.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="184.0" cy="142.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="210.0" cy="150.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><circle cx="196.0" cy="146.0" r="4" style="fill:var(--amber);fill-opacity:.7"/><text x="252.0" y="48.0" class="svgt" text-anchor="start" style="fill:var(--blue);font-size:12px">숫자 1</text><text x="108.0" y="96.0" class="svgt" text-anchor="end" style="fill:var(--violet);font-size:12px">숫자 4</text><text x="224.0" y="172.0" class="svgt" text-anchor="start" style="fill:var(--amber);font-size:12px">숫자 7</text><line x1="190.0" y1="136.0" x2="200.0" y2="150.0" style="stroke:var(--ink);stroke-width:1.2" stroke-dasharray="5 4"/><circle cx="190.0" cy="136.0" r="6" style="fill:var(--paper);stroke:var(--ink);stroke-width:2"/><text x="174.0" y="156.0" class="svgt" text-anchor="end" style="fill:var(--ink);font-size:12px">새 이미지</text><text x="380" y="60" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">같은 숫자는 가까이 모이고</text><text x="380" y="82" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">다른 숫자와는 떨어집니다.</text><text x="380" y="124" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">새 이미지는 가장 가까운</text><text x="380" y="142" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">무리(7)로 분류할 수 있습니다</text><text x="380" y="160" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">(최근접 이웃).</text></svg>
+    <figcaption>잠재 차원 2인 잠재 공간의 개념도 (보충). 점 하나가 이미지 하나이고, 위치는 병목 뉴런 두 개의 값입니다. 영상의 실제 그림은 숫자 0~9 열 가지가 섞여 있습니다.</figcaption>
+  </figure>
+
+  <h3>학습하며 정리되는 공간<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=323" target="_blank" rel="noopener">5:23~6:00</a></span></h3>
+  <p class="ask">학습하는 동안 잠재 공간은 어떻게 변하나요?</p>
+  <p>영상은 같은 이미지 묶음의 잠재 표현을 epoch마다 그려 보여 줍니다. 학습 초반에는 무리가 생기기 시작하면서 점들이 많이 움직이고, 몇 epoch 뒤 학습이 수렴하면 더 이상 움직이지 않습니다. 완벽하지는 않지만 이렇게 정리되면 데이터를 다루기가 훨씬 쉬워집니다. 영상은 <b>최근접 이웃(nearest neighbours)</b> 같은 분류 방법이 이 표현 위에서 꽤 괜찮은 결과를 낼 것이라고 말합니다.</p>
+  <p>최근접 이웃은 새 점과 가장 가까운 무리를 고르는 방법입니다. 위 개념도의 숫자로 계산해 보면 이렇습니다. (보충 예시)</p>
+  <div class="tbl"><table>
+    <tr><th>무리 (가운데 좌표)</th><th>새 이미지 (0.6, 0.47)까지의 거리</th></tr>
+    <tr><td>숫자 7 (0.65, 0.40)</td><td><b>0.09</b> ← 가장 가까움</td></tr>
+    <tr><td>숫자 4 (0.30, 0.60)</td><td>0.33</td></tr>
+    <tr><td>숫자 1 (0.80, 0.85)</td><td>0.43</td></tr>
+  </table></div>
+  <p>784개 픽셀을 그대로 비교하는 대신 숫자 2개로 비교하니 계산도 간단하고, 같은 숫자끼리 모여 있어 "가장 가까운 것"이 의미를 갖습니다.</p>
+
+  <h3>잠재 차원 정하기<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=360" target="_blank" rel="noopener">6:00~7:11</a></span></h3>
+  <p class="ask">병목 뉴런은 몇 개로 해야 하나요?</p>
+  <p>영상은 병목의 뉴런 수를 <b>잠재 차원(latent dimension)</b>이라 부르고, 오토인코더 설계에서 가장 중요한 선택이라고 말합니다. 데이터를 뉴런 수만큼의 숫자로 나타내기 때문입니다. 2개면 평면 위 좌표 2개, 3개면 3차원 공간의 좌표 3개, 더 많으면 4, 5차원이나 그 이상의 공간이 됩니다.</p>
+  <p>영상은 다른 것은 모두 같게 하고 잠재 차원만 바꿔 학습한 결과를 비교합니다. 잠재 공간이 너무 작으면 핵심 특징을 찾지 못해, 오래 학습해도 복원 품질이 나쁩니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 250" role="img" aria-label="잠재 차원 1과 2에서는 4가 9로 복원되고 9에서는 4로 복원됨"><text x="20" y="58" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">잠재 차원 1</text><rect x="130" y="32" width="46" height="46" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="153.0" y="65.12" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:28px;font-weight:600">4</text><line x1="180" y1="55" x2="200" y2="55" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="200.0,55.0 193.7,58.0 193.7,52.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="204.0,30.0 274.0,45.0 274.0,65.0 204.0,80.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="239.0" y="60" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px"></text><rect x="278" y="51.0" width="26" height="8" rx="3" style="fill:var(--green);fill-opacity:0.25;stroke:var(--green);stroke-width:1.2"/><polygon points="308.0,45.0 378.0,30.0 378.0,80.0 308.0,65.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="343.0" y="60" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px"></text><line x1="382" y1="55" x2="402" y2="55" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="402.0,55.0 395.7,58.0 395.7,52.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="406" y="32" width="46" height="46" rx="4" style="fill:var(--paper);stroke:var(--red);stroke-width:1.2"/><text x="429.0" y="65.12" class="svgt" text-anchor="middle" style="fill:var(--red);font-size:28px;font-weight:600">9</text><text x="470" y="60" class="svgt" text-anchor="start" style="fill:var(--red);font-size:13px">4를 9로 복원</text><text x="20" y="132" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">잠재 차원 2</text><rect x="130" y="106" width="46" height="46" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="153.0" y="139.12" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:28px;font-weight:600">4</text><line x1="180" y1="129" x2="200" y2="129" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="200.0,129.0 193.7,132.0 193.7,126.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="204.0,104.0 274.0,119.0 274.0,139.0 204.0,154.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="239.0" y="134" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px"></text><rect x="278" y="121.0" width="26" height="16" rx="3" style="fill:var(--green);fill-opacity:0.25;stroke:var(--green);stroke-width:1.2"/><polygon points="308.0,119.0 378.0,104.0 378.0,154.0 308.0,139.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="343.0" y="134" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px"></text><line x1="382" y1="129" x2="402" y2="129" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="402.0,129.0 395.7,132.0 395.7,126.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="406" y="106" width="46" height="46" rx="4" style="fill:var(--paper);stroke:var(--red);stroke-width:1.2"/><text x="429.0" y="139.12" class="svgt" text-anchor="middle" style="fill:var(--red);font-size:28px;font-weight:600">9</text><text x="470" y="134" class="svgt" text-anchor="start" style="fill:var(--red);font-size:13px">4를 9로 복원</text><text x="20" y="206" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">잠재 차원 9</text><rect x="130" y="180" width="46" height="46" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="153.0" y="213.12" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:28px;font-weight:600">4</text><line x1="180" y1="203" x2="200" y2="203" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="200.0,203.0 193.7,206.0 193.7,200.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="204.0,178.0 274.0,193.0 274.0,213.0 204.0,228.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="239.0" y="208" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px"></text><rect x="278" y="183.0" width="26" height="40" rx="3" style="fill:var(--green);fill-opacity:0.25;stroke:var(--green);stroke-width:1.2"/><polygon points="308.0,193.0 378.0,178.0 378.0,228.0 308.0,213.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="343.0" y="208" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px"></text><line x1="382" y1="203" x2="402" y2="203" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="402.0,203.0 395.7,206.0 395.7,200.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="406" y="180" width="46" height="46" rx="4" style="fill:var(--paper);stroke:var(--green);stroke-width:1.2"/><text x="429.0" y="213.12" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:28px;font-weight:600">4</text><text x="470" y="208" class="svgt" text-anchor="start" style="fill:var(--green);font-size:13px">4를 4로 복원</text></svg>
+    <figcaption>잠재 차원만 바꿨을 때 숫자 4의 복원 (영상 7:02~7:15 화면을 다시 그림). 가운데 초록 상자의 높이가 잠재 차원의 크기를 뜻합니다.</figcaption>
+  </figure>
+
+  <h3>복원 품질과 잠재 공간<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=431" target="_blank" rel="noopener">7:11~8:41</a></span></h3>
+  <p class="ask">원하는 건 잠재 공간인데 복원 품질이 왜 중요한가요?</p>
+  <p>영상은 복원 품질이 나쁘면 대개 잠재 공간의 정리도 나쁘다고 답합니다. 잠재 차원 2와 5를 비교하면 이렇습니다.</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>잠재 차원 2</th><th>잠재 차원 5</th></tr>
+    <tr><td>복원</td><td>그리 좋지 않음</td><td>더 좋음</td></tr>
+    <tr><td>무리</td><td>보이지만 서로 겹치고 모두 비슷한 곳에 몰림. 0의 무리는 아주 흩어짐</td><td>훨씬 잘 나뉨. 1은 주로 오른쪽 위, 2는 가운데쯤, 7은 조금 오른쪽</td></tr>
+    <tr><td>남은 문제</td><td></td><td>무리가 여전히 흩어져 있음. 2가 9들 근처에 놓여 9로, 3이 8로 복원되기도 함</td></tr>
+  </table></div>
+  <aside class="wait"><b>잠깐, 5차원을 어떻게 평면에 그리나요?</b> 영상은 잠재 공간을 가장 중요한 2개 차원만 남기도록 투영(project)해서 그렸다고 설명하고, 자세한 방법은 다음 영상에서 다룬다고 합니다.</aside>
+  <p class="take">잠재 공간은 병목 뉴런의 값을 좌표로 본 공간이고, 학습하면 같은 종류끼리 모입니다. 잠재 차원이 너무 작으면 복원도, 무리의 정리도 나빠집니다.</p>
+</section>
+
+<section class="page ch" id="ch3" hidden>
+  <p class="chno">3장</p>
+  <h2>활용과 한계</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=521" target="_blank" rel="noopener">Deepia, Autoencoders</a> 8:41~11:20</p>
+  <div class="card"><div><span>질문</span>오토인코더는 어디에 쓰고 무엇이 부족할까요?</div><div><span>키워드</span>뇌 MRI · 흐릿한 무리 · 보간 · 잡음 · 정규화된 잠재 공간 · VAE</div><div><span>연결</span>2장의 잠재 공간을 실제로 써 보고, 그 한계에서 VAE로 넘어가는 이유를 봅니다.</div></div>
+
+  <h3>한눈에 보기</h3>
+  <p class="ask">오토인코더의 가장 큰 장점과 약점은 무엇인가요?</p>
+  <p>영상은 오토인코더의 가장 큰 장점이 곧 가장 큰 한계라고 말합니다. 바로 <b>잠재 공간</b>입니다.</p>
+  <div class="tbl"><table>
+    <tr><th>한계</th><th>영상의 예</th></tr>
+    <tr><td>① 무리가 흐릿함</td><td>숫자 무리가 원하는 만큼 뚜렷하게 나뉘지 않음</td></tr>
+    <tr><td>② 중간 지점이 엉뚱함</td><td>0과 6 사이의 점을 복원하면 5가 나옴</td></tr>
+    <tr><td>③ 잡음에 약함</td><td>입력에 잡음을 조금 넣으면 4와 5가 9로 복원됨</td></tr>
+  </table></div>
+
+  <h3>활용: 뇌 MRI<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=521" target="_blank" rel="noopener">8:41~9:59</a></span></h3>
+  <p class="ask">숫자 말고 다른 데이터에도 쓸 수 있나요?</p>
+  <p>영상의 예는 1년에 수백만 명의 환자를 보는 병원입니다. 여러 환자의 뇌 MRI가 있는데, 의료 데이터를 처리하는 과정에서 환자의 성별 정보가 사라졌습니다. 많은 질환에서 나이 등과 함께 성별을 아는 것이 유용하지만, 뇌 MRI만 보고 성별을 알아내기는 숙련된 전문가도 못 할 만큼 어렵습니다.</p>
+  <p>오토인코더는 뇌 MRI를 낮은 차원의 공간으로 나타내고, 그 공간에서는 성별을 구분하기가 쉬워집니다. 영상의 잠재 공간 그림에서 남성과 여성이 뚜렷이 나뉩니다. 2장의 숫자 예와 같은 방식을 다른 데이터에 쓴 것입니다.</p>
+
+  <h3>한계 ①: 흐릿한 무리<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=599" target="_blank" rel="noopener">9:59~10:24</a></span></h3>
+  <p class="ask">오토인코더는 왜 단순한 형태로는 잘 쓰이지 않나요?</p>
+  <p>영상은 오토인코더가 어디에나 쓰이지만 이 단순한 형태로는 거의 쓰이지 않는다고 말합니다. 잠재 공간의 정리를 복원 손실 하나에만 맡기면 그저 그런 표현이 나오기 쉽습니다. 2장의 숫자 예에서 본 것처럼 무리가 원하는 만큼 뚜렷하지 않습니다.</p>
+
+  <h3>한계 ②: 중간 지점<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=624" target="_blank" rel="noopener">10:24~10:54</a></span></h3>
+  <p class="ask">잠재 공간의 두 점 사이를 복원하면 무엇이 나오나요?</p>
+  <p>잠재 공간의 두 점을 잡고 그 가운데 점을 복원하면 두 이미지가 섞인 모양이 나오기를 기대하게 됩니다. 하지만 대부분의 중간 지점은 엉뚱한 결과를 냅니다. 영상의 예에서는 0과 6의 중간이 5로 복원되는데, 그 근처에는 5로 인코딩된 점이 하나도 없습니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 220" role="img" aria-label="잠재 공간에서 0과 6 무리의 가운데 점을 디코더로 복원하면 5가 나옴"><line x1="60" y1="200" x2="250" y2="200" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="250.0,200.0 243.7,203.0 243.7,197.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="60" y1="200" x2="60" y2="20" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="60.0,20.0 63.0,26.3 57.0,26.3" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="254" y="204" class="svgm" text-anchor="start" style="fill:var(--ink2);font-size:15px">z₁</text><text x="52" y="22" class="svgm" text-anchor="end" style="fill:var(--ink2);font-size:15px">z₂</text><circle cx="83.8" cy="75.9" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="100.8" cy="64.0" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="105.9" cy="79.3" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="88.9" cy="60.6" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="94.0" cy="84.4" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="80.4" cy="65.7" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="102.5" cy="72.5" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="90.6" cy="69.1" r="4" style="fill:var(--blue);fill-opacity:.7"/><circle cx="194.3" cy="160.9" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="211.3" cy="149.0" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="216.4" cy="164.3" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="199.4" cy="145.6" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="204.5" cy="169.4" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="190.9" cy="150.7" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="213.0" cy="157.5" r="4" style="fill:var(--violet);fill-opacity:.7"/><circle cx="201.1" cy="154.1" r="4" style="fill:var(--violet);fill-opacity:.7"/><text x="74.0" y="54.5" class="svgt" text-anchor="end" style="fill:var(--blue);font-size:14px;font-weight:600">0</text><text x="226.5" y="143.5" class="svgt" text-anchor="start" style="fill:var(--violet);font-size:14px;font-weight:600">6</text><line x1="94.0" y1="72.5" x2="204.5" y2="157.5" style="stroke:var(--ink2);stroke-width:1.1" stroke-dasharray="5 4"/><circle cx="149.2" cy="115.0" r="6" style="fill:var(--paper);stroke:var(--red);stroke-width:2"/><text x="159.25" y="103.0" class="svgt" text-anchor="start" style="fill:var(--red);font-size:12px">가운데 점</text><line x1="330" y1="120" x2="380" y2="120" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="380.0,120.0 373.7,123.0 373.7,117.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="355" y="108" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">디코더</text><rect x="392" y="96" width="48" height="48" rx="4" style="fill:var(--paper);stroke:var(--red);stroke-width:1.2"/><text x="416.0" y="130.56" class="svgt" text-anchor="middle" style="fill:var(--red);font-size:29px;font-weight:600">5</text><text x="456" y="112" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px">0과 6의 중간이 아니라</text><text x="456" y="132" class="svgt" text-anchor="start" style="fill:var(--red);font-size:13px">근처에 없던 5</text></svg>
+    <figcaption>잠재 공간의 중간 지점 (영상 10:24~10:54의 내용을 개념도로 다시 그림, 보충). 무리 사이의 빈 곳은 학습 때 쓰인 적이 없어 디코더가 무엇을 만들지 정해져 있지 않습니다.</figcaption>
+  </figure>
+
+  <h3>한계 ③: 잡음<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=hZ4a4NgM3u0&t=654" target="_blank" rel="noopener">10:54~11:20</a></span></h3>
+  <p class="ask">입력이 조금만 달라지면 어떻게 되나요?</p>
+  <p>영상은 오토인코더가 쓸모없는 특징도 많이 배운다고 말합니다. 그래서 입력에 잡음을 조금만 더해도 제대로 복원하지 못합니다. 영상의 예에서는 잡음이 커질수록 복원이 나빠져, 4와 5가 9로 바뀌어 버립니다.</p>
+
+  <h3>그래서 VAE</h3>
+  <p class="ask">이 한계는 어떻게 해결하나요?</p>
+  <p>영상은 그래서 요즘의 오토인코더는 대부분 잠재 공간을 <b>정규화(regularize)</b>한다고 말합니다. 가장 유명한 것이 <b>variational autoencoder(VAE)</b>이고, 영상은 다음 영상에서 자세히 다룬다고 예고합니다. 커리큘럼이 말한 동영상 생성 모델의 VAE가 이것입니다.</p>
+  <p class="take">오토인코더의 잠재 공간은 분류 같은 일에 유용하지만, 복원 손실만으로 정리하면 무리가 흐릿하고 중간 지점과 잡음에 약합니다. 잠재 공간을 정규화한 VAE가 이 한계를 다룹니다.</p>
+</section>
+
+<section class="page ch" id="ch4" hidden>
+  <p class="chno">4장</p>
+  <h2>Transposed convolution</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=qb4nRoEAASA&t=3" target="_blank" rel="noopener">Andrew Ng, Transpose Convolutions</a> 0:03~7:39</p>
+  <div class="card"><div><span>질문</span>2 × 2를 어떻게 4 × 4로 키울까요?</div><div><span>키워드</span>transposed convolution · 필터를 출력 위에 · 스트라이드 · 패딩 · 겹친 칸 더하기</div><div><span>연결</span>1장의 디코더가 커지는 방법이고, 5장 U-Net의 핵심 부품입니다.</div></div>
+
+  <h3>한눈에 보기</h3>
+  <p class="ask">보통 합성곱과 무엇이 다른가요?</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>보통 합성곱 (3차)</th><th>transposed convolution</th></tr>
+    <tr><td>필터를 놓는 곳</td><td>입력 위</td><td><b>출력 위</b></td></tr>
+    <tr><td>한 자리의 계산</td><td>겹친 칸끼리 곱해 더함 → 숫자 1개</td><td>입력 값 1개 × 필터 전체 → 3 × 3개</td></tr>
+    <tr><td>겹치는 곳</td><td>없음 (자리마다 따로 계산)</td><td>겹친 칸은 <b>더함</b></td></tr>
+    <tr><td>크기</td><td>보통 작아짐 (6 × 6 → 4 × 4)</td><td>커짐 (2 × 2 → 4 × 4)</td></tr>
+  </table></div>
+
+  <h3>왜 필요한가</h3>
+  <p class="ask">디코더는 어떻게 커져야 하나요?</p>
+  <p>1장 끝에서 본 커리큘럼의 질문입니다. 인코더는 3차의 합성곱과 풀링으로 이미지를 줄이면 됩니다. 하지만 디코더는 작은 표현에서 원래 크기로 커져야 합니다. 커리큘럼은 "아주 간단한 정의"로 커지는 합성곱을 만들 수 있다고 말하고, 그것이 <b>transposed convolution</b>(영상에서는 transpose convolution)입니다. 영상은 이것을 U-Net 구조의 핵심 부품으로 소개합니다.</p>
+
+  <h3>보통 합성곱과 비교<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=qb4nRoEAASA&t=3" target="_blank" rel="noopener">0:03~1:08</a></span></h3>
+  <p class="ask">보통 합성곱과 크기가 어떻게 다른가요?</p>
+  <p>보통 합성곱 층은 예를 들어 6 × 6 × 3 이미지를 3 × 3 × 3 필터 5개로 합성곱해서 4 × 4 × 5를 냅니다. transposed convolution은 2 × 2 입력을 3 × 3 필터로 합성곱해서 4 × 4를 냅니다. 원래 입력보다 큽니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 204" role="img" aria-label="보통 합성곱은 6×6×3을 4×4×5로 줄이고 transposed convolution은 2×2를 4×4로 키움"><text x="20" y="26" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px;font-weight:600">보통 합성곱</text><polygon points="40.0,77.7 76.0,50.3 82.0,50.3 46.0,77.7" style="fill:var(--blue);fill-opacity:0.15;stroke:var(--blue);stroke-width:1.1;stroke-linejoin:round"/><polygon points="46.0,77.7 82.0,50.3 82.0,122.3 46.0,149.7" style="fill:var(--blue);fill-opacity:0.35;stroke:var(--blue);stroke-width:1.1;stroke-linejoin:round"/><rect x="40" y="77.7" width="6" height="72" rx="0" style="fill:var(--blue);fill-opacity:0.25;stroke:var(--blue);stroke-width:1.1"/><text x="61.0" y="166" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:12px">6 × 6 × 3</text><line x1="96.0" y1="100" x2="216.0" y2="100" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="216.0,100.0 209.7,103.0 209.7,97.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="156.0" y="86" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:12px">3 × 3 × 3 필터 5개</text><polygon points="230.0,85.1 254.0,66.9 264.0,66.9 240.0,85.1" style="fill:var(--green);fill-opacity:0.15;stroke:var(--green);stroke-width:1.1;stroke-linejoin:round"/><polygon points="240.0,85.1 264.0,66.9 264.0,114.9 240.0,133.1" style="fill:var(--green);fill-opacity:0.35;stroke:var(--green);stroke-width:1.1;stroke-linejoin:round"/><rect x="230.0" y="85.1" width="10" height="48" rx="0" style="fill:var(--green);fill-opacity:0.25;stroke:var(--green);stroke-width:1.1"/><text x="247.0" y="166" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:12px">4 × 4 × 5</text><text x="160" y="192" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">작아짐</text><line x1="330" y1="30" x2="330" y2="200" style="stroke:var(--rule);stroke-width:1"/><text x="350" y="26" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px;font-weight:600">transposed convolution</text><polygon points="370.0,92.6 382.0,83.4 385.0,83.4 373.0,92.6" style="fill:var(--green);fill-opacity:0.15;stroke:var(--green);stroke-width:1.1;stroke-linejoin:round"/><polygon points="373.0,92.6 385.0,83.4 385.0,107.4 373.0,116.6" style="fill:var(--green);fill-opacity:0.35;stroke:var(--green);stroke-width:1.1;stroke-linejoin:round"/><rect x="370" y="92.6" width="3" height="24" rx="0" style="fill:var(--green);fill-opacity:0.25;stroke:var(--green);stroke-width:1.1"/><text x="377.5" y="166" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:12px">2 × 2</text><line x1="401.0" y1="100" x2="471.0" y2="100" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="471.0,100.0 464.7,103.0 464.7,97.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="436.0" y="86" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:12px">3 × 3 필터</text><polygon points="485.0,85.1 509.0,66.9 512.0,66.9 488.0,85.1" style="fill:var(--blue);fill-opacity:0.15;stroke:var(--blue);stroke-width:1.1;stroke-linejoin:round"/><polygon points="488.0,85.1 512.0,66.9 512.0,114.9 488.0,133.1" style="fill:var(--blue);fill-opacity:0.35;stroke:var(--blue);stroke-width:1.1;stroke-linejoin:round"/><rect x="485.0" y="85.1" width="3" height="48" rx="0" style="fill:var(--blue);fill-opacity:0.25;stroke:var(--blue);stroke-width:1.1"/><text x="498.5" y="166" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:12px">4 × 4</text><text x="490" y="192" class="svgt" text-anchor="middle" style="fill:var(--ink2);font-size:12px">커짐</text></svg>
+    <figcaption>영상 0:24~1:08의 두 예 (3차 5장처럼 판 모양으로 다시 그림). 판의 높이가 가로세로 크기, 두께가 채널 수입니다.</figcaption>
+  </figure>
+
+  <h3>예제 설정<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=qb4nRoEAASA&t=68" target="_blank" rel="noopener">1:08~1:52</a></span></h3>
+  <p class="ask">영상의 예는 어떤 값으로 계산하나요?</p>
+  <div class="tbl"><table>
+    <tr><th>설정</th><th>값 (영상 화면)</th></tr>
+    <tr><td class="c-green">입력 2 × 2</td><td>2, 1 / 3, 2</td></tr>
+    <tr><td class="c-violet">필터 3 × 3 (f = 3)</td><td>1, 2, 1 / 2, 0, 1 / 0, 2, 1</td></tr>
+    <tr><td>패딩 p</td><td>1 (출력 둘레에 한 칸)</td></tr>
+    <tr><td>스트라이드 s</td><td>2</td></tr>
+    <tr><td class="c-blue">출력</td><td>4 × 4</td></tr>
+  </table></div>
+
+  <h3>한 칸씩 계산<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=qb4nRoEAASA&t=112" target="_blank" rel="noopener">1:52~6:28</a></span></h3>
+  <p class="ask">2 × 2가 4 × 4가 되는 계산은 어떻게 하나요?</p>
+  <p>보통 합성곱은 필터를 입력 위에 놓고 곱해 더합니다. transposed convolution은 필터를 <b>출력 위에</b> 놓습니다. 입력의 값 하나를 필터의 모든 칸에 곱해서 3 × 3 결과를 출력에 붙여 넣는 방식입니다.</p>
+  <p class="try"><b>재생해 보기:</b> 입력 네 칸이 차례로 필터에 곱해져 출력 위에 놓이고, 겹친 칸이 더해지는 과정을 봅니다.</p>
+  <figure class="fig" id="f-tconv">
+    <svg viewBox="0 0 640 316" role="img" aria-label="입력 2×2의 값마다 필터를 곱해 출력 위에 스트라이드 2로 놓고 겹친 칸을 더해 4×4를 만드는 과정"></svg>
+    <div class="ctrl">
+      <label for="tck">입력 칸</label><input type="range" id="tck" min="0" max="4" step="any" value="0"><output id="tck-o"></output>
+    </div>
+    <div class="read" id="tc-read"></div>
+  </figure>
+  <ol>
+    <li><b>입력 왼쪽 위의 2</b>: 필터 9칸에 모두 2를 곱해 출력의 왼쪽 위 3 × 3에 놓습니다. 패딩 칸에는 값을 넣지 않으므로, 안쪽 네 칸에만 0 × 2 = 0, 1 × 2 = 2, 2 × 2 = 4, 1 × 2 = 2가 들어갑니다.</li>
+    <li><b>입력 오른쪽 위의 1</b>: 필터에 1을 곱합니다. 입력에서 한 칸 옆이지만 스트라이드가 2라 출력에서는 <b>두 칸</b> 옆에 놓습니다. 앞의 결과와 겹치는 칸은 덮어쓰지 않고 <b>더합니다</b>. 이미 2가 있던 칸에 2가 더해져 4가 됩니다.</li>
+    <li><b>입력 왼쪽 아래의 3</b>: 필터에 3을 곱해 출력에서 두 칸 아래에 놓습니다.</li>
+    <li><b>입력 오른쪽 아래의 2</b>: 필터에 2를 곱해 오른쪽 아래에 놓고 더합니다.</li>
+  </ol>
+  <p>마지막에 각 칸에 모인 값을 모두 더하면 결과입니다. 영상 화면의 값과 같습니다.</p>
+  <div class="tbl"><table>
+    <tr><th></th><th>1열</th><th>2열</th><th>3열</th><th>4열</th></tr>
+    <tr><td>1행</td><td>0</td><td>2 + 2 = <b>4</b></td><td>0</td><td>1</td></tr>
+    <tr><td>2행</td><td>4 + 6 = <b>10</b></td><td>2 + 0 + 3 + 2 = <b>7</b></td><td>2 + 4 = <b>6</b></td><td>1 + 2 = <b>3</b></td></tr>
+    <tr><td>3행</td><td>0</td><td>3 + 4 = <b>7</b></td><td>0</td><td>2</td></tr>
+    <tr><td>4행</td><td>6</td><td>3 + 0 = <b>3</b></td><td>4</td><td>2</td></tr>
+  </table></div>
+  <aside class="wait"><b>잠깐, 출력 크기는 어떻게 계산하나요?</b> 영상은 공식을 따로 말하지 않습니다. 화면대로 따라가면 필터 3 × 3을 스트라이드 2로 두 번 놓아 5 × 5를 덮고, 그중 패딩 칸(위쪽 한 줄과 왼쪽 한 줄)을 버린 안쪽이 4 × 4입니다. 참고로 PyTorch 같은 프레임워크는 출력 크기를 (입력 − 1) × 스트라이드 + 필터 − 2 × 패딩으로 계산해서, 같은 설정이면 (2 − 1) × 2 + 3 − 2 = 3입니다. 4 × 4를 얻으려면 출력 쪽에 한 칸을 더하는 설정(output_padding = 1)을 함께 씁니다. (보충)</aside>
+
+  <h3>왜 이 방법인가<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=qb4nRoEAASA&t=388" target="_blank" rel="noopener">6:28~7:39</a></span></h3>
+  <p class="ask">왜 하필 이렇게 키우나요?</p>
+  <p>영상은 작은 입력을 큰 출력으로 바꾸는 방법은 여러 가지가 있을 수 있지만, transposed convolution은 효과적인 방법 중 하나라고 답합니다. 필터의 값을 모두 <b>학습</b>하게 하면, U-Net 안에 넣었을 때 좋은 결과를 냅니다. 3차의 합성곱 필터처럼 키우는 방법도 데이터에서 배우는 것입니다.</p>
+  <p class="take">transposed convolution은 입력 값 하나마다 필터 전체를 곱해 출력 위에 스트라이드만큼 옮겨 가며 놓고, 겹친 칸을 더해 작은 입력을 크게 만듭니다. 필터 값은 학습됩니다.</p>
+</section>
+
+<section class="page ch" id="ch5" hidden>
+  <p class="chno">5장</p>
+  <h2>U-Net</h2>
+  <p class="src">영상: <a href="https://www.youtube.com/watch?v=oQxrjl3INEY&t=3" target="_blank" rel="noopener">Andrew Ng, U-Net Architecture</a> 0:03~7:41</p>
+  <div class="card"><div><span>질문</span>대략적인 정보와 디테일을 어떻게 함께 쓸까요?</div><div><span>키워드</span>U-Net · 내려가는 길 · 올라가는 길 · 건너뛰기 연결(skip connection) · 1 × 1 합성곱 · 분할(segmentation) · argmax</div><div><span>연결</span>3차의 합성곱·풀링과 4장의 transposed convolution을 조합합니다.</div></div>
+
+  <h3>한눈에 보기</h3>
+  <p class="ask">U-Net은 무엇으로 되어 있나요?</p>
+  <p>U-Net 그림은 화살표 다섯 가지로 읽습니다. 영상 그림의 범례와 같습니다.</p>
+  <div class="tbl"><table>
+    <tr><th>화살표</th><th>하는 일</th><th>크기 변화</th></tr>
+    <tr><td>합성곱 + ReLU</td><td>3차의 합성곱 층</td><td>가로세로 그대로, 채널 바뀜</td></tr>
+    <tr><td class="c-amber">최대 풀링</td><td>3차의 max pooling</td><td>가로세로 줄어듦</td></tr>
+    <tr><td class="c-green">transposed conv</td><td>4장의 키우는 합성곱</td><td>가로세로 커짐</td></tr>
+    <tr><td class="c-blue">건너뛰기 연결</td><td>왼쪽 값을 오른쪽에 그대로 복사</td><td>채널이 붙어서 늘어남</td></tr>
+    <tr><td class="c-violet">1 × 1 합성곱</td><td>마지막에 픽셀마다 클래스 점수로</td><td>채널 = 클래스 수</td></tr>
+  </table></div>
+
+  <h3>오토인코더의 문제</h3>
+  <p class="ask">합성곱 오토인코더로 충분하지 않았나요?</p>
+  <p>커리큘럼의 설명입니다. 합성곱 오토인코더가 잘 쓰이면서 비전 작업은 단순한 특징 뽑기를 넘어 이미지 → 분할(segmentation) 이미지처럼 다양한 곳으로 넓어졌습니다. 그런데 디코더의 결과는 아주 압축된 잠재 코드에서 만든 것이라, 원본의 뚜렷한 디테일을 쓸 수 없었습니다.</p>
+  <p>잠재 코드의 대략적인 정보와 원본의 자세한 디테일을 모두 쓰기 위해, 생명공학·의료 분야의 논문 "U-Net: Convolutional Networks for Biomedical Image Segmentation"(2015)이 새로운 구조를 발표했고, 이것이 너무 잘 작동해서 모든 이미지 처리 과정에 쓰이게 되었다고 커리큘럼은 설명합니다.</p>
+  <figure class="fig mini">
+    <svg viewBox="0 0 640 270" role="img" aria-label="합성곱 오토인코더는 작은 잠재 표현만으로 복원하고 U-Net은 같은 크기의 인코더 값을 복사해 함께 씀"><text x="20" y="18" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px;font-weight:600">합성곱 오토인코더</text><rect x="40" y="28.0" width="10" height="60" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><line x1="54" y1="58" x2="88" y2="74" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="88.0,74.0 81.0,74.1 83.6,68.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="92" y="52.0" width="10" height="44" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><line x1="106" y1="74" x2="140" y2="90" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="140.0,90.0 133.0,90.1 135.6,84.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="144" y="75.0" width="10" height="30" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><line x1="158" y1="90" x2="192" y2="106" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="192.0,106.0 185.0,106.1 187.6,100.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="196" y="97.0" width="10" height="18" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><rect x="248" y="97" width="12" height="18" rx="0" style="fill:var(--green);fill-opacity:0.35;stroke:var(--green);stroke-width:1.1"/><line x1="210" y1="106" x2="244" y2="106" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="244.0,106.0 237.7,109.0 237.7,103.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="300" y="97.0" width="10" height="18" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><rect x="352" y="75.0" width="10" height="30" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><rect x="404" y="52.0" width="10" height="44" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><rect x="456" y="28.0" width="10" height="60" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><line x1="264" y1="106" x2="296" y2="106" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="296.0,106.0 289.7,109.0 289.7,103.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="314" y1="106" x2="348" y2="90" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="348.0,90.0 343.6,95.4 341.0,89.9" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="366" y1="90" x2="400" y2="74" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="400.0,74.0 395.6,79.4 393.0,73.9" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="418" y1="74" x2="452" y2="58" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="452.0,58.0 447.6,63.4 445.0,57.9" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><text x="490" y="86" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">디코더는 작은 잠재</text><text x="490" y="104" class="svgt" text-anchor="start" style="fill:var(--ink2);font-size:12px">표현만 보고 복원</text><text x="20" y="146" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px;font-weight:600">U-Net</text><rect x="40" y="165.0" width="10" height="60" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><line x1="54" y1="195" x2="88" y2="211" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="88.0,211.0 81.0,211.1 83.6,205.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="92" y="189.0" width="10" height="44" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><line x1="106" y1="211" x2="140" y2="227" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="140.0,227.0 133.0,227.1 135.6,221.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="144" y="212.0" width="10" height="30" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><line x1="158" y1="227" x2="192" y2="243" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="192.0,243.0 185.0,243.1 187.6,237.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="196" y="234.0" width="10" height="18" rx="0" style="fill:var(--blue);fill-opacity:0.3;stroke:var(--blue);stroke-width:1.1"/><rect x="248" y="234" width="12" height="18" rx="0" style="fill:var(--green);fill-opacity:0.35;stroke:var(--green);stroke-width:1.1"/><line x1="210" y1="243" x2="244" y2="243" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="244.0,243.0 237.7,246.0 237.7,240.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="300" y="234.0" width="10" height="18" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><rect x="352" y="212.0" width="10" height="30" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><rect x="404" y="189.0" width="10" height="44" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><rect x="456" y="165.0" width="10" height="60" rx="0" style="fill:var(--violet);fill-opacity:0.3;stroke:var(--violet);stroke-width:1.1"/><line x1="264" y1="243" x2="296" y2="243" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="296.0,243.0 289.7,246.0 289.7,240.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="314" y1="243" x2="348" y2="227" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="348.0,227.0 343.6,232.4 341.0,226.9" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="366" y1="227" x2="400" y2="211" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="400.0,211.0 395.6,216.4 393.0,210.9" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="418" y1="211" x2="452" y2="195" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="452.0,195.0 447.6,200.4 445.0,194.9" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="45" y1="165.0" x2="45" y2="159.0" style="stroke:var(--blue);stroke-width:1.2"/><line x1="45" y1="159.0" x2="461" y2="159.0" style="stroke:var(--blue);stroke-width:1.2"/><line x1="461" y1="159.0" x2="461" y2="165.0" style="stroke:var(--blue);stroke-width:1.2"/><polygon points="461.0,165.0 458.0,158.7 464.0,158.7" style="fill:var(--blue);fill-opacity:1;stroke:var(--blue);stroke-width:1;stroke-linejoin:round"/><line x1="97" y1="189.0" x2="97" y2="183.0" style="stroke:var(--blue);stroke-width:1.2"/><line x1="97" y1="183.0" x2="409" y2="183.0" style="stroke:var(--blue);stroke-width:1.2"/><line x1="409" y1="183.0" x2="409" y2="189.0" style="stroke:var(--blue);stroke-width:1.2"/><polygon points="409.0,189.0 406.0,182.7 412.0,182.7" style="fill:var(--blue);fill-opacity:1;stroke:var(--blue);stroke-width:1;stroke-linejoin:round"/><line x1="149" y1="212.0" x2="149" y2="206.0" style="stroke:var(--blue);stroke-width:1.2"/><line x1="149" y1="206.0" x2="357" y2="206.0" style="stroke:var(--blue);stroke-width:1.2"/><line x1="357" y1="206.0" x2="357" y2="212.0" style="stroke:var(--blue);stroke-width:1.2"/><polygon points="357.0,212.0 354.0,205.7 360.0,205.7" style="fill:var(--blue);fill-opacity:1;stroke:var(--blue);stroke-width:1;stroke-linejoin:round"/><text x="490" y="222" class="svgt" text-anchor="start" style="fill:var(--blue);font-size:12px">같은 크기의 인코더 값을</text><text x="490" y="240" class="svgt" text-anchor="start" style="fill:var(--blue);font-size:12px">건너뛰어 복사해 함께 사용</text></svg>
+    <figcaption>합성곱 오토인코더와 U-Net의 차이 (커리큘럼 설명을 그림으로 정리, 보충). 파란 판은 인코더, 보라 판은 디코더, 초록은 가장 작은 표현입니다.</figcaption>
+  </figure>
+
+  <h3>U-Net 개요<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=oQxrjl3INEY&t=3" target="_blank" rel="noopener">0:03~1:05</a></span></h3>
+  <p class="ask">U-Net은 어떤 모델인가요?</p>
+  <p>영상의 Andrew Ng은 U-Net을 오늘날 컴퓨터비전에서 가장 중요하고 기초적인 구조 중 하나라고 소개합니다. 그림으로 그리면 U자처럼 생겨서 U-Net이라고 부릅니다. Olaf Ronneberger, Philipp Fischer, Thomas Brox가 만들었고, 원래 논문은 의료 영상을 분할하는 데 쓰려는 것이었지만 다른 많은 분할 작업에도 유용한 것으로 드러났습니다.</p>
+  <p><b>분할(semantic segmentation)</b>은 이미지 전체에 정답 하나를 붙이는 분류와 달리, <b>픽셀마다</b> "자동차", "도로"처럼 클래스를 정하는 일입니다. 그래서 출력이 입력과 같은 가로세로 크기여야 합니다. (보충 설명)</p>
+
+  <h3>판 그림 읽기<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=oQxrjl3INEY&t=65" target="_blank" rel="noopener">1:05~2:31</a></span></h3>
+  <p class="ask">U-Net 그림의 얇은 판은 무엇인가요?</p>
+  <p>U-Net의 입력은 이미지 H × W × 3(RGB 세 채널)입니다. 영상은 3차원 블록 대신, 블록을 <b>옆에서 본 모습</b>만 그립니다. 그러면 판의 높이가 H, 두께가 채널 수 3이라 아주 얇게 보입니다. 3차 5장의 구조 그림과 같은 방식이고, 그림을 단순하게 하려는 것입니다.</p>
+
+  <h3>내려가는 길<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=oQxrjl3INEY&t=151" target="_blank" rel="noopener">2:31~3:36</a></span></h3>
+  <p class="ask">U-Net의 앞부분은 무엇을 하나요?</p>
+  <p>앞부분은 3차에서 본 보통 CNN입니다.</p>
+  <ul>
+    <li><b>합성곱 + ReLU</b>를 두 번 합니다. 가로세로는 그대로이고 채널은 조금 늘어납니다.</li>
+    <li><b class="c-amber">최대 풀링</b>으로 가로세로를 줄입니다. 대신 판은 더 두꺼워져(채널 증가) 갑니다.</li>
+    <li>이것을 반복하면 가로세로가 아주 작아집니다.</li>
+  </ul>
+
+  <h3>올라가는 길<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=oQxrjl3INEY&t=216" target="_blank" rel="noopener">3:36~5:48</a></span></h3>
+  <p class="ask">작아진 것을 어떻게 다시 키우나요?</p>
+  <p>뒷부분에서는 4장의 <b class="c-green">transposed convolution</b>으로 크기를 다시 키웁니다. 여기에 U-Net을 만드는 한 가지가 더 들어갑니다. <b class="c-blue">건너뛰기 연결(skip connection)</b>은 왼쪽(내려가는 길)의 같은 높이 층 값을 오른쪽으로 <b>그대로 복사</b>합니다. 영상의 그림에서 붙은 판의 밝은 부분은 transposed convolution에서 온 것이고, 어두운 부분은 왼쪽에서 복사해 온 것입니다.</p>
+  <p>그 뒤 합성곱 + ReLU를 두 번 하고, 다시 transposed convolution → 복사해 붙이기 → 합성곱을 반복해서 원래 입력과 같은 H × W로 돌아옵니다.</p>
+  <p class="try"><b>재생해 보기:</b> U-Net이 내려갔다가 올라오는 순서대로 한 층씩 쌓이는 과정을 봅니다.</p>
+  <figure class="fig" id="f-unet">
+    <svg viewBox="0 0 640 300" role="img" aria-label="U-Net: 합성곱과 풀링으로 내려가고 transposed convolution과 건너뛰기 연결로 올라와 1×1 합성곱으로 출력"></svg>
+    <div class="ctrl">
+      <label for="uk">단계</label><input type="range" id="uk" min="0" max="6" step="any" value="0"><output id="uk-o"></output>
+    </div>
+    <div class="read" id="un-read"></div>
+  </figure>
+  <p class="note">영상 0:40의 U-Net 그림을 단순하게 다시 그렸습니다. 판의 높이와 두께는 커지고 작아지는 경향만 나타낸 것입니다(보충).</p>
+  <aside class="wait"><b>잠깐, 첫 transposed convolution은 크기를 안 키우나요?</b> 영상의 그림에서는 첫 transposed convolution 층이 가로세로는 그대로 두고 채널 수만 줄였고(4:00), 그다음부터 가로세로를 키웁니다. 위 그림은 모든 단계에서 키우도록 단순화했습니다. 원 논문은 올라가는 단계마다 가로세로를 두 배로 키웁니다. (보충)</aside>
+
+  <h3>출력: 픽셀마다 분류<span class="ts">Andrew Ng <a href="https://www.youtube.com/watch?v=oQxrjl3INEY&t=348" target="_blank" rel="noopener">5:48~7:41</a></span></h3>
+  <p class="ask">마지막 출력은 어떻게 만드나요?</p>
+  <p>원래 크기로 돌아온 뒤 합성곱을 몇 번 더 하고, 마지막에 <b class="c-violet">1 × 1 합성곱</b>으로 분할 결과를 만듭니다. 출력의 크기는 입력과 같은 H × W에 <b>클래스 수</b>를 곱한 H × W × 클래스 수입니다. 클래스가 3개면 3, 10개면 10입니다.</p>
+  <p>즉 H × W 픽셀마다 클래스 수만큼의 숫자가 있고, 그 숫자들이 그 픽셀이 각 클래스일 가능성을 나타냅니다. 픽셀마다 <b>argmax</b>(가장 큰 값의 위치)를 고르면 픽셀이 클래스 하나로 정해지고, 이것을 색으로 칠하면 분할 지도가 됩니다.</p>
+  <div class="tbl"><table>
+    <tr><th>픽셀 하나</th><th>배경</th><th>도로</th><th>자동차</th><th>argmax</th></tr>
+    <tr><td>자동차 위의 픽셀</td><td>0.2</td><td>0.5</td><td><b>2.1</b></td><td>자동차</td></tr>
+    <tr><td>길 위의 픽셀</td><td>0.3</td><td><b>1.8</b></td><td>0.4</td><td>도로</td></tr>
+  </table></div>
+  <p class="note">클래스 이름과 점수는 보충 예시입니다. 1 × 1 합성곱은 픽셀 하나의 채널 값들을 가중합하는 것이라, 3차의 완전연결층을 픽셀마다 따로 적용한 것과 같습니다(보충).</p>
+  <p class="take">U-Net은 합성곱·풀링으로 내려가며 대략적인 정보를 모으고, transposed convolution으로 올라오면서 같은 높이의 인코더 값을 복사해 붙여 디테일을 되살립니다. 마지막 1 × 1 합성곱이 픽셀마다 클래스 점수를 냅니다.</p>
+</section>
+
+<section class="page" id="glossary" hidden>
+  <p class="chno">부록</p>
+  <h2>용어·기호</h2>
+  <p>4차 노트에 나오는 용어와 기호입니다. 오른쪽 칸은 처음 나오는 장입니다. 앞 차수의 용어는 <a href="ai-stage1.html#glossary">1차</a>, <a href="ai-stage2.html#glossary">2차</a>, <a href="ai-stage3.html#glossary">3차</a> 용어·기호에 있습니다.</p>
+  <h3>용어</h3>
+  <div class="tbl"><table>
+    <tr><th>용어 (읽기)</th><th>뜻</th><th>장</th></tr>
+    <tr><td>인코더 (encoder) · 디코더 (decoder)</td><td>입력을 작은 표현으로 줄이는 부분 · 작은 표현에서 데이터를 만드는 부분</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>오토인코더 (autoencoder)</td><td>입력을 줄였다가 그대로 복원하도록 학습하는 신경망</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>병목 (bottleneck)</td><td>오토인코더에서 가장 작은 층</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>잠재 공간 (latent space) · 잠재 코드 (latent code)</td><td>압축된 표현들이 놓이는 공간 · 그 표현</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>복원 (reconstruction)</td><td>압축된 표현에서 입력을 다시 만든 것</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>정답 없는 학습 (unsupervised learning, 비지도 학습)</td><td>사람이 붙인 정답(레이블) 없이 하는 학습</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>합성곱 오토인코더 (convolutional autoencoder)</td><td>인코더와 디코더를 CNN으로 만든 오토인코더</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td>차원 축소 (dimensionality reduction)</td><td>데이터를 더 적은 숫자로 나타내는 것</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>무리 (cluster, 클러스터)</td><td>잠재 공간에서 비슷한 데이터가 모인 영역</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>최근접 이웃 (nearest neighbours)</td><td>가장 가까운 데이터의 종류로 분류하는 방법</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>잠재 차원 (latent dimension)</td><td>병목 층의 뉴런 수 = 잠재 공간의 차원</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>투영 (projection)</td><td>높은 차원의 점을 낮은 차원으로 옮겨 그리는 것</td><td><a href="#ch2">2</a></td></tr>
+    <tr><td>보간 (interpolation)</td><td>두 점 사이의 중간 지점을 잡는 것</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>VAE (variational autoencoder, 변분 오토인코더)</td><td>잠재 공간을 정규화한 대표적인 오토인코더</td><td><a href="#ch3">3</a></td></tr>
+    <tr><td>transposed convolution (트랜스포즈드 컨볼루션)</td><td>필터를 출력 위에 놓고 겹친 값을 더해 크기를 키우는 합성곱</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td>U-Net (유넷)</td><td>내려가는 길과 올라가는 길을 건너뛰기 연결로 이은 U자 모양 구조</td><td><a href="#ch5">5</a></td></tr>
+    <tr><td>건너뛰기 연결 (skip connection)</td><td>앞쪽 층의 값을 뒤쪽 층으로 복사해 주는 연결</td><td><a href="#ch5">5</a></td></tr>
+    <tr><td>분할 (semantic segmentation, 시맨틱 세그멘테이션)</td><td>픽셀마다 클래스를 정하는 일</td><td><a href="#ch5">5</a></td></tr>
+    <tr><td>1 × 1 합성곱</td><td>픽셀 하나의 채널 값들만 가중합하는 합성곱</td><td><a href="#ch5">5</a></td></tr>
+  </table></div>
+  <h3>기호</h3>
+  <p class="note">읽는 법은 흔히 쓰는 읽기입니다. (보충)</p>
+  <div class="tbl"><table>
+    <tr><th>기호</th><th>읽는 법</th><th>뜻</th><th>장</th></tr>
+    <tr><td class="m">z₁, z₂</td><td>제트 원, 제트 투</td><td>잠재 표현의 숫자(병목 뉴런의 값)</td><td><a href="#ch1">1</a></td></tr>
+    <tr><td class="m">f, p, s</td><td>에프, 피, 에스</td><td>필터 크기, 패딩, 스트라이드 (영상 표기)</td><td><a href="#ch4">4</a></td></tr>
+    <tr><td class="m">H × W × 3</td><td>에이치 바이 더블유 바이 삼</td><td>높이 × 너비 × 채널(RGB)</td><td><a href="#ch5">5</a></td></tr>
+  </table></div>
+</section>
+
+<nav class="pager" id="pager" aria-label="이전·다음 장"></nav>
+<footer>원문: Deepia, Autoencoders | Deep Learning Animated · Andrew Ng (DeepLearning.AI), Transpose Convolutions · Andrew Ng (DeepLearning.AI), U-Net Architecture</footer>
+</main>
+</div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const f=(n,d)=>{let v=Number(n).toFixed(d);if(/^-0(\.0+)?$/.test(v))v=v.slice(1);return v.replace('-','−');};
+const T=(x,y,s,o)=>{o=o||{};return `<text x="${x}" y="${y}" class="${o.m?'svgm':'svgt'}" ${o.a?`text-anchor="${o.a}"`:''} style="${o.c?`fill:var(--${o.c})`:''}">${s}</text>`;};
+const L=(x1,y1,x2,y2,c,w,d)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--${c||'ink2'});stroke-width:${w||1}" ${d?'stroke-dasharray="5 4"':''}/>`;
+const C=(x,y,r,c,op)=>`<circle cx="${x}" cy="${y}" r="${r}" style="fill:var(--${c})${op!==undefined?`;opacity:${op}`:''}"/>`;
+const bind=(ids,fn)=>{ids.forEach(i=>$(i).addEventListener('input',fn));fn();};
+
+/* ---------- 라우팅 · 목차 ---------- */
+const pages=[...document.querySelectorAll('main .page')];
+const order=['intro','ch1','ch2','ch3','ch4','ch5','glossary'];
+const names={intro:"개요",ch1:"1장. 오토인코더",ch2:"2장. 잠재 공간",ch3:"3장. 활용과 한계",ch4:"4장. Transposed convolution",ch5:"5장. U-Net",glossary:"용어·기호"};
+const SITE='4차 오토인코더와 U-Net · AI 기초 노트';
+pages.forEach(pg=>{pg.querySelectorAll('h3').forEach((h,i)=>{if(!h.id) h.id=`${pg.id}-k${i+1}`;});});
+const nav=$('sidenav'); let html='';
+order.forEach(id=>{
+  if(id==='glossary') html+='<div class="sep"></div>';
+  html+=`<a href="#${id}" data-p="${id}">${names[id]}</a>`;
+  if(/^ch/.test(id)) html+=`<div class="kw" data-kw="${id}" hidden>`+[...$(id).querySelectorAll('h3')].map(h=>`<a href="#${h.id}">${h.firstChild.textContent.trim()}</a>`).join('')+'</div>';
+  if(id==='intro') html+='<div class="sep"></div>';
+});
+nav.innerHTML=html;
+const side=$('side'), btn=$('navbtn');
+btn.addEventListener('click',()=>{const o=side.classList.toggle('open');btn.setAttribute('aria-expanded',o);});
+function route(){
+  const id=decodeURIComponent(location.hash.slice(1))||'intro';
+  let target=document.getElementById(id), pg=target?target.closest('.page'):null;
+  if(!pg){pg=$('intro');target=pg;}
+  pages.forEach(p=>p.hidden=(p!==pg));
+  nav.querySelectorAll('a[data-p]').forEach(a=>a.classList.toggle('on',a.dataset.p===pg.id));
+  nav.querySelectorAll('.kw').forEach(k=>k.hidden=(k.dataset.kw!==pg.id));
+  const i=order.indexOf(pg.id), pv=order[i-1], nx=order[i+1];
+  $('pager').innerHTML=(pv?`<a href="#${pv}"><small>이전</small>${names[pv]}</a>`:'')+(nx?`<a class="next" href="#${nx}"><small>다음</small>${names[nx]}</a>`:'');
+  side.classList.remove('open');btn.setAttribute('aria-expanded','false');
+  document.title=(pg.id==='intro'?'':names[pg.id]+' · ')+SITE;
+  requestAnimationFrame(()=>{if(target!==pg) target.scrollIntoView(); else window.scrollTo(0,0);});
+}
+window.addEventListener('hashchange',route); route();
+
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+const topGap=()=>(window.innerWidth<=900?side.getBoundingClientRect().height:0)+40+((document.querySelector('.topbar')||{}).offsetHeight||0);
+nav.addEventListener('click',e=>{
+  const a=e.target.closest('.kw a'); if(!a) return;
+  const el=document.getElementById(a.getAttribute('href').slice(1));
+  if(!el||el.closest('.page').hidden) return;
+  e.preventDefault(); side.classList.remove('open');btn.setAttribute('aria-expanded','false');
+  window.scrollTo({top:Math.max(0,window.scrollY+el.getBoundingClientRect().top-topGap()),behavior:reduceMotion.matches?'auto':'smooth'});
+  history.pushState(null,'','#'+el.id);
+});
+let spyTick=false;
+function spy(){
+  spyTick=false;
+  const pg=pages.find(p=>!p.hidden); if(!pg) return;
+  const hs=[...pg.querySelectorAll('h3')]; if(!hs.length) return;
+  const line=window.innerWidth<=900?110:90; let cur=null;
+  hs.forEach(hd=>{ if(hd.getBoundingClientRect().top<=line) cur=hd; });
+  if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4) cur=hs[hs.length-1];
+  nav.querySelectorAll('.kw a').forEach(a=>a.classList.toggle('on',!!cur&&a.getAttribute('href')==='#'+cur.id));
+  const on=nav.querySelector('.kw a.on');
+  if(on&&window.innerWidth>900){const sb=side.getBoundingClientRect(),r=on.getBoundingClientRect();if(r.top<sb.top+40||r.bottom>sb.bottom-20) on.scrollIntoView({block:'nearest'});}
+}
+window.addEventListener('scroll',()=>{ if(!spyTick){spyTick=true;requestAnimationFrame(spy);} },{passive:true});
+window.addEventListener('hashchange',()=>requestAnimationFrame(()=>requestAnimationFrame(spy)));
+requestAnimationFrame(spy);
+
+/* ================= 4차 그림 ================= */
+const R=(x,y,w,h,fill,op,stroke,sw)=>`<rect x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" width="${(+w).toFixed(1)}" height="${(+h).toFixed(1)}" style="fill:${fill?`var(--${fill})`:'none'};${op!==undefined&&op!==null?`fill-opacity:${op};`:''}stroke:${stroke?`var(--${stroke})`:'none'};stroke-width:${sw||1}"/>`;
+const op01=(k,i)=>Math.max(0,Math.min(1,k-i+1));
+const g=(op,s)=>op>0?`<g style="opacity:${op.toFixed(3)}">${s}</g>`:'';
+const TX=(x,y,s,c,a,fs,w)=>`<text x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" class="svgt" text-anchor="${a||'start'}" style="fill:var(--${c||'ink2'});font-size:${fs||13}px${w?';font-weight:'+w:''}">${s}</text>`;
+const AR=(x1,y1,x2,y2,c,w)=>{const a=Math.atan2(y2-y1,x2-x1),L=6;const p=(t)=>`${(x2-L*Math.cos(a+t)).toFixed(1)},${(y2-L*Math.sin(a+t)).toFixed(1)}`;
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--${c||'ink2'});stroke-width:${w||1.3}"/><polygon points="${x2},${y2} ${p(-0.45)} ${p(0.45)}" style="fill:var(--${c||'ink2'})"/>`;};
+
+/* ---------- 4장. transposed convolution (영상 화면 값) ---------- */
+const TIN=[[2,1],[3,2]], TF=[[1,2,1],[2,0,1],[0,2,1]];
+function tcanvas(n){ // 입력 칸 n개까지 반영한 6×6 (패딩 포함)
+  const C=[...Array(6)].map(()=>Array(6).fill(0)), U=[...Array(6)].map(()=>Array(6).fill(false));
+  for(let q=0;q<n;q++){const i=q>>1,j=q&1;for(let a=0;a<3;a++)for(let b=0;b<3;b++){C[2*i+a][2*j+b]+=TIN[i][j]*TF[a][b];U[2*i+a][2*j+b]=true;}}
+  return {C,U};
+}
+function tconv(){
+  const k=+$('tck').value, n=Math.min(4,Math.ceil(k-1e-9)), cur=n-1, ci=cur>>1, cj=cur&1;
+  const {C,U}=tcanvas(n), prev=tcanvas(Math.max(0,n-1));
+  const IX=30,IY=78,IS=42, FX=150,FY=78,FS=30, PX=150,PY=212, OX=330,OY=48,OS=42;
+  let s='';
+  s+=TX(IX+IS,IY-14,'입력 2 × 2','green','middle');
+  TIN.forEach((row,r)=>row.forEach((v,c)=>{const on=n>0&&r===ci&&c===cj;s+=R(IX+c*IS,IY+r*IS,IS,IS,on?'amber':null,on?0.35:null,'rule')+TX(IX+c*IS+IS/2,IY+r*IS+IS/2+6,v,'green','middle',17,600);}));
+  s+=TX(FX+1.5*FS,FY-14,'필터 3 × 3','violet','middle');
+  TF.forEach((row,r)=>row.forEach((v,c)=>{s+=R(FX+c*FS,FY+r*FS,FS,FS,null,null,'rule')+TX(FX+c*FS+FS/2,FY+r*FS+FS/2+5,v,'violet','middle',14);}));
+  if(n>0){
+    const v=TIN[ci][cj];
+    s+=TX(PX+1.5*FS,PY-12,`${v} × 필터`,'amber','middle');
+    TF.forEach((row,r)=>row.forEach((f,c)=>{s+=R(PX+c*FS,PY+r*FS,FS,FS,'amber',0.12,'rule')+TX(PX+c*FS+FS/2,PY+r*FS+FS/2+5,v*f,'ink','middle',14);}));
+  }
+  s+=TX(OX+3*OS,OY-16,'출력 (회색 = 패딩, 안쪽 4 × 4가 결과)','blue','middle',12);
+  for(let r=0;r<6;r++)for(let c=0;c<6;c++){
+    const pad=r===0||c===0||r===5||c===5;
+    s+=R(OX+c*OS,OY+r*OS,OS,OS,pad?'ink2':null,pad?0.16:null,'rule');
+  }
+  if(n>0) s+=R(OX+2*cj*OS,OY+2*ci*OS,3*OS,3*OS,'amber',0.18,'amber',2);
+  for(let r=1;r<5;r++)for(let c=1;c<5;c++){
+    if(!U[r][c]) continue;
+    const ch=n>0&&C[r][c]!==prev.C[r][c]||(n>0&&!prev.U[r][c]);
+    s+=TX(OX+c*OS+OS/2,OY+r*OS+OS/2+6,C[r][c],ch?'amber':'blue','middle',16,ch?700:500);
+  }
+  if(n>=4&&k>=3.999) s+=R(OX+OS,OY+OS,4*OS,4*OS,null,null,'blue',2.2);
+  $('f-tconv').querySelector('svg').innerHTML=s;
+  $('tck-o').textContent=n+'/4';
+  const nm=['왼쪽 위','오른쪽 위','왼쪽 아래','오른쪽 아래'], place=['출력의 왼쪽 위','출력에서 두 칸 오른쪽','출력에서 두 칸 아래','출력에서 두 칸 오른쪽·두 칸 아래'];
+  $('tc-read').innerHTML=n===0?'입력 2 × 2, 필터 3 × 3, 패딩 1, 스트라이드 2':
+    (`입력 ${nm[cur]}의 <span class="c-green">${TIN[ci][cj]}</span> × 필터를 <span class="c-amber">${place[cur]}</span>에 놓고, 이미 있던 값에 더함`+(n===4&&k>=3.999?' · <span class="c-blue">결과 4 × 4 완성</span>':''));
+}
+bind(['tck'],tconv);
+
+/* ---------- 5장. U-Net (영상 0:40 그림을 단순화) ---------- */
+function unet(){
+  const k=+$('uk').value;
+  const H=[56,42,30,20,12], T=[6,9,12,15,18], YM=[36,100,154,200,242], GAP=10;
+  const xl=L=>14+L*36, xr=L=>548-L*36; // 왼쪽 그룹 시작, 오른쪽 그룹 끝
+  const slab=(x,L,w,c,op)=>R(x,YM[L]-H[L]/2,w,H[L],c,op??0.3,c,1);
+  let s='';
+  // 왼쪽(내려가는 길)
+  const leftEnd=[];
+  for(let L=0;L<5;L++){
+    const st=L===0?1:(L<4?2:3), o=op01(k,st);
+    let x=xl(L), part='';
+    const tin=L===0?3:T[L-1];
+    const first=slab(x,L,tin,'blue',L===0?0.45:0.3);
+    if(L===0) s+=first; else part+=first;
+    x+=tin;
+    for(let q=0;q<2;q++){ part+=AR(x+1,YM[L],x+GAP-1,YM[L],'ink',1.1); x+=GAP; part+=slab(x,L,T[L],'blue'); x+=T[L]; }
+    leftEnd[L]=x;
+    if(L<4) part+=AR(x-T[L]/2,YM[L]+H[L]/2+2,x-T[L]/2,YM[L+1]-H[L+1]/2-3,'amber',1.6);
+    s+=g(L===0?op01(k,1):o, part);
+  }
+  // 오른쪽(올라가는 길)
+  for(let L=3;L>=0;L--){
+    const st=L===3?4:5, o=op01(k,st);
+    let part='';
+    const w=T[L]+T[L]/2+GAP+T[L]+GAP+T[L];
+    let x=xr(L)-w;
+    part+=slab(x,L,T[L],'blue',0.45); // 복사해 온 부분
+    part+=slab(x+T[L],L,T[L]/2,'green',0.35); // transposed conv 결과
+    const cx=x+T[L]*0.75;
+    const fromX=L===3?leftEnd[4]-T[4]/2:xr(L+1)-T[L+1]/2;
+    part+=AR(fromX,YM[L+1]-H[L+1]/2-2,x+T[L]*1.25,YM[L]+H[L]/2+3,'green',1.6);
+    part+=AR(leftEnd[L]+4,YM[L],x-4,YM[L],'blue',1.4);
+    x+=T[L]*1.5;
+    for(let q=0;q<2;q++){ part+=AR(x+1,YM[L],x+GAP-1,YM[L],'ink',1.1); x+=GAP; part+=slab(x,L,T[L],'blue'); x+=T[L]; }
+    s+=g(o,part);
+  }
+  // 1×1 합성곱 → 출력
+  const o6=op01(k,6), xo=xr(0);
+  s+=g(o6, AR(xo+2,YM[0],xo+24,YM[0],'violet',1.6)+R(xo+28,YM[0]-H[0]/2,5,H[0],'violet',0.45,'violet',1)+TX(xo+30.5,YM[0]+H[0]/2+16,'출력','violet','middle',12));
+  s+=TX(14+1.5,YM[0]+H[0]/2+16,'입력','blue','start',12);
+  // 범례
+  const lg=[['ink','합성곱 + ReLU','r'],['amber','최대 풀링','d'],['green','transposed conv','u'],['blue','복사 (건너뛰기)','r'],['violet','1 × 1 합성곱','r']];
+  lg.forEach(([c,t,d],i)=>{const y=214+i*17,x=470;
+    s+=d==='r'?AR(x,y-4,x+22,y-4,c,1.4):(d==='d'?AR(x+11,y-11,x+11,y+2,c,1.6):AR(x+11,y+2,x+11,y-11,c,1.6));
+    s+=TX(x+30,y,t,c==='ink'?'ink':c,'start',12);});
+  $('f-unet').querySelector('svg').innerHTML=s;
+  const msg=['입력 이미지 H × W × 3','합성곱 + ReLU 두 번: 크기는 그대로, 채널이 늘어남','최대 풀링으로 가로세로를 줄이고 합성곱을 반복 (내려가는 길)','가장 작아진 맨 아래','transposed conv로 키우고, 왼쪽의 같은 층 값을 복사해 붙임','같은 일을 반복해 원래 H × W로 (올라가는 길)','1 × 1 합성곱으로 H × W × 클래스 수 출력'];
+  $('uk-o').textContent=Math.round(k)+'/6';
+  $('un-read').innerHTML=msg[Math.min(6,Math.round(k))];
+}
+bind(['uk'],unet);
+})();
+</script>
+
+<script id="scenes">
+(function(){
+/* ================= scene player =================
+   SCENES[figId] = [{dur, cap, line, clear, set:{sliderId:to}, cut:{sliderId:v}, move:[a,b]}]
+   - set: 장면 안에서 move 구간(기본 0.1~0.85) 동안 이전 값 → to 로 부드럽게 이동
+   - cut: 장면 시작에서 바로 바뀜
+   - line: 식 한 줄(HTML) 또는 함수(v, lv) → HTML. v는 슬라이더 값, lv(id,hi,lo)는 로그 슬라이더 실제 값
+   - clear: 이 장면에서 식 줄을 비우고 새로 시작
+   - hl: (v, lv, op) → SVG 문자열. 꼭 필요한 장면에만, 면 채우기만 부드럽게 깜빡임(테두리·글자·화살표 없음). blink:false면 고정
+   - cap에는 <b class="c-red">…</b>처럼 강조색을 넣어 그림의 강조 색과 맞춤
+   - click: 이 장면부터 적용할 모드 버튼(선택자). 모드가 바뀔 때만 한 번 누름 */
+const SCENES={};
+function initScenes(){
+  const $=id=>document.getElementById(id);
+  const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+  const clamp=u=>Math.max(0,Math.min(1,u));
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  const players=[];
+  Object.keys(SCENES).forEach(fid=>{
+    const fig=$(fid); if(!fig) return;
+    const scenes=SCENES[fid];
+    fig.classList.add('sc');
+    const inputs=[...fig.querySelectorAll('input[type=range]')];
+    const mkLv=v=>(id,hi,lo)=>hi*Math.pow(lo/hi,v[id]/100);
+    // 장면 시작 시점의 값 미리 계산
+    const starts=[],base=[],ends=[]; let TOT=0, cur={}; inputs.forEach(i=>cur[i.id]=+i.value);
+    scenes.forEach(s=>{
+      Object.assign(cur,s.cut||{}); starts.push(TOT); base.push({...cur});
+      Object.assign(cur,s.set||{}); ends.push({...cur}); TOT+=s.dur;
+    });
+    // 식 줄 목록(장면별로 보일 줄 번호)
+    const shown=[]; let acc=[];
+    scenes.forEach((s,i)=>{ if(s.clear) acc=[]; if(s.line) acc=acc.concat(i); shown.push(acc.slice()); });
+    const freeze=scenes.map((s,k)=>{let m=k+1;while(m<scenes.length&&!scenes[m].line&&!scenes[m].clear)m++;return ends[m-1];});
+    const maxLines=Math.max(1,...shown.map(a=>a.length));
+    // UI
+    const svg=fig.querySelector('svg');
+    const lines=document.createElement('div'); lines.className='sc-lines'; lines.style.minHeight=(maxLines*1.55)+'em';
+    const cap=document.createElement('p'); cap.className='sc-cap'; cap.setAttribute('aria-live','polite');
+    const bar=document.createElement('div'); bar.className='sc-bar';
+    bar.innerHTML=`<button type="button" class="sc-prev" aria-label="이전 장면">⏮</button><button type="button" class="sc-play">▶ 재생</button><button type="button" class="sc-next" aria-label="다음 장면">⏭</button><input type="range" min="0" max="1000" step="any" value="0" aria-label="재생 위치"><div class="sc-dots">${scenes.map((s,i)=>`<button type="button" aria-label="장면 ${i+1}" title="장면 ${i+1}"></button>`).join('')}</div>`;
+    const ctrl=fig.querySelector('.ctrl')||fig.querySelector('.btns');
+    const anchor=ctrl||svg.nextSibling;
+    fig.insertBefore(lines,anchor); fig.insertBefore(cap,anchor); fig.insertBefore(bar,anchor);
+    const btn=bar.querySelector('.sc-play'), seek=bar.querySelector('input'), dots=[...bar.querySelectorAll('.sc-dots button')];
+    let vals={}, t=0, raf=0, last=0, ci=-1, lineKey='', enter=0;
+    const svgEl=svg;
+    function overlay(now){
+      const old=svgEl.querySelector('g.sc-hl'); if(old) old.remove();
+      const s=scenes[ci]; if(!s||!s.hl) return;
+      const fade=Math.min(1,(now-enter)/450), ph=0.5-0.5*Math.cos(2*Math.PI*(now-enter)/1400);
+      const op=fade*(reduce.matches||s.blink===false?0.8:(0.3+0.7*ph));
+      svgEl.insertAdjacentHTML('beforeend',`<g class="sc-hl" pointer-events="none">${s.hl(vals,mkLv(vals),op)}</g>`);
+    }
+    function apply(nv){
+      inputs.forEach(inp=>{
+        const v=nv[inp.id]; if(v===undefined) return;
+        if(Math.abs(+inp.value-v)>1e-9||vals[inp.id]===undefined){ inp.value=v; inp.dispatchEvent(new Event('input')); }
+      });
+      vals={}; inputs.forEach(i=>vals[i.id]=+i.value);
+    }
+    const modeAt=[]; let md=null; scenes.forEach(s=>{ if(s.click) md=s.click; modeAt.push(md); });
+    let mode=null;
+    function render(tt){
+      t=Math.max(0,Math.min(TOT,tt));
+      let i=scenes.length-1; for(let k=0;k<scenes.length;k++){ if(t<starts[k]+scenes[k].dur){i=k;break;} }
+      const s=scenes[i], u=(t-starts[i])/s.dur, mv=s.move||[0.1,0.85], e=ease(clamp((u-mv[0])/(mv[1]-mv[0])));
+      if(modeAt[i]&&modeAt[i]!==mode){ mode=modeAt[i]; const el=fig.querySelector(mode)||document.querySelector(mode); if(el) el.click(); }
+      const nv={...base[i]};
+      for(const k in (s.set||{})) nv[k]=base[i][k]+(s.set[k]-base[i][k])*e;
+      apply(nv);
+      if(i!==ci){
+        ci=i; enter=performance.now(); cap.style.opacity=0;
+        setTimeout(()=>{cap.innerHTML=s.cap||'';cap.style.opacity=1;},110);
+        dots.forEach((d,k)=>{d.classList.toggle('on',k<i);d.classList.toggle('now',k===i);});
+      }
+      const key=shown[i].join(',');
+      if(key!==lineKey){ lineKey=key; lines.innerHTML=shown[i].map(k=>`<div class="sc-ln${k===shown[i][shown[i].length-1]?' cur':''}" data-k="${k}"></div>`).join(''); }
+      lines.querySelectorAll('.sc-ln').forEach(el=>{
+        const k=+el.dataset.k, L=scenes[k].line, last=k===shown[i][shown[i].length-1], v=last?vals:freeze[k], h=typeof L==='function'?L(v,mkLv(v)):L;
+        if(el.innerHTML!==h) el.innerHTML=h;
+      });
+      seek.value=t/TOT*1000;
+      overlay(performance.now());
+    }
+    const setBtn=()=>{btn.textContent=raf?'❚❚ 멈춤':(t>=TOT?'↺ 다시':'▶ 재생');};
+    function frame(now){ t+=(now-last)/1000; last=now; render(t); if(t<TOT){raf=requestAnimationFrame(frame);} else {raf=0;setBtn();} }
+    function pause(){ if(raf) cancelAnimationFrame(raf); raf=0; setBtn(); }
+    function go(i){ pause(); i=Math.max(0,Math.min(scenes.length-1,i)); render(starts[i]+(reduce.matches?scenes[i].dur-1e-3:0)); setBtn(); }
+    function play(){
+      players.forEach(p=>p!==api&&p.pause());
+      if(t>=TOT) t=0;
+      if(reduce.matches){ go(ci+(t>starts[ci]?1:0)); return; }
+      last=performance.now(); raf=requestAnimationFrame(frame); setBtn();
+    }
+    btn.addEventListener('click',()=>raf?pause():play());
+    bar.querySelector('.sc-prev').addEventListener('click',()=>go(t-starts[ci]>0.6&&!reduce.matches?ci:ci-1));
+    bar.querySelector('.sc-next').addEventListener('click',()=>go(ci+1));
+    seek.addEventListener('input',()=>{pause();render(+seek.value/1000*TOT);setBtn();});
+    dots.forEach((d,k)=>d.addEventListener('click',()=>go(k)));
+    const api={pause,tick:now=>{ if(scenes[ci]&&scenes[ci].hl&&fig.offsetParent!==null) overlay(now); }};
+    players.push(api);
+    render(0); setBtn();
+  });
+  window.addEventListener('hashchange',()=>players.forEach(p=>p.pause()));
+  (function loop(now){ players.forEach(p=>p.tick(now)); requestAnimationFrame(loop); })(performance.now());
+}
+
+/* ---- 강조: 면 채우기만 (테두리·글자 외곽선·화살표 없음) ---- */
+const hFill=(d,c,op,a)=>`<path d="${d}" style="fill:var(--${c});fill-opacity:${(a??0.45)*op};stroke:none"/>`;
+const hBox=(x,y,w,h,c,op,a)=>`<rect x="${Math.min(x,x+w)}" y="${Math.min(y,y+h)}" width="${Math.abs(w)}" height="${Math.abs(h)}" style="fill:var(--${c});fill-opacity:${(a??0.45)*op};stroke:none"/>`;
+const hPts=pts=>'M'+pts.map(p=>(+p[0]).toFixed(1)+' '+(+p[1]).toFixed(1)).join('L')+'Z';
+const hBand=(x1,y1,x2,y2,c,op,w)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--${c});stroke-opacity:${0.55*op};stroke-width:${w||8};stroke-linecap:round"/>`;
+
+const bc=(c,t)=>`<b class="c-${c}">${t}</b>`;
+
+SCENES['f-tconv']=[
+  {dur:5.5, cut:{tck:0}, cap:`영상의 예입니다. ${bc('green','입력 2 × 2')}를 ${bc('violet','필터 3 × 3')}, 패딩 1, 스트라이드 2로 4 × 4 출력으로 키웁니다. 회색 칸이 패딩입니다.`, line:'입력 2 × 2 → 출력 4 × 4'},
+  {dur:7, set:{tck:1}, cap:`보통 합성곱은 필터를 입력 위에 놓지만, 여기서는 필터를 ${bc('amber','출력 위')}에 놓습니다. 입력의 첫 값 2를 필터 9칸에 모두 곱해 왼쪽 위 3 × 3에 붙입니다. 패딩 칸에 떨어진 값은 버리고 안쪽 네 칸(0, 2, 4, 2)만 남깁니다.`, line:'2 × 필터 → 0, 2, 4, 2'},
+  {dur:7.5, set:{tck:2}, cap:`입력에서 한 칸 오른쪽으로 가면, 스트라이드가 2라 출력에서는 ${bc('amber','두 칸')} 옮겨 놓습니다. 앞 칸과 겹치는 세로줄은 덮어쓰지 않고 더합니다(2 + 2 = 4).`, line:'겹친 칸은 더하기: 2 + 2 = 4'},
+  {dur:6, set:{tck:3}, cap:'입력 왼쪽 아래의 3은 출력에서 두 칸 아래로 내려 같은 일을 합니다.', line:'3 × 필터를 두 칸 아래에'},
+  {dur:6, set:{tck:4}, cap:'마지막 2까지 더하면 안쪽 4 × 4가 결과입니다. 영상 화면의 값과 같습니다.', line:'0 4 0 1 / 10 7 6 3 / 0 7 0 2 / 6 3 4 2'}
+];
+
+SCENES['f-unet']=[
+  {dur:4.5, cut:{uk:0}, cap:`입력 이미지 H × W × 3을 옆에서 본 얇은 판으로 그립니다. 판의 높이가 H, 두께가 채널 수입니다.`, line:'판 높이 = H, 두께 = 채널'},
+  {dur:5, set:{uk:1}, cap:'합성곱 + ReLU를 두 번 합니다. 가로세로는 그대로이고 채널이 늘어 판이 두꺼워집니다.', line:'합성곱 + ReLU × 2'},
+  {dur:6, set:{uk:2}, cap:`${bc('amber','최대 풀링')}으로 가로세로를 줄이고 다시 합성곱을 두 번 합니다. 3차의 CNN과 같은 내려가는 길입니다.`, line:'풀링 → 합성곱 반복'},
+  {dur:4.5, set:{uk:3}, cap:'맨 아래에서는 가로세로가 가장 작고 채널은 가장 많습니다.', line:'가장 작은 H × W'},
+  {dur:7.5, set:{uk:4}, cap:`${bc('green','transposed convolution')}으로 다시 키우고, 왼쪽의 같은 높이 층 값을 ${bc('blue','그대로 복사')}해 옆에 붙입니다(건너뛰기 연결). 그 뒤 합성곱을 두 번 합니다.`, line:'키우기 + 복사해 붙이기'},
+  {dur:6.5, set:{uk:5}, cap:'키우기 → 복사해 붙이기 → 합성곱을 반복해 원래 이미지의 H × W로 돌아옵니다.', line:'올라가는 길'},
+  {dur:6, set:{uk:6}, cap:`마지막으로 ${bc('violet','1 × 1 합성곱')}으로 H × W × 클래스 수를 만듭니다. 픽셀마다 클래스별 점수가 하나씩 생깁니다.`, line:'출력: H × W × 클래스 수'}
+];
+
+initScenes();
+})();
+</script>
+</body>
+</html>
