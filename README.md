@@ -9,7 +9,9 @@
 | `ai.html` | 첫 페이지. 차수 목록 |
 | `ai-stage1.html` | 1차. 선형회귀와 경사하강법 (개요, 1~4장, 용어·기호) |
 | `ai-stage2.html` | 2차. 역전파와 신경망 (개요, 1~4장, 용어·기호) |
-| `ai-stage3.html` ~ `ai-stage6.html` | 준비 중 |
+| `ai-stage3.html` | 3차. 합성곱 신경망 (개요, 1~5장, 용어·기호) |
+| `ai-stage4.html` | 4차. 오토인코더와 U-Net (개요, 1~5장, 용어·기호) |
+| `ai-stage5.html` ~ `ai-stage6.html` | 준비 중 |
 
 모든 페이지 위쪽의 차수 메뉴로 다른 차수와 미적분 노트로 이동할 수 있습니다. 각 페이지는 한 파일 안에 CSS와 JS가 모두 들어 있습니다.
 
@@ -19,11 +21,25 @@
 - ⏮ ⏭나 장면 점을 누르면 원하는 장면에서 멈춰 볼 수 있습니다.
 - 색 뜻(1차): 파랑 = 측정한 데이터, 보라 = 모델(직선)과 예측값, 빨강 = 잔차·오차·손실, 초록 = 손실 곡선의 기울기, 주황 = 한 번에 움직이는 걸음(Step Size).
 - 색 뜻(2차): 파랑 = 순전파 값, 초록 = 그래디언트, 주황 = 국소 그래디언트, 보라 = 가중치·바이어스, 빨강 = 손실.
+- 색 뜻(3차): 파랑 = 입력, 보라 = 필터·가중치, 초록 = feature map, 주황 = 현재 위치·풀링, 빨강 = 오류율·문제점.
+- 색 뜻(4차): 파랑 = 입력·복원, 보라 = 인코더·디코더·필터, 초록 = 잠재 표현·작은 입력, 주황 = 현재 위치·풀링, 빨강 = 오차·한계.
 - 글꼴: 본문 Pretendard, 수식 STIX Two Text.
 
 ## 미분
 
 미분은 다시 설명하지 않고 [미적분학의 본질 노트](https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html)의 해당 장으로 연결합니다.
+
+## 4차 원문 영상
+
+- [Autoencoders | Deep Learning Animated](https://www.youtube.com/watch?v=hZ4a4NgM3u0) — Deepia
+- [Transpose Convolutions](https://www.youtube.com/watch?v=qb4nRoEAASA) — Andrew Ng (DeepLearning.AI)
+- [U-Net Architecture](https://www.youtube.com/watch?v=oQxrjl3INEY) — Andrew Ng (DeepLearning.AI)
+
+## 3차 원문 영상
+
+- [Neural Networks Part 8: Image Classification with Convolutional Neural Networks (CNNs)](https://www.youtube.com/watch?v=HGwBXDKFk9I) — StatQuest
+- [Lecture 5: Image Classification with CNNs](https://www.youtube.com/watch?v=f3g1zGdxptI) — Stanford CS231n (2025)
+- [Lecture 6: CNN Architectures](https://www.youtube.com/watch?v=aVJy4O5TOk8) — Stanford CS231n (2025)
 
 ## 2차 원문 영상
 
