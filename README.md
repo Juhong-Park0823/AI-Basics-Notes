@@ -11,7 +11,8 @@
 | `ai-stage2.html` | 2차. 역전파와 신경망 (개요, 1~4장, 용어·기호) |
 | `ai-stage3.html` | 3차. 합성곱 신경망 (개요, 1~5장, 용어·기호) |
 | `ai-stage4.html` | 4차. 오토인코더와 U-Net (개요, 1~5장, 용어·기호) |
-| `ai-stage5.html` ~ `ai-stage6.html` | 준비 중 |
+| `ai-stage5.html` | 5차. VAE와 GAN (개요, 1~5장, 용어·기호) |
+| `ai-stage6.html` | 준비 중 |
 
 모든 페이지 위쪽의 차수 메뉴로 다른 차수와 미적분 노트로 이동할 수 있습니다. 각 페이지는 한 파일 안에 CSS와 JS가 모두 들어 있습니다.
 
@@ -23,11 +24,17 @@
 - 색 뜻(2차): 파랑 = 순전파 값, 초록 = 그래디언트, 주황 = 국소 그래디언트, 보라 = 가중치·바이어스, 빨강 = 손실.
 - 색 뜻(3차): 파랑 = 입력, 보라 = 필터·가중치, 초록 = feature map, 주황 = 현재 위치·풀링, 빨강 = 오류율·문제점.
 - 색 뜻(4차): 파랑 = 입력·복원, 보라 = 인코더·디코더·필터, 초록 = 잠재 표현·작은 입력, 주황 = 현재 위치·풀링, 빨강 = 오차·한계.
+- 색 뜻(5차): 파랑 = 입력·진짜 데이터·복원, 보라 = 인코더·디코더·생성자·학습 중인 분포, 초록 = 잠재 공간·μ와 σ·판별자, 주황 = 무작위로 뽑는 값·확률, 빨강 = 손실·문제점.
 - 글꼴: 본문 Pretendard, 수식 STIX Two Text.
 
 ## 미분
 
 미분은 다시 설명하지 않고 [미적분학의 본질 노트](https://juhong-park0823.github.io/The-Essence-of-Calculus/calculus.html)의 해당 장으로 연결합니다.
+
+## 5차 원문 영상
+
+- [Variational Autoencoders | Generative AI Animated](https://www.youtube.com/watch?v=qJeaCHQ1k2w) — Deepia
+- [MIT 6.S191 Lecture 4: Deep Generative Modeling](https://www.youtube.com/watch?v=R8V8CbuxryI) — MIT 6.S191 (2026)
 
 ## 4차 원문 영상
 
