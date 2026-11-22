@@ -304,6 +304,7 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <p class="ask">4차의 오토인코더를 생성의 관점에서 보면 어떤가요?</p>
   <p>MIT 강의는 잠재 변수를 플라톤의 동굴 비유로 설명합니다. 동굴 벽만 볼 수 있는 사람에게 그림자는 관측한 데이터이고, 그림자를 만드는 뒤쪽의 물체는 직접 볼 수 없는 <b>잠재 변수</b>입니다. 오토인코더는 데이터를 저차원의 잠재 변수 z로 줄였다가 x̂로 복원하고, 정답 없이 x와 x̂의 차이만으로 학습합니다. 4차 1장의 내용 그대로입니다.</p>
   <p>Deepia 영상은 크기를 덧붙입니다. 이미지는 보통 수백만 개의 값으로 되어 있지만, 잠재 표현은 보통 10~100개짜리 숫자 벡터입니다.</p>
+  <p>MIT 강의는 잠재 공간의 차원이 병목의 크기를 정한다고 설명합니다. 작을수록 더 강하게 압축해서 담을 수 있는 정보가 줄고, 너무 크면 작은 잠재 변수를 배우는 의미가 없어집니다. 화면(16:00)은 같은 숫자 이미지들을 2차원과 5차원 잠재 공간으로 복원한 결과를 원본과 나란히 보여 줍니다. 4차 2장의 잠재 차원 비교와 같은 이야기입니다.</p>
 
   <h3>오토인코더로 생성하면<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=109" target="_blank" rel="noopener">1:49~2:45</a> · MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=1039" target="_blank" rel="noopener">17:19~17:50</a></span></h3>
   <p class="ask">오토인코더의 잠재 공간에서 점을 뽑아 디코더에 넣으면 새 이미지가 나오지 않나요?</p>
@@ -313,6 +314,14 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <tr><td>잠재 공간에서 아무 점이나 뽑기</td><td class="c-red">대부분 의미 없는 이미지</td><td>잠재 공간이 정리되어 있지 않고 불규칙해서 넓은 영역이 의미 있는 이미지로 복원되지 않음</td></tr>
     <tr><td>인코딩한 점 근처에서 뽑기</td><td class="c-red">원본의 의미 있는 변형이 아님. 아주 가까우면 같은 복원</td><td>가까운 점끼리도 의미가 비슷하다는 보장이 없음</td></tr>
   </table></div>
+  <p class="try"><b>재생해 보기:</b> 오토인코더의 잠재 공간에서 점을 골라 디코더에 넣어 봅니다. 빈 곳, 기존 점 바로 옆, 조금 떨어진 곳을 차례로 봅니다 (개념도, 보충).</p>
+  <figure class="fig" id="f-aegen">
+    <svg viewBox="0 0 640 220" role="img" aria-label="오토인코더의 잠재 공간에서 빈 곳의 점은 알아보기 어려운 모양, 기존 7 바로 옆은 같은 7, 조금 떨어진 곳은 의미 있는 변형이 아닌 모양으로 복원"></svg>
+    <div class="ctrl">
+      <label for="gp">고른 점</label><input type="range" id="gp" min="0" max="4" step="1" value="0"><output id="gp-o"></output>
+    </div>
+    <div class="read" id="gp-read"></div>
+  </figure>
   <p>MIT 강의는 다른 각도에서 봅니다. 오토인코더는 <b>결정론적</b>입니다. 학습이 끝나면 같은 입력은 언제나 똑같이 복원됩니다. 변화의 여지, 즉 확률분포라는 개념이 없어서 샘플 생성에 쓸모가 없습니다.</p>
   <p class="take">생성 모델은 데이터의 확률분포를 배워 새 샘플을 뽑습니다. 오토인코더는 결정론적이고 잠재 공간이 불규칙해서, 잠재 공간에서 점을 뽑아도 의미 있는 새 데이터가 잘 나오지 않습니다.</p>
 </section>
@@ -333,8 +342,34 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   </table></div>
   <figure class="fig mini">
     <svg viewBox="0 0 640 260" role="img" aria-label="오토인코더는 인코더가 점 z 하나를 내고 VAE는 μ와 σ를 낸 뒤 분포에서 z를 뽑아 디코더로 복원"><text x="18" y="26" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px;font-weight:600">오토인코더</text><rect x="20" y="48" width="44" height="44" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="42.0" y="79.68" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:27px;font-weight:600">7</text><line x1="70" y1="70" x2="92" y2="70" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="92.0,70.0 85.7,73.0 85.7,67.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="96.0,28.0 186.0,50.0 186.0,90.0 96.0,112.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="141.0" y="75" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px">인코더</text><line x1="190" y1="70" x2="262" y2="70" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="262.0,70.0 255.7,73.0 255.7,67.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="268" y="52" width="44" height="36" rx="4" style="fill:var(--green);fill-opacity:0.22;stroke:var(--green);stroke-width:1.3"/><text x="290" y="76" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:16px">z</text><text x="290" y="108" class="svgt" text-anchor="middle" style="fill:var(--green);font-size:12px">점 하나</text><line x1="316" y1="70" x2="384" y2="70" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="384.0,70.0 377.7,73.0 377.7,67.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="388.0,50.0 478.0,28.0 478.0,112.0 388.0,90.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="433.0" y="75" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px">디코더</text><line x1="482" y1="70" x2="504" y2="70" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="504.0,70.0 497.7,73.0 497.7,67.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="510" y="48" width="44" height="44" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="532.0" y="79.68" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:27px;font-weight:600">7</text><text x="580" y="75" class="svgm" text-anchor="start" style="fill:var(--blue);font-size:16px">x̂</text><text x="18" y="146" class="svgt" text-anchor="start" style="fill:var(--ink);font-size:13px;font-weight:600">VAE</text><rect x="20" y="168" width="44" height="44" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="42.0" y="199.68" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:27px;font-weight:600">7</text><line x1="70" y1="190" x2="92" y2="190" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="92.0,190.0 85.7,193.0 85.7,187.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="96.0,148.0 186.0,170.0 186.0,210.0 96.0,232.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="141.0" y="195" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px">인코더</text><line x1="190" y1="178" x2="214" y2="168" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="214.0,168.0 209.4,173.2 207.0,167.6" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="190" y1="202" x2="214" y2="212" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="214.0,212.0 207.0,212.4 209.4,206.8" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="218" y="152" width="34" height="30" rx="4" style="fill:var(--green);fill-opacity:0.22;stroke:var(--green);stroke-width:1.3"/><text x="235" y="173" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:16px">μ</text><rect x="218" y="198" width="34" height="30" rx="4" style="fill:var(--green);fill-opacity:0.22;stroke:var(--green);stroke-width:1.3"/><text x="235" y="219" class="svgm" text-anchor="middle" style="fill:var(--green);font-size:16px">σ</text><line x1="256" y1="168" x2="280" y2="184" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="280.0,184.0 273.1,183.0 276.4,178.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><line x1="256" y1="212" x2="280" y2="196" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="280.0,196.0 276.4,202.0 273.1,197.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><circle cx="300" cy="190" r="16" style="fill:var(--amber);fill-opacity:.22;stroke:var(--amber);stroke-width:1.3"/><text x="300" y="196" class="svgm" text-anchor="middle" style="fill:var(--amber);font-size:16px">z</text><text x="300" y="242" class="svgt" text-anchor="middle" style="fill:var(--amber);font-size:12px">분포에서 뽑은 점</text><line x1="318" y1="190" x2="384" y2="190" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="384.0,190.0 377.7,193.0 377.7,187.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><polygon points="388.0,170.0 478.0,148.0 478.0,232.0 388.0,210.0" style="fill:var(--violet);fill-opacity:0.12;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round"/><text x="433.0" y="195" class="svgt" text-anchor="middle" style="fill:var(--violet);font-size:13px">디코더</text><line x1="482" y1="190" x2="504" y2="190" style="stroke:var(--ink2);stroke-width:1.3"/><polygon points="504.0,190.0 497.7,193.0 497.7,187.0" style="fill:var(--ink2);fill-opacity:1;stroke:var(--ink2);stroke-width:1;stroke-linejoin:round"/><rect x="510" y="168" width="44" height="44" rx="4" style="fill:var(--paper);stroke:var(--blue);stroke-width:1.2"/><text x="532.0" y="199.68" class="svgt" text-anchor="middle" style="fill:var(--blue);font-size:27px;font-weight:600">7</text><text x="580" y="195" class="svgm" text-anchor="start" style="fill:var(--blue);font-size:16px">x̂</text></svg>
-    <figcaption>오토인코더와 VAE의 차이 (MIT 강의 18:20 화면을 다시 그림). 다른 부분은 가운데 병목뿐입니다.</figcaption>
+    <figcaption>오토인코더와 VAE의 차이. VAE 줄은 MIT 강의 18:20 화면을 다시 그렸고, 비교용 오토인코더 줄은 보충입니다. 다른 부분은 가운데 병목뿐입니다.</figcaption>
   </figure>
+
+  <h3>인코더가 내는 것: μ와 σ<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=654" target="_blank" rel="noopener">10:54~11:48</a> · MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=1070" target="_blank" rel="noopener">17:50~20:25</a></span></h3>
+  <p class="ask">실제 신경망에서는 무엇이 바뀌나요?</p>
+  <p>보통 오토인코더의 압축 표현은 잠재 공간의 점 하나입니다. VAE의 인코더는 입력을 점 대신 가우시안 분포의 파라미터인 평균 μ와 σ로 바꿉니다. MIT 강의 표현으로는, 잠재 변수를 직접 배우는 대신 <b>잠재 변수마다 평균과 표준편차</b>를 배웁니다. 그래서 인코더의 출력은 평균 벡터 하나와 표준편차 벡터 하나입니다. 그 분포에서 무작위로 점을 뽑고, 디코더가 그 점을 다시 입력 공간으로 바꿉니다.</p>
+  <p class="try"><b>재생해 보기:</b> 같은 입력이 오토인코더에서는 점 하나가 되고, VAE에서는 분포가 되어 거기서 뽑은 점마다 결과가 나오는 과정을 봅니다 (개념도, 보충).</p>
+  <figure class="fig" id="f-vae">
+    <svg viewBox="0 0 640 230" role="img" aria-label="입력 7이 오토인코더에서는 점 하나, VAE에서는 μ와 σ로 정한 분포가 되고, 분포에서 뽑은 z마다 디코더가 조금씩 다른 7을 만듦"></svg>
+    <div class="ctrl">
+      <label for="vk">단계</label><input type="range" id="vk" min="0" max="4" step="any" value="0"><output id="vk-o"></output>
+    </div>
+    <div class="read" id="vae-read"></div>
+  </figure>
+  <p>MIT 강의는 이것을 식으로도 씁니다. 인코더는 입력이 주어졌을 때의 잠재 변수 분포 <span class="m">q<sub>φ</sub>(z | x)</span>를, 디코더는 잠재 변수가 주어졌을 때의 데이터 분포 <span class="m">p<sub>θ</sub>(x | z)</span>를 계산합니다. φ, θ는 각각 인코더와 디코더의 가중치이고, 학습으로 정해집니다.</p>
+  <aside class="wait"><b>잠깐, 인코더가 무작위로 바뀌나요?</b> 아닙니다. 커리큘럼이 강조하는 점입니다. 인코더가 입력에서 μ, σ를 계산하는 매핑 자체는 완전히 <b>결정론적</b>입니다. 같은 입력이면 늘 같은 μ, σ, 즉 같은 분포가 나옵니다. 무작위성은 그 분포에서 z를 <b>뽑는 단계</b>에만 있고, 뽑힌 z를 디코더가 이미지로 바꾸는 과정도 결정론적입니다.</aside>
+  <p>μ와 σ가 숫자로 무슨 뜻인지 예를 들어 보겠습니다. 인코더가 어떤 이미지에 대해 잠재 변수 하나의 값을 μ = 1, σ = 0.5로 냈다면, 그 잠재 변수는 이렇게 뽑힙니다. (보충 예시)</p>
+  <div class="tbl"><table>
+    <tr><th>범위</th><th>값</th><th>그 안에서 뽑힐 확률</th></tr>
+    <tr><td>μ ± σ</td><td>0.5 ~ 1.5</td><td>약 68%</td></tr>
+    <tr><td>μ ± 2σ</td><td>0 ~ 2</td><td>약 95%</td></tr>
+    <tr><td>그 밖</td><td>0보다 작거나 2보다 큼</td><td>약 5%</td></tr>
+  </table></div>
+  <p>μ는 뽑히는 값의 <b>가운데</b>, σ는 <b>퍼진 정도</b>입니다. σ가 0에 가까우면 거의 μ만 나와서 오토인코더의 점 하나와 비슷해지고, σ가 크면 넓게 흩어집니다. 잠재 변수가 여러 개면 변수마다 μ와 σ가 하나씩 있습니다.</p>
+  <aside class="wait"><b>잠깐, σ는 분산인가요, 표준편차인가요?</b> Deepia 영상은 σ를 "variance(분산)"라고 부르고(11:19 등), MIT 강의도 "standard deviations or variances"라고 함께 씁니다. 하지만 3장의 KL 식에 분산이 σ²로 따로 나오고, 4장의 z = μ + σ·ε에서 ε에 곱하는 값은 표준편차입니다. 그래서 이 노트는 σ를 표준편차, σ²를 분산으로 씁니다. (보충)</aside>
+  <p class="take">VAE는 오토인코더의 병목을 바꿔, 입력을 잠재 공간의 점 하나가 아니라 μ와 σ로 정한 분포로 인코딩합니다. 디코더에는 그 분포에서 뽑은 z가 들어갑니다.</p>
+
+  <p class="note">여기까지가 2장의 핵심입니다. 아래는 VAE가 나온 배경과 이론(만든 사람, 확률 기초, 베이즈 관점의 아이디어)입니다.</p>
 
   <h3>VAE를 만든 사람<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=165" target="_blank" rel="noopener">2:45~3:14</a></span></h3>
   <p class="ask">VAE는 언제, 누가 만들었나요?</p>
@@ -365,20 +400,6 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <li>깊은 <b>인코더</b>가 이미지에서 μ, σ를 추정하고, <b>디코더</b>가 근사 사후분포에서 뽑은 z로 이미지를 복원합니다.</li>
   </ol>
 
-  <h3>인코더가 내는 것: μ와 σ<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=654" target="_blank" rel="noopener">10:54~11:48</a> · MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=1070" target="_blank" rel="noopener">17:50~20:25</a></span></h3>
-  <p class="ask">실제 신경망에서는 무엇이 바뀌나요?</p>
-  <p>보통 오토인코더의 압축 표현은 잠재 공간의 점 하나입니다. VAE의 인코더는 입력을 점 대신 가우시안 분포의 파라미터인 평균 μ와 σ로 바꿉니다. MIT 강의 표현으로는, 잠재 변수를 직접 배우는 대신 <b>잠재 변수마다 평균과 표준편차</b>를 배웁니다. 그래서 인코더의 출력은 평균 벡터 하나와 표준편차 벡터 하나입니다. 그 분포에서 무작위로 점을 뽑고, 디코더가 그 점을 다시 입력 공간으로 바꿉니다.</p>
-  <p class="try"><b>재생해 보기:</b> 같은 입력이 오토인코더에서는 점 하나가 되고, VAE에서는 분포가 되어 거기서 뽑은 점마다 결과가 나오는 과정을 봅니다 (개념도, 보충).</p>
-  <figure class="fig" id="f-vae">
-    <svg viewBox="0 0 640 230" role="img" aria-label="입력 7이 오토인코더에서는 점 하나, VAE에서는 μ와 σ로 정한 분포가 되고, 분포에서 뽑은 z마다 디코더가 조금씩 다른 7을 만듦"></svg>
-    <div class="ctrl">
-      <label for="vk">단계</label><input type="range" id="vk" min="0" max="4" step="any" value="0"><output id="vk-o"></output>
-    </div>
-    <div class="read" id="vae-read"></div>
-  </figure>
-  <p>MIT 강의는 이것을 식으로도 씁니다. 인코더는 입력이 주어졌을 때의 잠재 변수 분포 <span class="m">q<sub>φ</sub>(z | x)</span>를, 디코더는 잠재 변수가 주어졌을 때의 데이터 분포 <span class="m">p<sub>θ</sub>(x | z)</span>를 계산합니다. φ, θ는 각각 인코더와 디코더의 가중치이고, 학습으로 정해집니다.</p>
-  <aside class="wait"><b>잠깐, 인코더가 무작위로 바뀌나요?</b> 아닙니다. 커리큘럼이 강조하는 점입니다. 인코더가 입력에서 μ, σ를 계산하는 매핑 자체는 완전히 <b>결정론적</b>입니다. 같은 입력이면 늘 같은 μ, σ, 즉 같은 분포가 나옵니다. 무작위성은 그 분포에서 z를 <b>뽑는 단계</b>에만 있고, 뽑힌 z를 디코더가 이미지로 바꾸는 과정도 결정론적입니다.</aside>
-  <p class="take">VAE는 오토인코더의 병목을 바꿔, 입력을 잠재 공간의 점 하나가 아니라 μ와 σ로 정한 분포로 인코딩합니다. 디코더에는 그 분포에서 뽑은 z가 들어갑니다.</p>
 </section>
 
 <section class="page ch" id="ch3" hidden>
@@ -403,9 +424,9 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <p>복잡해 보이지만 영상은 꽤 직관적이라고 말합니다. 앞부분은 <b>데이터 일치</b> 항이고, 뒷부분은 <b>정규화</b> 항입니다. 커리큘럼도 이 식이 낯선 기호로 쓰인 건 베이즈 통계에 수학적 근거를 두기 때문일 뿐, 내용은 익숙하다고 설명합니다.</p>
   <ul>
     <li><b class="c-blue">데이터 일치 항</b>: 인코딩한 z에서 이미지 x를 얼마나 잘 복원하는지 잽니다. 진짜 이미지를 인코딩해 z를 얻고, 디코더로 복원한 뒤 원본과의 차이를 봅니다. 영상의 가정 아래에서는 이 항이 <b>L2 복원 손실(MSE)</b>이 되어, 보통 오토인코더와 똑같이 계산합니다.</li>
-    <li><b class="c-green">정규화 항 (KL 발산)</b>: KL 발산은 두 확률분포 사이의 거리 같은 것입니다. 근사 사후분포 q(z | x)가 사전분포 p(z)에 얼마나 가까운지 잽니다. p(z)를 정규분포로 정했으므로, 이 항을 최적화하면 근사 사후분포도 정규분포 모양을 갖도록 강제됩니다.</li>
+    <li><b class="c-green">정규화 항 (KL 발산)</b>: KL 발산은 두 확률분포 사이의 거리 같은 것입니다. 근사 사후분포 q(z | x)가 사전분포 p(z)에 얼마나 가까운지 잽니다. p(z)를 정규분포로 정했으므로, 이 항을 최적화하면 근사 사후분포도 정규분포 모양을 갖도록 강제됩니다. (보충: 보통의 거리와 달리 KL(q ‖ p)와 KL(p ‖ q)는 값이 다를 수 있어서 "거리 같은 것"이라고 부릅니다.)</li>
   </ul>
-  <p>영상은 이 학습 목표를 <b>ELBO</b>라고 부르고, "정규화된 복원 손실"로 생각할 수 있다고 정리합니다. MIT 강의도 손실을 복원 손실 + 정규화 항(분포 손실이라고도 함)으로 나누고, 복원 손실의 예로 ‖x − x̂‖²를 화면에 적습니다.</p>
+  <p>영상은 이 학습 목표를 <b>ELBO</b>라고 부르고, "정규화된 복원 손실"로 생각할 수 있다고 정리합니다. ELBO는 <b>키우는</b> 값입니다(복원이 잘될수록 log p(x | z)가 커지고, KL이 작을수록 덜 빠짐). 그래서 실제로 줄이는 손실은 부호를 바꾼 <b>−ELBO = 복원 손실 + KL</b>입니다(보충). MIT 강의도 손실을 복원 손실 + 정규화 항(분포 손실이라고도 함)으로 나누고, 복원 손실의 예로 ‖x − x̂‖²를 화면에 적습니다.</p>
 
   <h3>KL을 계산해 보기<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=790" target="_blank" rel="noopener">13:10~13:50</a></span></h3>
   <p class="ask">KL은 숫자로 어떻게 나오나요?</p>
@@ -430,6 +451,20 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   </table></div>
   <p class="note">표의 숫자는 위 식으로 계산한 보충 예시입니다. 잠재 변수가 여러 개면 변수마다 이 값을 구해 더합니다(보충).</p>
 
+  <h3>두 목표의 줄다리기</h3>
+  <p class="ask">복원과 KL은 서로 돕는 관계인가요?</p>
+  <p>커리큘럼은 두 목표가 서로 <b>상충</b>한다고 설명합니다.</p>
+  <div class="tbl"><table>
+    <tr><th>KL 쪽 제약</th><th>복원</th><th>잠재 공간</th></tr>
+    <tr><td>약하게</td><td>좋아짐 (입출력 차이만 보고 최적화)</td><td>구조화가 덜 되어 좋은 샘플링 지점을 찾기 어려움</td></tr>
+    <tr><td>강하게</td><td>조금 희생됨</td><td>더 구조화되고 다루기 쉬움</td></tr>
+  </table></div>
+  <p>그래서 KL 항 앞에 별도의 파라미터를 두고 제약의 정도를 조절합니다. Deepia 영상이 끝부분(17:54)에서 소개하는 <b>β-VAE</b>가 이 파라미터 β로 복원 품질과 잘 분리된 잠재 표현(disentanglement) 사이의 균형을 조절하는 변형입니다.</p>
+  <div class="eq">손실 = 복원 손실 + <b>β</b> × KL</div>
+  <p class="take">VAE가 줄이는 손실은 입력을 잘 복원하라는 복원 항과, 각 입력의 분포를 N(0, 1)에 가깝게 하라는 KL 항의 합이고, 영상의 학습 목표 ELBO에 −를 붙인 것입니다. KL은 잠재 공간을 연속적이고 빈틈없게 만들지만 복원과 서로 당기므로, β로 균형을 맞춥니다.</p>
+
+  <p class="note">여기까지가 3장의 핵심입니다. 아래는 왜 하필 정규분포로 당기는지에 대한 MIT 강의의 설명입니다.</p>
+
   <h3>왜 정규분포로 당기나<span class="ts">MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=1410" target="_blank" rel="noopener">23:30~28:14</a></span></h3>
   <p class="ask">왜 하필 분포를 N(0, 1) 쪽으로 당기나요?</p>
   <p>MIT 강의는 먼저 좋은 잠재 공간의 조건 두 가지를 듭니다.</p>
@@ -444,17 +479,6 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   </figure>
   <p>아무 분포나 사전분포로 쓴다고 이 성질이 보장되지는 않습니다. 분산이 너무 작으면 분포가 뾰족해서 조금만 벗어나도 의미 있게 복원되지 않습니다. 평균들이 0 근처에 모여 있지 않으면 잠재 변수들이 서로 멀리 떨어져 불연속인 곳이 생깁니다. 정규 사전분포는 <b>평균을 가운데로 모으고 분산을 정규화</b>해서 연속성과 완전성을 돕는다는 것이 강의의 설명입니다. 그렇다고 모든 잠재 변수가 N(0, 1)이 되지는 않습니다. 복원 항이 함께 있어서 두 항의 균형으로 정해집니다.</p>
 
-  <h3>두 목표의 줄다리기</h3>
-  <p class="ask">복원과 KL은 서로 돕는 관계인가요?</p>
-  <p>커리큘럼은 두 목표가 서로 <b>상충</b>한다고 설명합니다.</p>
-  <div class="tbl"><table>
-    <tr><th>KL 쪽 제약</th><th>복원</th><th>잠재 공간</th></tr>
-    <tr><td>약하게</td><td>좋아짐 (입출력 차이만 보고 최적화)</td><td>구조화가 덜 되어 좋은 샘플링 지점을 찾기 어려움</td></tr>
-    <tr><td>강하게</td><td>조금 희생됨</td><td>더 구조화되고 다루기 쉬움</td></tr>
-  </table></div>
-  <p>그래서 KL 항 앞에 별도의 파라미터를 두고 제약의 정도를 조절합니다. Deepia 영상이 4장 끝에서 소개하는 <b>β-VAE</b>가 이 파라미터 β로 복원 품질과 잘 분리된 잠재 표현(disentanglement) 사이의 균형을 조절하는 변형입니다.</p>
-  <div class="eq">손실 = 복원 손실 + <b>β</b> × KL</div>
-  <p class="take">VAE의 손실(ELBO)은 입력을 잘 복원하라는 복원 항과, 각 입력의 분포를 N(0, 1)에 가깝게 하라는 KL 항의 합입니다. KL은 잠재 공간을 연속적이고 빈틈없게 만들지만 복원과 서로 당기므로, β로 균형을 맞춥니다.</p>
 </section>
 
 <section class="page ch" id="ch4" hidden>
@@ -534,8 +558,10 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
     <li><b>β-VAE</b>: 조절 파라미터로 복원 품질과 잘 분리된 잠재 표현 사이의 균형을 맞춥니다(3장).</li>
     <li><b>VQ-VAE</b>: 이산적인 잠재 공간으로 더 선명하게 복원합니다.</li>
   </ul>
-  <aside class="wait"><b>더 보기: ELBO는 어디서 나오나요?</b><span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=1126" target="_blank" rel="noopener">18:46~20:09</a></span> 영상의 부록 내용입니다. ① 데이터 분포의 로그 밀도 log p(x)를 주변화로 씁니다. ② 근사 사후분포 q(z | x)를 끼워 넣어 q에 대한 기댓값으로 바꿉니다. ③ log가 오목한 함수이므로 Jensen 부등식으로 log와 기댓값의 순서를 바꾸면 부등식이 생기고, 오른쪽이 <b>ELBO(evidence lower bound)</b>, 왼쪽이 evidence입니다. evidence를 키우는 대신 더 쉬운 ELBO를 키웁니다. ④ 베이즈 공식으로 결합확률을 바꾸면 ELBO가 "사후분포에 대한 가능도의 기댓값"과 "−KL(q ‖ p(z))"로 나뉘어 3장의 식이 됩니다.</aside>
   <p class="take">재매개변수화(z = μ + σ·ε)로 무작위성을 ε로 빼내면 VAE를 역전파로 학습할 수 있습니다. 학습한 VAE는 정규분포 모양의 매끄러운 잠재 공간에서 새 이미지를 만들고 이미지를 섞을 수 있지만, 결과가 흐린 것이 약점입니다.</p>
+
+  <p class="note">여기까지가 4장의 핵심입니다. 아래는 ELBO 식이 어디서 나오는지에 대한 영상 부록입니다.</p>
+  <aside class="wait"><b>더 보기: ELBO는 어디서 나오나요?</b><span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=1126" target="_blank" rel="noopener">18:46~20:09</a></span> 영상의 부록 내용입니다. ① 데이터 분포의 로그 밀도 log p(x)를 주변화로 씁니다. ② 근사 사후분포 q(z | x)를 끼워 넣어 q에 대한 기댓값으로 바꿉니다. ③ log가 오목한 함수이므로 Jensen 부등식으로 log와 기댓값의 순서를 바꾸면 부등식이 생기고, 오른쪽이 <b>ELBO(evidence lower bound)</b>, 왼쪽이 evidence입니다. evidence를 키우는 대신 더 쉬운 ELBO를 키웁니다. ④ 베이즈 공식으로 결합확률을 바꾸면 ELBO가 "사후분포에 대한 가능도의 기댓값"과 "−KL(q ‖ p(z))"로 나뉘어 3장의 식이 됩니다.</aside>
 </section>
 
 <section class="page ch" id="ch5" hidden>
@@ -588,15 +614,18 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <div class="eq">arg min<sub>G</sub> max<sub>D</sub> E<sub>z,x</sub>[ log D(G(z)) + log(1 − D(x)) ]</div>
   <p>커리큘럼의 표현으로는, 판별자는 자기 판별 결과에 따라 최적화하고 생성자는 판별자의 손실이 커지는 방향으로 파라미터를 최적화합니다. 이 경쟁으로 둘이 함께 나아지고, 학습이 끝나면 생성자는 좋은 판별자도 거의 속일 만큼 진짜 같은 가짜를 만드는 생성 모델이 됩니다.</p>
   <aside class="wait"><b>잠깐, D는 진짜일 확률인가요, 가짜일 확률인가요?</b> 위 화면의 식은 D(·)를 "가짜일 확률"로 놓은 형태입니다. 첫 항은 가짜 G(z)를 가짜로 맞힐 확률, 둘째 항은 진짜 x를 진짜로 맞힐 확률입니다. 강의 말과도 같습니다. 원 논문(Goodfellow 외, 2014)과 대부분의 자료는 D(·)를 "진짜일 확률"로 놓고 min<sub>G</sub> max<sub>D</sub> E[log D(x)] + E[log(1 − D(G(z)))]로 씁니다. 같은 내용을 반대 기준으로 쓴 것입니다. 위의 1차원 그림은 강의의 1차원 설명처럼 "진짜일 확률"로 그렸습니다. (보충)</aside>
-
-  <h3>학습의 어려움과 노이즈 공간<span class="ts">MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=2549" target="_blank" rel="noopener">42:29~44:35</a></span></h3>
-  <p class="ask">GAN은 학습이 쉬운가요?</p>
-  <p>강의는 적대적 목표 때문에 GAN을 안정적으로 학습시키기가 꽤 까다롭다고 말합니다. 그래서 수년간 학습 안정성과 확장성을 높이는 연구가 많았고, 일부 분야에서는 여전히 GAN을 쓰지만 다른 방식으로 넘어간 분야도 있습니다.</p>
-  <p>순수한 노이즈가 어떻게 의미 있는 것이 될까요? 두 신경망이 경쟁하는 구조 덕분에 경사하강법과 역전파로 그 변환을 배울 수 있습니다. 그 결과 노이즈 분포의 한 곳에서 뽑은 샘플은 특정한 결과를, 다른 곳에서 뽑은 샘플은 다른 결과를 냅니다. 강의는 가우시안 노이즈 공간을 따라 움직이면 결과도 의미가 이어지게 바뀐다는 연구를 소개합니다.</p>
-
-  <h3>CycleGAN<span class="ts">MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=2675" target="_blank" rel="noopener">44:35~47:14</a></span></h3>
-  <p class="ask">노이즈가 아니라 다른 데이터에서 시작할 수도 있나요?</p>
-  <p>네. 기본 GAN은 가우시안 노이즈를 목표 데이터 분포로 바꾸지만, 한 데이터 분포를 다른 데이터 분포로 바꾸는 변형도 있습니다. 대표적인 것이 <b>CycleGAN</b>입니다. 생성자 두 개와 판별자 두 개로, 짝지어진 예시 없이 한 도메인의 이미지를 다른 도메인의 이미지로 바꿉니다(짝 없는 이미지 변환). 두 도메인은 순환 손실(cyclic loss)로 이어집니다. 강의는 이미지뿐 아니라 음성에도 쓸 수 있다며, 예전에 CycleGAN으로 강사의 목소리를 오바마 스타일의 목소리로 바꾼 예를 들려줍니다.</p>
+  <p>숫자로 계산해 보면 두 신경망이 같은 값을 반대 방향으로 미는 것이 보입니다. D를 "진짜일 확률"로 놓은 원 논문 식의 값 log D(x) + log(1 − D(G(z)))로 계산했습니다. (보충 예시, log는 자연로그)</p>
+  <div class="tbl"><table>
+    <tr><th>상황</th><th>D(진짜)</th><th>D(가짜)</th><th>log D(x)</th><th>log(1 − D(G(z)))</th><th>합</th></tr>
+    <tr><td>D가 잘 구분함</td><td>0.9</td><td>0.2</td><td>−0.11</td><td>−0.22</td><td><b>−0.33</b></td></tr>
+    <tr><td>G가 좋아짐</td><td>0.9</td><td>0.7</td><td>−0.11</td><td>−1.20</td><td><b>−1.31</b></td></tr>
+    <tr><td>끝: 구분 불가</td><td>0.5</td><td>0.5</td><td>−0.69</td><td>−0.69</td><td><b>−1.39</b></td></tr>
+  </table></div>
+  <ul>
+    <li><b class="c-green">D</b>는 이 합을 <b>키우려</b> 합니다(0에 가깝게). 진짜에 1, 가짜에 0을 줄수록 커집니다.</li>
+    <li><b class="c-violet">G</b>는 이 합을 <b>줄이려</b> 합니다. G가 건드릴 수 있는 것은 둘째 항뿐이라, 가짜가 진짜처럼 보여 D(가짜)가 커지도록 합니다. 0.2 → 0.7이 되자 합이 −0.33에서 −1.31로 내려갔습니다.</li>
+    <li>G가 진짜 분포를 완전히 따라 하면 D는 어디서나 0.5밖에 말할 수 없고, 합은 2 × log 0.5 ≈ −1.39가 됩니다. 위 1차원 그림의 마지막 장면입니다.</li>
+  </ul>
 
   <h3>정리: VAE와 GAN<span class="ts">MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=2834" target="_blank" rel="noopener">47:14~48:18</a></span></h3>
   <p class="ask">VAE와 GAN은 무엇이 다른가요?</p>
@@ -610,6 +639,18 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   </table></div>
   <p>강의는 다음 강의에서 노이즈를 이용해 복원하는 원리를 쓴 새로운 모델(확산 모델)을 다룬다고 예고합니다. 4장 재매개변수화 부분의 질문 시간(30:51)에도, 출력 쪽에서 노이즈를 다루는 방식이 확산 모델과 이어진다고 답했습니다.</p>
   <p class="take">GAN은 노이즈를 가짜 데이터로 바꾸는 생성자와 진짜·가짜를 가리는 판별자를 경쟁시켜, 생성자가 진짜 데이터 분포를 흉내 내도록 학습합니다. 결과는 선명하지만 학습이 불안정할 수 있습니다.</p>
+
+  <p class="note">여기까지가 5장의 핵심입니다. 아래는 GAN 학습의 어려움과 변형(CycleGAN)입니다.</p>
+
+  <h3>학습의 어려움과 노이즈 공간<span class="ts">MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=2549" target="_blank" rel="noopener">42:29~44:35</a></span></h3>
+  <p class="ask">GAN은 학습이 쉬운가요?</p>
+  <p>강의는 적대적 목표 때문에 GAN을 안정적으로 학습시키기가 꽤 까다롭다고 말합니다. 그래서 수년간 학습 안정성과 확장성을 높이는 연구가 많았고, 일부 분야에서는 여전히 GAN을 쓰지만 다른 방식으로 넘어간 분야도 있습니다.</p>
+  <p>순수한 노이즈가 어떻게 의미 있는 것이 될까요? 두 신경망이 경쟁하는 구조 덕분에 경사하강법과 역전파로 그 변환을 배울 수 있습니다. 그 결과 노이즈 분포의 한 곳에서 뽑은 샘플은 특정한 결과를, 다른 곳에서 뽑은 샘플은 다른 결과를 냅니다. 강의는 가우시안 노이즈 공간을 따라 움직이면 결과도 의미가 이어지게 바뀐다는 연구를 소개합니다.</p>
+
+  <h3>CycleGAN<span class="ts">MIT 6.S191 <a href="https://www.youtube.com/watch?v=R8V8CbuxryI&t=2675" target="_blank" rel="noopener">44:35~47:14</a></span></h3>
+  <p class="ask">노이즈가 아니라 다른 데이터에서 시작할 수도 있나요?</p>
+  <p>네. 기본 GAN은 가우시안 노이즈를 목표 데이터 분포로 바꾸지만, 한 데이터 분포를 다른 데이터 분포로 바꾸는 변형도 있습니다. 대표적인 것이 <b>CycleGAN</b>입니다. 생성자 두 개와 판별자 두 개로, 짝지어진 예시 없이 한 도메인의 이미지를 다른 도메인의 이미지로 바꿉니다(짝 없는 이미지 변환). 두 도메인은 순환 손실(cyclic loss)로 이어집니다. 강의는 이미지뿐 아니라 음성에도 쓸 수 있다며, 예전에 CycleGAN으로 강사의 목소리를 오바마 스타일의 목소리로 바꾼 예를 들려줍니다.</p>
+
 </section>
 
 <section class="page" id="glossary" hidden>
@@ -763,6 +804,30 @@ function vaefig(){
   $('vae-read').innerHTML=m[Math.min(4,Math.round(k))];
 }
 bind(['vk'],vaefig);
+
+/* ---------- 1장. 오토인코더 잠재 공간에서 뽑기 (개념도) ---------- */
+const AGC=[['0','blue',0.22,0.68,[[-0.06,0.1],[0.02,0.02],[0.05,-0.09],[-0.03,-0.04],[0.08,0.12],[-0.09,0.05]]],
+  ['6','violet',0.72,0.26,[[-0.1,0.02],[0.06,-0.05],[0.12,0.06],[-0.02,0.08],[0.02,-0.1]]],
+  ['7','amber',0.6,0.72,[[0,0],[0.03,-0.02],[-0.03,0.025],[0.015,0.035],[-0.02,-0.03]]]];
+const AGP=[null,[0.9,0.9,'?','red','빈 곳','알아보기 어려운 모양'],[0.12,0.18,'?','red','빈 곳','알아보기 어려운 모양'],[0.607,0.718,'7','blue','7 바로 옆','원래 7과 같은 복원'],[0.69,0.6,'?','red','7에서 조금 떨어진 곳','다른 필체의 7이 아님']];
+function aegen(){
+  const k=Math.round(+$('gp').value), X0=60,Y0=200,S=180, px=v=>X0+v*S, py=v=>Y0-v*S;
+  let s=AR(X0,Y0,X0+S+16,Y0)+AR(X0,Y0,X0,Y0-S-8)+TX(X0+S+20,Y0+4,'z₁','ink2','start',14)+TX(X0-8,Y0-S-6,'z₂','ink2','end',14)+TX(X0+S/2,14,'오토인코더의 잠재 공간','green','middle',12);
+  AGC.forEach(([nm,c,cx,cy,off])=>{off.forEach(([dx,dy])=>{s+=DOT(px(cx+dx),py(cy+dy),4,c,0.75);});});
+  s+=TX(px(0.22)-24,py(0.68)-22,'0','blue','end',13,600)+TX(px(0.72)+26,py(0.26)+4,'6','violet','start',13,600)+TX(px(0.6)+16,py(0.72)-12,'7','amber','start',13,600);
+  const P=AGP[k];
+  s+=AR(X0+S+40,120,X0+S+96,120,'ink2')+TX(X0+S+68,108,'디코더','violet','middle',12);
+  if(P){
+    s+=`<circle cx="${px(P[0]).toFixed(1)}" cy="${py(P[1]).toFixed(1)}" r="7" style="fill:none;stroke:var(--${P[3]});stroke-width:2"/>`;
+    s+=DIG(X0+S+104,94,P[2],P[3],52)+TX(X0+S+170,114,P[4],'ink','start',13)+TX(X0+S+170,134,P[5],P[3],'start',13);
+  }else{
+    s+=R(X0+S+104,94,52,52,null,null,'ink2',1.2)+TX(X0+S+170,124,'점을 골라 디코더에 넣어 봅니다','ink2','start',12);
+  }
+  $('f-aegen').querySelector('svg').innerHTML=s;
+  $('gp-o').textContent=k+'/4';
+  $('gp-read').innerHTML=P?`${P[4]} → <span class="c-${P[3]}">${P[5]}</span>`:'점들은 훈련 이미지를 인코딩한 자리입니다';
+}
+bind(['gp'],aegen);
 
 /* ---------- 3장. KL 발산 ---------- */
 function klfig(){
@@ -1014,6 +1079,14 @@ SCENES['f-gan']=[
   {dur:5.5, set:{gs:2}, cap:'생성자 G를 학습하면 가짜 점이 진짜 쪽으로 옮겨 갑니다.', line:'G 학습'},
   {dur:7, set:{gs:5}, cap:'D와 G를 번갈아 학습하는 일을 반복합니다. 가짜가 가까워질수록 D가 구분하기 어려워집니다.', line:'번갈아 반복'},
   {dur:6, set:{gs:6}, cap:'가짜가 진짜와 겹치면 D는 어디서나 0.5밖에 말할 수 없습니다. 이것이 GAN이 노리는 상태입니다.', line:'D = 0.5'}
+];
+
+SCENES['f-aegen']=[
+  {dur:4.5, cut:{gp:0}, cap:'오토인코더의 잠재 공간입니다. 점들은 훈련 이미지(숫자 0, 6, 7)를 인코딩한 자리입니다 (개념도, 보충).', line:'훈련 이미지의 자리'},
+  {dur:5.5, set:{gp:1}, cap:`아무 데서나 점을 뽑아 디코더에 넣으면 대부분 ${bc('red','의미 없는 이미지')}가 나옵니다. 잠재 공간이 정리되어 있지 않아 빈 곳이 많기 때문입니다.`, line:'빈 곳 → 의미 없음'},
+  {dur:4.5, set:{gp:2}, cap:'다른 빈 곳도 마찬가지입니다.', line:'빈 곳 → 의미 없음'},
+  {dur:5.5, set:{gp:3}, cap:`기존 7의 점 ${bc('blue','바로 옆')}에서 뽑으면 원래와 같은 7이 다시 나올 뿐입니다.`, line:'바로 옆 → 같은 7'},
+  {dur:6, set:{gp:4}, cap:`조금만 떨어져도 ${bc('red','다른 필체의 7이 아니라')} 무너진 이미지가 나옵니다. 가까운 점끼리 의미가 비슷하다는 보장이 없습니다. 2장의 VAE가 이 문제를 다룹니다.`, line:'조금 떨어짐 → 7이 아님'}
 ];
 
 initScenes();
