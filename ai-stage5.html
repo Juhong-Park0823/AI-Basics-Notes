@@ -379,34 +379,44 @@ h.addEventListener('focusin',()=>{if(hid)set(false);});})();
   <p class="ask">VAE를 읽으려면 어떤 확률 기호를 알아야 하나요?</p>
   <p>영상이 VAE 이론 전에 짚는 기호들입니다. 영상은 0~10 사이의 값을 갖는 확률변수 X로 설명합니다.</p>
   <div class="tbl"><table>
-    <tr><th>기호</th><th>뜻 (영상 설명)</th></tr>
-    <tr><td class="m">샘플링</td><td>X의 확률분포에 따라 값 하나가 나오는 것 ("X에서 뽑는다")</td></tr>
-    <tr><td class="m">p(x)</td><td>확률밀도 함수. 각 값이 나올 가능성</td></tr>
-    <tr><td class="m">E(X)</td><td>기댓값. 뽑았을 때 기대되는 평균값 (밀도 함수의 적분으로 계산)</td></tr>
-    <tr><td class="m">p(x), p(z)</td><td>두 변수 X, Z의 결합분포에서 다른 변수를 적분해 없앤 주변분포 (같은 p로 쓰지만 서로 다른 밀도)</td></tr>
-    <tr><td class="m">p(x | z)</td><td>z가 주어졌을 때 x의 확률. 결합분포를 z에서 자른 단면을 p(z)로 나눠 정규화</td></tr>
-    <tr><td class="m">p(z | x)</td><td>데이터 x를 뽑았을 때 잠재 변수 z가 있었을 확률</td></tr>
+    <tr><th>기호</th><th>읽는 법</th><th>뜻 (영상 설명)</th></tr>
+    <tr><td class="m">X, x</td><td>엑스</td><td>대문자 X는 값이 무작위로 정해지는 확률변수, 소문자 x는 그 변수가 실제로 가진 값 (구분은 보충)</td></tr>
+    <tr><td class="m">샘플링</td><td>샘플링 (sampling)</td><td>X의 확률분포에 따라 값 하나가 나오는 것 ("X에서 뽑는다")</td></tr>
+    <tr><td class="m">p(x)</td><td>피 오브 엑스</td><td>확률밀도 함수. 각 값이 나올 가능성</td></tr>
+    <tr><td class="m">E(X)</td><td>이 오브 엑스, 기댓값</td><td>뽑았을 때 기대되는 평균값 (밀도 함수의 적분으로 계산)</td></tr>
+    <tr><td class="m">p(x, z)</td><td>피 오브 엑스 콤마 제트</td><td>결합분포. 두 변수 X, Z의 값이 함께 나올 확률</td></tr>
+    <tr><td class="m">p(x), p(z)</td><td>피 오브 엑스, 피 오브 제트</td><td>주변분포. 결합분포에서 다른 변수를 적분해 없앤 것 (같은 p로 쓰지만 서로 다른 밀도)</td></tr>
+    <tr><td class="m">p(x | z)</td><td>피 오브 엑스 기븐 제트</td><td>z가 주어졌을 때 x의 확률. 결합분포를 z에서 자른 단면을 p(z)로 나눠 정규화</td></tr>
+    <tr><td class="m">p(z | x)</td><td>피 오브 제트 기븐 엑스</td><td>데이터 x를 뽑았을 때 잠재 변수 z가 있었을 확률</td></tr>
   </table></div>
+  <p class="note">세로줄 "|"는 "기븐(given)", 즉 "~가 주어졌을 때"로 읽습니다. 오른쪽이 이미 아는 것, 왼쪽이 궁금한 것입니다. 읽는 법은 흔히 쓰는 읽기입니다(보충).</p>
 
   <h3>VAE의 아이디어<span class="ts">Deepia <a href="https://www.youtube.com/watch?v=qJeaCHQ1k2w&t=381" target="_blank" rel="noopener">6:21~8:38</a></span></h3>
   <p class="ask">VAE는 어떤 생각에서 출발하나요?</p>
-  <p>목표는 데이터 분포 p(x)(예: 이미지들)에서 새 데이터를 만드는 것입니다. 하지만 p(x)의 정확한 모양은 모르고, 훈련 데이터라는 샘플만 있습니다. 그래서 영상은 다음 순서로 문제를 바꿉니다.</p>
-  <p class="try"><b>재생해 보기:</b> 아래 목록의 단계를 두 "세계"의 그림으로 따라갑니다. Deepia 영상 9:35의 데이터 분포·잠재 분포 화면을 바탕으로 다시 그린 개념도입니다 (보충).</p>
+  <p>영상은 이 부분을 확률 기호로 설명합니다. 여기서는 같은 내용을 <b>"진짜 같은 이미지를 만들고 싶다"</b>에서 출발해, 그러려면 무엇이 필요한지를 차례로 붙여 가는 순서로 정리했습니다. 각 부품이 영상의 어떤 기호인지 함께 적었습니다(순서와 예시는 보충).</p>
+  <p class="try"><b>재생해 보기:</b> 목표에서 시작해 디코더 → 인코더 → N(0, 1)과 KL이 하나씩 붙어 VAE 구조가 완성되는 과정을 봅니다 (개념도, 보충).</p>
   <figure class="fig" id="f-idea">
-    <svg viewBox="0 0 640 275" role="img" aria-label="이미지 세계 p(x)와 잠재 세계 p(z)를 사후분포와 가능도 두 길로 잇고, 잠재 세계를 N(0, 1)로 정하고, 이미지마다 q(z|x)로 어림잡아 인코더와 디코더가 되는 과정"></svg>
+    <svg viewBox="0 0 640 258" role="img" aria-label="진짜 같은 이미지를 만들기 위해 디코더, 인코더, N(0,1)과 KL이 차례로 붙어 VAE 구조가 되는 과정"></svg>
     <div class="ctrl">
-      <label for="ik">단계</label><input type="range" id="ik" min="0" max="6" step="any" value="0"><output id="ik-o"></output>
+      <label for="ik">단계</label><input type="range" id="ik" min="0" max="5" step="any" value="0"><output id="ik-o"></output>
     </div>
     <div class="read" id="idea-read"></div>
   </figure>
   <ol>
-    <li>데이터의 핵심 특징을 담은 낮은 차원의 <b>잠재 분포 p(z)</b>를 도입합니다.</li>
-    <li>두 분포를 잇는 길이 두 개 필요합니다. 이미지 x가 잠재 벡터 z를 만들었을 확률인 <b>사후분포 p(z | x)</b>와, z에서 이미지 x를 복원할 확률인 <b>가능도 p(x | z)</b>입니다.</li>
-    <li>사후분포에서 z를 뽑아 이미지로 복원할 수 있으면, 원래 데이터 분포의 새 샘플을 만든 셈입니다.</li>
-    <li>p(z)도 모르면 계산이 불가능하므로, p(z)를 <b>정규분포</b>라고 가정합니다. 그러면 가능도 p(x | z)를 계산할 수 있습니다.</li>
-    <li>진짜 사후분포는 여전히 모르므로, 평균 μ와 표준편차 σ를 갖는 가우시안 <b>q(z | x)</b>로 <b>근사</b>합니다. 이 근사를 최적화하는 것을 variational Bayes라고 하며, 이름의 "variational"이 여기서 왔습니다.</li>
-    <li>깊은 <b>인코더</b>가 이미지에서 μ, σ를 추정하고, <b>디코더</b>가 근사 사후분포에서 뽑은 z로 이미지를 복원합니다.</li>
+    <li><b>목표: 진짜 같은 이미지 — p(x)</b><br>28 × 28 흑백 이미지는 숫자 784개입니다. 784개를 아무렇게나 정하면 거의 다 잡음이고, 손글씨 숫자처럼 보이는 조합은 그중 아주 좁은 일부입니다. 영상의 <b>데이터 분포 p(x)</b>는 "어떤 조합이 진짜 이미지처럼 보이나"를 나타내고, 생성은 여기서 하나를 뽑는 일입니다. 하지만 p(x)의 모양은 모르고, 가진 것은 훈련 이미지(샘플)뿐입니다.</li>
+    <li><b>숫자 몇 개를 이미지로 바꾸는 장치: 디코더 — p(x | z)</b><br>784개를 직접 고르는 대신, 숫자 몇 개 z(잠재 변수)를 이미지로 바꿔 주는 신경망을 씁니다. z를 넣으면 어떤 이미지가 나오는지가 영상의 <b>가능도 p(x | z)</b>이고, 이 일을 디코더가 합니다. 잠재 공간은 따로 있는 세계가 아니라 <b>디코더에 넣는 입력들의 공간</b>입니다.</li>
+    <li><b>디코더를 학습시킬 짝: 인코더 — q(z | x)</b><br>디코더를 학습하려면 "이 훈련 이미지에는 이 z"라는 짝이 있어야 합니다. 그 진짜 짝, 즉 이미지 x가 어느 z에서 나왔을지가 영상의 <b>사후분포 p(z | x)</b>인데, 이것은 계산할 수 없습니다. 그래서 <b>인코더</b>가 이미지를 보고 평균 μ와 표준편차 σ를 내서 가우시안으로 <b>어림잡습니다</b>. 이 어림이 <b>q(z | x)</b>이고, 이렇게 어림을 최적화하는 방법을 variational Bayes라고 해서 이름의 "variational"이 여기서 왔습니다.</li>
+    <li><b>범위에서 뽑아 복원하기</b><br>인코더가 정한 범위에서 z를 뽑아 디코더에 넣고, 나온 이미지를 원래 이미지와 비교해 둘을 함께 학습합니다(3장의 복원 손실). 인코더 → z → 디코더로, 4차 오토인코더와 같은 모양이 됩니다.</li>
+    <li><b>생성할 때 뽑을 곳: p(z) = N(0, 1)</b><br>학습이 끝나면 인코더 없이 z를 뽑아 디코더에 넣어야 합니다. 그래서 영상은 <b>잠재 분포 p(z)를 정규분포로 가정</b>합니다. 이 가정 덕분에 계산이 가능해지고, 학습 때 인코더의 범위들이 이 N(0, 1)에 들어맞도록 <b>KL</b>로 끌어당깁니다(3장).</li>
+    <li><b>생성</b><br>학습 후에는 N(0, 1)에서 z를 뽑아 디코더에 넣으면 새 이미지가 나옵니다. 영상의 표현으로는, 사후분포에서 뽑은 잠재 벡터를 이미지로 되돌리면 원래 데이터 분포의 새 샘플을 만든 셈입니다.</li>
   </ol>
+  <div class="tbl"><table>
+    <tr><th>필요한 이유</th><th>부품</th><th>영상의 기호</th></tr>
+    <tr><td>진짜 같은 이미지를 만들고 싶다</td><td>목표</td><td class="m">p(x)</td></tr>
+    <tr><td>숫자 몇 개로 이미지를 만들 장치</td><td>디코더 (가중치 θ)</td><td class="m">p<sub>θ</sub>(x | z)</td></tr>
+    <tr><td>그 장치를 학습시킬 짝 찾기</td><td>인코더 (가중치 φ) → μ, σ</td><td class="m">q<sub>φ</sub>(z | x)</td></tr>
+    <tr><td>생성할 때 뽑을 장소 정하기</td><td>기준 분포 + KL</td><td class="m">p(z) = N(0, 1)</td></tr>
+  </table></div>
 
 </section>
 
@@ -813,38 +823,42 @@ function vaefig(){
 }
 bind(['vk'],vaefig);
 
-/* ---------- 2장. VAE의 아이디어 (Deepia 9:35 화면을 바탕으로 다시 그림, 보충) ---------- */
+/* ---------- 2장. VAE의 아이디어: 부품이 하나씩 붙는 순서 (개념도, 보충) ---------- */
+const NZ7=[...Array(49)].map((_,i)=>((i*37+11)%19)/18);
+const D7=[[1,1,1,1,1,1,0],[0,0,0,0,1,1,0],[0,0,0,1,1,0,0],[0,0,0,1,0,0,0],[0,0,1,1,0,0,0],[0,0,1,0,0,0,0],[0,0,1,0,0,0,0]];
 function ideafig(){
-  const k=+$('ik').value, o=i=>op01(k,i);
-  const CURVE=(x1,y1,cx,cy,x2,y2,c)=>{const a=Math.atan2(y2-cy,x2-cx),L=7,p=t=>`${(x2-L*Math.cos(a+t)).toFixed(1)},${(y2-L*Math.sin(a+t)).toFixed(1)}`;
-    return `<path d="M${x1},${y1} Q${cx},${cy} ${x2},${y2}" style="fill:none;stroke:var(--${c});stroke-width:1.6"/><polygon points="${x2},${y2} ${p(-0.45)} ${p(0.45)}" style="fill:var(--${c})"/>`;};
+  const k=+$('ik').value, o=i=>op01(k,i), Y=104, gen=o(5);
   let s='';
-  // 이미지 세계 p(x)
-  s+=`<path d="M70,120 C60,70 120,48 160,62 C200,40 250,70 238,120 C262,160 230,215 180,206 C150,236 90,222 92,184 C52,170 50,140 70,120 Z" style="fill:var(--blue);fill-opacity:.1;stroke:var(--blue);stroke-width:1.3"/>`;
-  s+=TX(150,30,'이미지 세계 p(x)','blue','middle',13,600);
-  const IM=[['7',96,96],['2',150,78],['0',186,120],['5',112,150],['3',156,170]];
-  IM.forEach(([d,x,y])=>{const hl=d==='7'&&k>=4.5; s+=R(x,y,24,24,null,null,hl?'amber':'blue',hl?2:1.1)+TX(x+12,y+18,d,'blue','middle',15,600);});
-  s+=g(1-o(1)*0.0, TX(150,262,k<0.5?'분포의 모양은 모르고, 훈련 이미지(샘플)만 있음':'','ink2','middle',12));
-  // 잠재 세계 p(z)
-  const blobOp=o(1)*(1-o(4)), circOp=o(4);
-  s+=g(o(1), TX(490,30,'잠재 세계 p(z)','green','middle',13,600));
-  s+=g(blobOp, `<path d="M420,130 C410,80 470,60 500,78 C545,62 575,110 560,140 C585,180 530,215 495,200 C455,222 415,190 428,165 C400,155 405,140 420,130 Z" style="fill:var(--green);fill-opacity:.1;stroke:var(--green);stroke-width:1.3"/>`+TX(490,262,'모양을 모름','green','middle',12));
-  s+=g(circOp, `<circle cx="490" cy="145" r="78" style="fill:var(--green);fill-opacity:.1;stroke:var(--green);stroke-width:1.3"/><circle cx="490" cy="145" r="40" style="fill:none;stroke:var(--green);stroke-width:1" stroke-dasharray="4 4"/>`+DOT(490,145,3,'green',1)+TX(490,262,'정규분포 N(0, 1)이라고 정함','green','middle',12));
-  // 두 길
-  const lab2=1-o(6);
-  s+=g(o(2), CURVE(248,108,320,62,404,108,'ink2')+CURVE(404,192,320,238,248,192,'ink2'));
-  s+=g(o(2)*lab2*(1-o(5)), TX(320,62,'p(z | x): 이미지 → 어디쯤','ink','middle',12));
-  s+=g(o(5)*lab2, TX(320,62,'q(z | x): 종 모양으로 어림잡음','amber','middle',12));
-  s+=g(o(2)*lab2, TX(320,252-4,'p(x | z): 점 → 이미지','ink','middle',12));
-  s+=g(o(6), TX(320,62,'인코더 = q<tspan dy="3" style="font-size:9px">φ</tspan><tspan dy="-3">(z | x)</tspan>','violet','middle',12,600)+TX(320,248,'디코더 = p<tspan dy="3" style="font-size:9px">θ</tspan><tspan dy="-3">(x | z)</tspan>','violet','middle',12,600));
-  // 생성: 잠재에서 뽑아 새 이미지
-  s+=g(o(3)*(1-o(5)*0.0), DOT(462,196,5,'amber',1)+TX(470,201,'z','amber','start',13)+R(204,170,26,26,'amber',0.15,'amber',1.6)+TX(217,189,'6','amber','middle',15,600)+TX(217,214,'새 이미지','amber','middle',11));
-  // 어림잡은 분포 q(z|x)
-  s+=g(o(5), `<ellipse cx="516" cy="112" rx="24" ry="15" style="fill:var(--amber);fill-opacity:.22;stroke:var(--amber);stroke-width:1.4"/>`+DOT(516,112,3,'amber',1)+TX(548,78,'N(μ, σ)','amber','start',12)+`<line x1="120" y1="108" x2="492" y2="112" style="stroke:var(--amber);stroke-width:1.1" stroke-dasharray="4 4"/>`);
+  // 0: 목표
+  const o0=1-o(1);
+  if(o0>0){let p='';
+    p+=TX(320,30,'p(x): 784개 숫자의 어떤 조합이 진짜 이미지처럼 보이나','blue','middle',13,600);
+    for(let r=0;r<7;r++)for(let c=0;c<7;c++){p+=R(150+c*14,62+r*14,14,14,'ink2',NZ7[r*7+c]*0.8,'rule',0.6);p+=R(392+c*14,62+r*14,14,14,D7[r][c]?'blue':null,D7[r][c]?0.85:null,'rule',0.6);}
+    p+=TX(199,180,'아무렇게 정한 784개','ink2','middle',12)+TX(199,198,'→ 거의 다 잡음','red','middle',12);
+    p+=TX(441,180,'손글씨 숫자','blue','middle',12)+TX(441,198,'→ 전체 중 아주 좁은 일부','blue','middle',12);
+    p+=TX(320,232,'(그림은 28 × 28을 7 × 7로 줄여 그림)','ink2','middle',11);
+    s+=g(o0,p);}
+  // 디코더 (1~)
+  s+=g(o(1), AR(306,Y,326,Y)+TRAP(330,Y,80,36,80,'violet')+TX(370,Y+5,'디코더','violet','middle',12)+TX(370,Y+66,'p<tspan dy="3" style="font-size:9px">θ</tspan><tspan dy="-3">(x | z)</tspan>','violet','middle',12)+AR(414,Y,432,Y));
+  s+=g(o(1)*(1-gen), DOT(294,Y,6,'amber',1)+TX(294,Y-14,'z (숫자 몇 개)','amber','middle',11));
+  // 출력 이미지
+  const outRec=o(2)*(1-gen);
+  s+=g(o(1)*(1-o(2)), DIG(436,Y-26,'?','violet',52)+TX(462,Y+44,'이미지가 나옴','violet','middle',11));
+  s+=g(outRec, DIG(436,Y-26,'7','blue',52)+TX(462,Y+44,'복원','blue','middle',11));
+  s+=g(gen, DIG(436,Y-26,'6','amber',52)+TX(462,Y+44,'새 이미지','amber','middle',11));
+  // 인코더 (2~)
+  const encOp=o(2)*(1-0.75*gen);
+  s+=g(encOp, DIG(14,Y-26,'7','blue',52)+TX(40,Y+44,'훈련 이미지 x','blue','middle',11)+AR(70,Y,90,Y)+TRAP(94,Y,80,80,36,'violet')+TX(134,Y+5,'인코더','violet','middle',12)+TX(134,Y+66,'q<tspan dy="3" style="font-size:9px">φ</tspan><tspan dy="-3">(z | x)</tspan>','violet','middle',12)+AR(178,Y,196,Y)
+     +`<ellipse cx="232" cy="${Y}" rx="30" ry="18" style="fill:var(--amber);fill-opacity:.2;stroke:var(--amber);stroke-width:1.3"/>`+TX(232,Y-26,'μ, σ (범위)','green','middle',11));
+  s+=g(o(3)*(1-gen), AR(264,Y,286,Y)+DOT(294,Y,6,'amber',1)+TX(294,Y+22,'뽑은 z','amber','middle',11));
+  // N(0,1) + KL (4~)
+  s+=g(o(4), `<circle cx="294" cy="210" r="24" style="fill:var(--green);fill-opacity:.15;stroke:var(--green);stroke-width:1.3"/>`+TX(294,215,'N(0, 1)','green','middle',11)+TX(324,236,'p(z): 미리 정한 기준','green','start',11));
+  s+=g(o(4)*(1-gen), `<line x1="240" y1="${Y+18}" x2="276" y2="194" style="stroke:var(--red);stroke-width:1.4" stroke-dasharray="4 3"/>`+TX(236,170,'KL로 맞춤','red','end',11));
+  s+=g(gen, AR(294,184,294,Y+9,'amber',1.6)+DOT(294,Y,6,'amber',1)+TX(306,150,'여기서 뽑음','amber','start',11)+TX(134,198,'생성 땐 인코더 안 씀','ink2','middle',11));
   $('f-idea').querySelector('svg').innerHTML=s;
-  $('ik-o').textContent=Math.round(k)+'/6';
-  const m=['목표: 이미지 세계 p(x)에서 새 이미지를 뽑고 싶지만, 그 모양은 모름','① 단순한 잠재 세계 p(z)를 따로 둠','② 두 세계를 잇는 길: p(z | x)는 이미지 → 잠재, p(x | z)는 잠재 → 이미지','③ 잠재 세계에서 z를 뽑아 p(x | z)로 보내면 새 이미지','④ p(z)도 모르니 N(0, 1)이라고 정함 → p(x | z)를 계산할 수 있게 됨','⑤ p(z | x)도 모르니 이미지마다 종 모양 q(z | x) = N(μ, σ)로 어림잡음 (variational)','⑥ 어림잡는 쪽이 인코더, 되돌리는 쪽이 디코더'];
-  $('idea-read').innerHTML=m[Math.min(6,Math.round(k))];
+  $('ik-o').textContent=Math.round(k)+'/5';
+  const m=['목표: 진짜 같은 이미지(p(x))를 만들고 싶지만, 784개를 직접 고를 수는 없음','디코더: 숫자 몇 개 z를 이미지로 바꾸는 장치 = p(x | z)','인코더: 디코더를 학습시킬 짝(z)을 찾으려고, 이미지를 보고 범위 μ, σ를 어림 = q(z | x)','범위에서 z를 뽑아 디코더로 복원 → 원본과 비교해 학습 (오토인코더 모양)','생성할 곳을 N(0, 1)로 미리 정하고, 인코더의 범위를 KL로 거기에 맞춤','생성: 인코더 없이 N(0, 1)에서 z를 뽑아 디코더로 → 새 이미지'];
+  $('idea-read').innerHTML=m[Math.min(5,Math.round(k))];
 }
 bind(['ik'],ideafig);
 
@@ -1133,13 +1147,12 @@ SCENES['f-aegen']=[
 ];
 
 SCENES['f-idea']=[
-  {dur:5.5, cut:{ik:0}, cap:`목표는 ${bc('blue','이미지 세계 p(x)')}에서 새 이미지를 뽑는 것입니다. 하지만 이 세계의 모양(분포)은 모르고, 가진 것은 훈련 이미지들(샘플)뿐입니다.`, line:'목표: p(x)에서 뽑기'},
-  {dur:5, set:{ik:1}, cap:`그래서 숫자 몇 개짜리 단순한 ${bc('green','잠재 세계 p(z)')}를 따로 둡니다.`, line:'① 잠재 세계 p(z)'},
-  {dur:7, set:{ik:2}, cap:'두 세계를 잇는 길이 두 개 필요합니다. 위는 "이 이미지는 잠재 세계의 어디쯤인가"(사후분포 p(z | x)), 아래는 "이 점에서는 어떤 이미지가 나오나"(가능도 p(x | z))입니다.', line:'② 두 길'},
-  {dur:6, set:{ik:3}, cap:`이 길들이 있으면 잠재 세계에서 ${bc('amber','z')}를 뽑아 아래 길로 보내 ${bc('amber','새 이미지')}를 만들 수 있습니다.`, line:'③ 뽑아서 되돌리기 = 생성'},
-  {dur:6.5, set:{ik:4}, cap:`문제 1: 잠재 세계의 모양도 모릅니다. 그래서 ${bc('green','N(0, 1)')}(가운데 0, 폭 1인 종 모양)이라고 정해 버립니다. 그러면 아래 길 p(x | z)를 계산할 수 있게 됩니다.`, line:'④ p(z) = N(0, 1)로 정함'},
-  {dur:7, set:{ik:5}, cap:`문제 2: 위 길의 진짜 답 p(z | x)도 모릅니다. 그래서 이미지(예: 7)마다 ${bc('amber','종 모양 N(μ, σ)')}로 어림잡습니다. 이 어림잡은 분포가 q(z | x)이고, 이 방식이 "variational"입니다.`, line:'⑤ q(z | x)로 어림잡기'},
-  {dur:6, set:{ik:6}, cap:`결국 위 길(어림잡기)을 맡는 신경망이 ${bc('violet','인코더')}, 아래 길(되돌리기)을 맡는 신경망이 ${bc('violet','디코더')}입니다. φ, θ는 각 신경망의 가중치입니다.`, line:'⑥ 인코더와 디코더'}
+  {dur:6.5, cut:{ik:0}, cap:`목표는 진짜 같은 이미지를 만드는 것입니다. 28 × 28 이미지는 숫자 784개인데, 아무렇게나 정하면 잡음이고 ${bc('blue','손글씨처럼 보이는 조합')}은 아주 좁은 일부입니다. 이 "어떤 조합이 진짜처럼 보이나"가 p(x)입니다.`, line:'목표: p(x)'},
+  {dur:6.5, set:{ik:1}, cap:`784개를 직접 고르는 대신, ${bc('amber','숫자 몇 개 z')}를 이미지로 바꿔 주는 ${bc('violet','디코더')}를 씁니다. 이것이 p(x | z)이고, z가 놓이는 곳이 잠재 공간입니다.`, line:'디코더 = p(x | z)'},
+  {dur:7.5, set:{ik:2}, cap:`디코더를 학습하려면 "이 이미지에는 이 z"라는 짝이 필요한데, 진짜 짝 p(z | x)는 계산할 수 없습니다. 그래서 ${bc('violet','인코더')}가 이미지를 보고 범위 μ, σ로 어림잡습니다. 이것이 q(z | x)입니다.`, line:'인코더 = q(z | x)'},
+  {dur:6, set:{ik:3}, cap:`범위에서 ${bc('amber','z를 뽑아')} 디코더로 복원하고, 원래 이미지와 비교해 둘을 함께 학습합니다. 4차 오토인코더와 같은 모양입니다.`, line:'뽑아서 복원'},
+  {dur:7, set:{ik:4}, cap:`나중에 인코더 없이 z를 뽑으려면 뽑을 곳이 정해져 있어야 합니다. 그래서 ${bc('green','p(z) = N(0, 1)')}로 정해 두고, 인코더의 범위를 ${bc('red','KL')}로 거기에 맞춥니다.`, line:'N(0, 1)과 KL'},
+  {dur:6, set:{ik:5}, cap:`생성할 때는 인코더를 쓰지 않습니다. ${bc('green','N(0, 1)')}에서 z를 뽑아 디코더에 넣으면 ${bc('amber','새 이미지')}가 나옵니다.`, line:'생성'}
 ];
 
 initScenes();
